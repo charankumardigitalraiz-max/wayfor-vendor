@@ -10,7 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import type { Venue } from '../../types';
-import { Modal } from '../common/Modal';
+import { AddVenueModal } from '../common/AddVenueModal';
 
 interface VenuesViewProps {
   venues: Venue[];
@@ -24,35 +24,6 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
   onShowToast
 }) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [city, setCity] = useState('');
-  const [capacity, setCapacity] = useState(30000);
-  const [address, setAddress] = useState('');
-  const [soundSystem, setSoundSystem] = useState('L-Acoustics K1 Stadium Array');
-  const [type, setType] = useState<Venue['type']>('Stadium');
-  const [contactPerson, setContactPerson] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !city || !address) return;
-
-    onAddVenue({
-      id: `ven-${Date.now().toString().slice(-4)}`,
-      name,
-      city,
-      capacity: Number(capacity),
-      address,
-      soundSystem,
-      type,
-      contactPerson: contactPerson || 'Venue Operations Desk',
-      status: 'active'
-    });
-
-    setIsAddOpen(false);
-    setName('');
-    setAddress('');
-    onShowToast(`Partner venue "${name}" added successfully!`);
-  };
 
   return (
     <div className="space-y-4">
@@ -150,119 +121,13 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
         ))}
       </div>
 
-      {/* Add Venue Modal */}
-      <Modal
+      {/* Global Add Venue Modal */}
+      <AddVenueModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title="Add Partner Concert Arena / Stadium"
-        subtitle="Register stage specifications, audio delay rigs, and security turnstiles"
-        maxWidth="md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div className="space-y-1">
-            <label className="font-semibold text-slate-700">Arena / Stadium Name *</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. DY Patil Stadium"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-700">City *</label>
-              <input
-                type="text"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Navi Mumbai"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-700">Arena Type</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as Venue['type'])}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-              >
-                <option value="Stadium">Stadium</option>
-                <option value="Arena">Arena</option>
-                <option value="Open Grounds">Open Grounds</option>
-                <option value="Auditorium">Auditorium</option>
-                <option value="Club">Club / Amphitheatre</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-700">Max Capacity</label>
-              <input
-                type="number"
-                value={capacity}
-                onChange={(e) => setCapacity(Number(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-700">Contact Person / Desk</label>
-              <input
-                type="text"
-                value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
-                placeholder="Manager (+91 ...)"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="font-semibold text-slate-700">Full Address *</label>
-            <input
-              type="text"
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Sector, Landmark, Pin code..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="font-semibold text-slate-700">Audio / Sound System Rig</label>
-            <input
-              type="text"
-              value={soundSystem}
-              onChange={(e) => setSoundSystem(e.target.value)}
-              placeholder="e.g. L-Acoustics K1 / d&b audiotechnik"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer"
-            >
-              Save Arena
-            </button>
-          </div>
-        </form>
-      </Modal>
+        onAddVenue={onAddVenue}
+        onShowToast={onShowToast}
+      />
     </div>
   );
 };

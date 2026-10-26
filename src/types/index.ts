@@ -1,6 +1,7 @@
 export type NavigationTab =
   | 'overview'
   | 'concerts'
+  | 'artists'
   | 'gate-scanner'
   | 'attendees'
   | 'venues'
@@ -34,6 +35,7 @@ export interface ConcertEvent {
   supportingActs?: string[];
   tourName?: string;
   genre: 'EDM' | 'Rock' | 'Pop' | 'Hip-Hop' | 'Indie' | 'Classical' | 'Jazz';
+  genres?: string[];
   date: string;
   doorsOpen: string;
   showTime?: string;
@@ -53,6 +55,10 @@ export interface ConcertEvent {
   connectedRidesCount?: number;
   soundSystem?: string;
   ageRestriction?: string;
+  durationHours?: string;
+  languages?: string[];
+  gallery?: string[];
+  videoUrl?: string;
   productionChecklist?: ProductionChecklist;
 }
 
@@ -127,4 +133,47 @@ export interface VendorProfile {
   rating: number;
   totalConcertsHosted: number;
   totalTicketsSold: number;
+}
+
+export interface ArtistSocialLinks {
+  spotify?: string;
+  instagram?: string;
+  youtube?: string;
+  appleMusic?: string;
+  twitter?: string;
+}
+
+export interface ArtistManagement {
+  managerName?: string;
+  agency?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface ArtistRider {
+  microphonePreference?: string;
+  inEarMonitors?: string;
+  hospitalityNotes?: string;
+  stagePlotNotes?: string;
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  stageName?: string;
+  genre: string;
+  subGenres?: string[];
+  avatar: string;
+  bannerImage?: string;
+  bio: string;
+  country: string;
+  city?: string;
+  monthlyListeners?: string;
+  status: 'touring' | 'active' | 'available' | 'on-break';
+  socialLinks?: ArtistSocialLinks;
+  management?: ArtistManagement;
+  rider?: ArtistRider;
+  totalConcerts?: number;
+  upcomingConcerts?: number;
+  verified?: boolean;
 }

@@ -1,15 +1,17 @@
-import type { ConcertEvent, AttendeeBooking, GateScanLog, PayoutTransaction, Venue } from '../types';
+import type { ConcertEvent, AttendeeBooking, GateScanLog, PayoutTransaction, Venue, Artist } from '../types';
 import {
   mockVendorConcerts,
   mockAttendees,
   mockGateScanLogs,
   mockPayouts,
-  mockVenues
+  mockVenues,
+  mockArtists
 } from '../data/mockVendorData';
 
 const CONCERTS_STORAGE_KEY = 'digitalraiz_vendor_concerts';
 const ATTENDEES_STORAGE_KEY = 'digitalraiz_vendor_attendees';
 const SCAN_LOGS_STORAGE_KEY = 'digitalraiz_vendor_scan_logs';
+const ARTISTS_STORAGE_KEY = 'digitalraiz_vendor_artists';
 
 class VendorConcertService {
   private getStoredConcerts(): ConcertEvent[] {
@@ -205,6 +207,53 @@ class VendorConcertService {
 
   getPayouts(): PayoutTransaction[] {
     return mockPayouts;
+  }
+
+  // Artists Management
+  getArtists(): Artist[] {
+    const raw = localStorage.getItem(ARTISTS_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(ARTISTS_STORAGE_KEY, JSON.stringify(mockArtists));
+      return mockArtists;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return mockArtists;
+    }
+  }
+
+  saveArtists(artists: Artist[]) {
+    localStorage.setItem(ARTISTS_STORAGE_KEY, JSON.stringify(artists));
+  }
+
+  async createArtist(artist: Omit<Artist, 'id'>): Promise<Artist> {
+    const artists = this.getArtists();
+    const newArtist: Artist = {
+      ...artist,
+      id: `art-${Date.now().toString().slice(-4)}`
+    };
+    const updated = [newArtist, ...artists];
+    this.saveArtists(updated);
+    return newArtist;
+  }
+
+  async updateArtist(id: string, updates: Partial<Artist>): Promise<Artist> {
+    const artists = this.getArtists();
+    const index = artists.findIndex(a => a.id === id);
+    if (index === -1) throw new Error('Artist not found');
+
+    const updatedArtist = { ...artists[index], ...updates };
+    artists[index] = updatedArtist;
+    this.saveArtists(artists);
+    return updatedArtist;
+  }
+
+  async deleteArtist(id: string): Promise<boolean> {
+    const artists = this.getArtists();
+    const filtered = artists.filter(a => a.id !== id);
+    this.saveArtists(filtered);
+    return true;
   }
 }
 

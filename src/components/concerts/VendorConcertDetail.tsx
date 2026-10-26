@@ -103,13 +103,19 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
   const avgPrice = (concert.minPrice + concert.maxPrice) / 2;
   const grossEst = concert.ticketsSold * avgPrice;
   const checkedInCount = eventAttendees.filter(a => a.checkedIn).length;
+  const totalTierQuota = concert.ticketTiers.reduce((acc, t) => acc + t.total, 0);
+  const totalTierAvailable = concert.ticketTiers.reduce((acc, t) => acc + t.available, 0);
+  const totalTierSold = totalTierQuota - totalTierAvailable;
+  const totalTierRevenue = concert.ticketTiers.reduce((acc, t) => acc + (t.total - t.available) * t.price, 0);
+  const totalTierSoldPct = totalTierQuota > 0 ? Math.round((totalTierSold / totalTierQuota) * 100) : 0;
+  const tabIndex = activeTab === 'tiers' ? 0 : activeTab === 'attendees' ? 1 : 2;
 
   const attendeeColumns: Column<AttendeeBooking>[] = [
     {
       key: 'ticketCode',
       header: 'Ticket Code',
       render: (item) => (
-        <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80">
+        <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80 shadow-2xs">
           {item.ticketCode}
         </span>
       )
@@ -118,9 +124,14 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
       key: 'customerName',
       header: 'Attendee Name',
       render: (item) => (
-        <div>
-          <span className="font-semibold text-slate-900 block">{item.customerName}</span>
-          <span className="text-[11px] text-slate-500">{item.customerEmail}</span>
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-full bg-purple-100 text-purple-700 border border-purple-200/70 flex items-center justify-center font-bold text-xs shrink-0">
+            {item.customerName.charAt(0)}
+          </div>
+          <div>
+            <span className="font-semibold text-slate-900 block">{item.customerName}</span>
+            <span className="text-[11px] text-slate-500">{item.customerEmail}</span>
+          </div>
         </div>
       )
     },
@@ -374,18 +385,18 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
         {/* Workspace Tab Header */}
         <div className="border-b border-slate-200/80 bg-white px-4 py-3 sm:px-5 flex items-center justify-between gap-4 flex-wrap">
           {/* Segmented Pill Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 rounded-md border border-slate-200/60">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200/70">
             <button
               type="button"
               onClick={() => setActiveTab('tiers')}
-              className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'tiers'
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'tiers'
                 ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
                 }`}
             >
               <Ticket className="h-3.5 w-3.5" />
               <span>Ticket Tiers & Inventory</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'tiers' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold transition-colors ${activeTab === 'tiers' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
                 }`}>
                 {concert.ticketTiers.length}
               </span>
@@ -394,14 +405,14 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('attendees')}
-              className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'attendees'
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'attendees'
                 ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
                 }`}
             >
               <Users className="h-3.5 w-3.5" />
               <span>Attendee Manifest</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'attendees' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold transition-colors ${activeTab === 'attendees' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
                 }`}>
                 {eventAttendees.length}
               </span>
@@ -410,9 +421,9 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('production')}
-              className={`px-3 py-1.5 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'production'
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'production'
                 ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
                 }`}
             >
               <Sliders className="h-3.5 w-3.5" />
@@ -426,185 +437,265 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
           </div>
         </div>
 
-        {/* Tab 1: Ticket Tiers */}
-        {activeTab === 'tiers' && (
-          <div className="p-4 sm:p-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {concert.ticketTiers.map((tier) => {
-                const tierSold = tier.total - tier.available;
-                const tierSoldPct = Math.round((tierSold / (tier.total || 1)) * 100);
-                const isSoldOut = tierSoldPct >= 100;
+        {/* Sliding Tab Panes Container */}
+        <div className="overflow-hidden w-full relative">
+          <div
+            className="flex w-full items-start transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${tabIndex * 100}%)` }}
+          >
+            {/* Tab 1: Ticket Tiers */}
+            <div className="w-full shrink-0 min-w-full">
+              {/* Header Toolbar */}
+              <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                    <Ticket className="h-4 w-4 text-purple-600" />
+                    Ticket Tiers & Quota Allocations
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Official box office passes broken down by seating class, quota velocity, and stage visibility.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200 shadow-2xs">
+                    {concert.ticketTiers.length} Active Tiers
+                  </span> */}
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 shadow-2xs">
+                    ₹{totalTierRevenue.toLocaleString()} Gross Inflow
+                  </span>
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={tier.id}
-                    className="rounded-lg border border-slate-200 bg-white p-4 flex flex-col justify-between hover:border-slate-300 transition-colors space-y-3.5"
-                  >
-                    <div>
-                      {/* Name & Price */}
-                      <div className="flex items-start justify-between gap-2 min-h-[45px]">
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 line-clamp-1">{tier.name}</h4>
-                          {/* <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{tier.description || 'Arena admission'}</p> */}
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      <th className="py-3.5 px-5">Tier Category</th>
+                      <th className="py-3.5 px-4">Price / Pass</th>
+                      <th className="py-3.5 px-4 min-w-[180px]">Quota & Sales</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-5 text-right">Gross Inflow</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
+                    {concert.ticketTiers.map((tier, idx) => {
+                      const tierSold = tier.total - tier.available;
+                      const tierPercent = Math.round((tierSold / (tier.total || 1)) * 100);
+                      const tierRevenue = tierSold * tier.price;
+                      const isSoldOut = tier.available === 0;
+                      const isSellingFast = tierPercent >= 80 && !isSoldOut;
+
+                      const lowerName = tier.name.toLowerCase();
+                      const tierBadgeStyle = lowerName.includes('vvip')
+                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                        : lowerName.includes('vip')
+                          ? 'bg-purple-100 text-purple-800 border-purple-200'
+                          : lowerName.includes('standing') || lowerName.includes('floor') || lowerName.includes('mosh')
+                            ? 'bg-blue-100 text-blue-800 border-blue-200'
+                            : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+
+                      return (
+                        <tr
+                          key={idx}
+                          className="hover:bg-purple-50/30 transition-colors"
+                        >
+                          <td className="py-3.5 px-5">
+                            <div className="flex items-center gap-3">
+                              <div className={`h-8 w-8 rounded-lg border flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${tierBadgeStyle}`}>
+                                {tier.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-slate-900">{tier.name}</div>
+                                <div className="text-[11px] text-slate-500">
+                                  <span className="font-medium text-slate-700">{tier.available.toLocaleString()}</span> available of {tier.total.toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                            ₹{tier.price.toLocaleString()}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center justify-between text-[11px] mb-1">
+                              <span className="font-medium text-slate-700">{tierSold.toLocaleString()} sold</span>
+                              <span className="font-semibold text-purple-700">{tierPercent}%</span>
+                            </div>
+                            <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${isSoldOut
+                                  ? 'bg-rose-500'
+                                  : isSellingFast
+                                    ? 'bg-amber-500'
+                                    : 'bg-purple-600'
+                                  }`}
+                                style={{ width: `${tierPercent}%` }}
+                              />
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            {isSoldOut ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                                Sold Out
+                              </span>
+                            ) : isSellingFast ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+                                Selling Fast
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                                Available
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-5 text-right font-semibold text-purple-700 whitespace-nowrap">
+                            ₹{tierRevenue.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot className="border-t-2 border-slate-200 bg-slate-50/75 text-xs font-semibold text-slate-800">
+                    <tr>
+                      <td className="py-3.5 px-5">
+                        <div className="font-bold text-slate-900">Total Portfolio Allocation</div>
+                        <div className="text-[11px] text-slate-500 font-normal">
+                          {totalTierAvailable.toLocaleString()} remaining across {concert.ticketTiers.length} categories
                         </div>
-                        <span className="text-base font-extrabold text-slate-900 shrink-0">
-                          ₹{tier.price.toLocaleString()}
-                        </span>
-                      </div>
-
-                      {/* Simple Progress & Availability */}
-                      <div className="mt-3.5 space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500 font-medium">
-                            Sold: <strong className="text-slate-800">{tierSold.toLocaleString()}</strong> / {tier.total.toLocaleString()}
-                          </span>
-                          <span className={`font-bold ${isSoldOut ? 'text-emerald-600' : 'text-purple-600'}`}>
-                            {tierSoldPct}%
-                          </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                        Avg ₹{Math.round(totalTierQuota > 0 ? (concert.ticketTiers.reduce((acc, t) => acc + t.price * t.total, 0) / totalTierQuota) : 0).toLocaleString()}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center justify-between text-[11px] mb-1">
+                          <span className="font-bold text-slate-800">{totalTierSold.toLocaleString()} total sold</span>
+                          <span className="font-bold text-purple-700">{totalTierSoldPct}%</span>
                         </div>
-
-                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-300 ${isSoldOut ? 'bg-emerald-500' : 'bg-purple-600'}`}
-                            style={{ width: `${Math.min(100, tierSoldPct)}%` }}
+                            className="h-full rounded-full bg-purple-600 transition-all duration-500"
+                            style={{ width: `${totalTierSoldPct}%` }}
                           />
                         </div>
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-400">
-                          <span>{isSoldOut ? 'Fully booked' : `${(tier.total - tierSold).toLocaleString()} passes left`}</span>
-                          {isSoldOut ? (
-                            <span className="text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/60 text-[10px]">Sold Out</span>
-                          ) : (
-                            <span className="text-slate-500 text-[10px]">Active</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Simple Perks Tags */}
-                    {/* {tier.perks && tier.perks.length > 0 && (
-                      <div className="pt-2.5 border-t border-slate-100">
-                        <div className="flex flex-wrap gap-1">
-                          {tier.perks.map((p, i) => (
-                            <span
-                              key={i}
-                              className="text-[10px] font-medium text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-100"
-                            >
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )} */}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Attendee Manifest */}
-        {activeTab === 'attendees' && (
-          <div>
-            {/* Search & Filter Toolbar */}
-            <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={attendeeSearch}
-                  onChange={(e) => {
-                    setAttendeeSearch(e.target.value);
-                    setAttendeePage(1);
-                  }}
-                  placeholder="Search attendee name, ticket code (TKT-9821)..."
-                  className="w-full rounded-md border border-slate-200 bg-slate-50/70 pl-9 pr-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all shadow-2xs"
-                />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={attendeeFilter}
-                  onChange={(e) => {
-                    setAttendeeFilter(e.target.value as 'all' | 'checkedIn' | 'pending');
-                    setAttendeePage(1);
-                  }}
-                  className="appearance-none rounded-md border border-slate-200 bg-white px-3 py-2 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300"
-                >
-                  <option value="all">All Attendees</option>
-                  <option value="checkedIn">Admitted</option>
-                  <option value="pending">Pending Entry</option>
-                </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100/80 text-purple-800 border border-purple-200/80 shadow-2xs">
+                          {concert.ticketTiers.length} Active Categories
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-5 text-right font-bold text-sm text-purple-800 whitespace-nowrap">
+                        ₹{totalTierRevenue.toLocaleString()}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
 
-            <Table
-              columns={attendeeColumns}
-              data={paginatedAttendees}
-              keyExtractor={(a) => a.id}
-              showPagination={false}
-              containerClassName="border-0 rounded-none shadow-none bg-transparent"
-              emptyMessage="No attendees found matching filter."
-              footer={
-                filteredAttendees.length > 0 ? (
-                  <Pagination
-                    variant="attached"
-                    currentPage={safeAttendeePage}
-                    totalItems={filteredAttendees.length}
-                    pageSize={attendeePageSize}
-                    onPageChange={setAttendeePage}
-                    onPageSizeChange={setAttendeePageSize}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    itemName="attendees"
+            {/* Tab 2: Attendee Manifest */}
+            <div className="w-full shrink-0 min-w-full">
+              {/* Search & Filter Toolbar */}
+              <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={attendeeSearch}
+                    onChange={(e) => {
+                      setAttendeeSearch(e.target.value);
+                      setAttendeePage(1);
+                    }}
+                    placeholder="Search attendee name, ticket code (TKT-9821)..."
+                    className="w-full rounded-md border border-slate-200 bg-slate-50/70 pl-9 pr-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all shadow-2xs"
                   />
-                ) : null
-              }
-            />
-          </div>
-        )}
+                </div>
 
-        {/* Tab 3: Stage & Production */}
-        {activeTab === 'production' && (
-          <div className="p-4 sm:p-5 lg:p-6 space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
-                Stadium Acoustics & Technical Rider Specifications
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Production guidelines, sound system calibration, and security arrangements.
-              </p>
+                <div className="relative">
+                  <select
+                    value={attendeeFilter}
+                    onChange={(e) => {
+                      setAttendeeFilter(e.target.value as 'all' | 'checkedIn' | 'pending');
+                      setAttendeePage(1);
+                    }}
+                    className="appearance-none rounded-md border border-slate-200 bg-white px-3 py-2 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300"
+                  >
+                    <option value="all">All Attendees</option>
+                    <option value="checkedIn">Admitted</option>
+                    <option value="pending">Pending Entry</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <Table
+                columns={attendeeColumns}
+                data={paginatedAttendees}
+                keyExtractor={(a) => a.id}
+                showPagination={false}
+                containerClassName="border-0 rounded-none shadow-none bg-transparent"
+                emptyMessage="No attendees found matching filter."
+                footer={
+                  filteredAttendees.length > 0 ? (
+                    <Pagination
+                      variant="attached"
+                      currentPage={safeAttendeePage}
+                      totalItems={filteredAttendees.length}
+                      pageSize={attendeePageSize}
+                      onPageChange={setAttendeePage}
+                      onPageSizeChange={setAttendeePageSize}
+                      pageSizeOptions={[5, 10, 15, 20]}
+                      itemName="attendees"
+                    />
+                  ) : null
+                }
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                  <Music className="h-4 w-4 text-purple-600" />
-                  <span>Audio System Rider</span>
-                </h4>
-                <p className="text-xs text-slate-700 font-semibold">
-                  {concert.soundSystem || 'L-Acoustics K1 Stadium Array + KS28 Sub Arc'}
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  FOH console calibrated to 102dB Leq with digital delay towers mapped across all stadium tiers.
+            {/* Tab 3: Stage & Production */}
+            <div className="w-full shrink-0 min-w-full p-4 sm:p-5 lg:p-6 space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Stadium Acoustics & Technical Rider Specifications
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Production guidelines, sound system calibration, and security arrangements.
                 </p>
               </div>
 
-              <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  <span>Security & Gate Personnel</span>
-                </h4>
-                <p className="text-xs text-slate-700 font-semibold">
-                  {concert.productionChecklist?.securityGuardsCount || 150} Certified Bouncers & Stewards
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  DFMD metal detectors stationed at Gates 1 through 6 with dedicated women security lanes.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
+                  <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <Music className="h-4 w-4 text-purple-600" />
+                    <span>Audio System Rider</span>
+                  </h4>
+                  <p className="text-xs text-slate-700 font-semibold">
+                    {concert.soundSystem || 'L-Acoustics K1 Stadium Array + KS28 Sub Arc'}
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    FOH console calibrated to 102dB Leq with digital delay towers mapped across all stadium tiers.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
+                  <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                    <span>Security & Gate Personnel</span>
+                  </h4>
+                  <p className="text-xs text-slate-700 font-semibold">
+                    {concert.productionChecklist?.securityGuardsCount || 150} Certified Bouncers & Stewards
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    DFMD metal detectors stationed at Gates 1 through 6 with dedicated women security lanes.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div >
   );

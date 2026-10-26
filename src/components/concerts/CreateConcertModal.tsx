@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Calendar, MapPin, Music, DollarSign, Image as ImageIcon, Upload, X } from 'lucide-react';
 import type { ConcertEvent, TicketTier } from '../../types';
 import { Modal } from '../common/Modal';
@@ -29,6 +29,8 @@ export const CreateConcertModal: React.FC<CreateConcertModalProps> = ({
   const [soundSystem, setSoundSystem] = useState('L-Acoustics K1 Stadium Array');
   const [ageRestriction, setAgeRestriction] = useState('16+ (Valid ID Required)');
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -37,6 +39,13 @@ export const CreateConcertModal: React.FC<CreateConcertModalProps> = ({
         setImageUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -276,51 +285,7 @@ export const CreateConcertModal: React.FC<CreateConcertModalProps> = ({
           </div>
         </div>
 
-        {/* Banner Artwork Image File Upload */}
-        <div className="space-y-1.5">
-          <label className="font-semibold text-slate-700 block text-xs">Banner Artwork Image</label>
-          <div className="flex items-center gap-3">
-            {imageUrl ? (
-              <div className="relative h-18 w-28 rounded-lg overflow-hidden border border-slate-200 shrink-0 group shadow-2xs">
-                <img
-                  src={imageUrl}
-                  alt="Banner preview"
-                  className="h-full w-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => setImageUrl('')}
-                  className="absolute top-1 right-1 h-5 w-5 rounded-full bg-slate-900/80 text-white flex items-center justify-center hover:bg-rose-600 transition-colors cursor-pointer"
-                  title="Remove image"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ) : null}
 
-            <label
-              htmlFor="concert-banner-upload"
-              className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-purple-400 bg-slate-50/70 hover:bg-purple-50/20 rounded-lg p-3 transition-all cursor-pointer group"
-            >
-              <div className="flex items-center gap-2 text-slate-600 group-hover:text-purple-700">
-                <Upload className="h-4 w-4 text-purple-600" />
-                <span className="text-xs font-semibold">
-                  {imageUrl ? 'Replace artwork file' : 'Upload concert banner artwork'}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                PNG, JPG, or WEBP (16:9 recommended)
-              </p>
-              <input
-                id="concert-banner-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
 
         {/* Ticket Tiers Section */}
         <div className="pt-2 border-t border-slate-200 space-y-3">
@@ -392,6 +357,45 @@ export const CreateConcertModal: React.FC<CreateConcertModalProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+
+
+
+          {/* Banner Artwork Image File Upload */}
+          <div className="space-y-1.5">
+            <label className="font-semibold text-slate-700 block text-xs">
+              Banner Artwork Image (File Upload)
+            </label>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <input
+                ref={fileInputRef}
+                id="concert-banner-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 file:cursor-pointer border border-slate-200 rounded-xl bg-slate-50 p-1.5 focus:outline-none focus:border-purple-500 cursor-pointer"
+              />
+              {imageUrl && (
+                <div className="relative h-14 w-24 shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-2xs group">
+                  <img
+                    src={imageUrl}
+                    alt="Banner preview"
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-1 right-1 h-4 w-4 rounded-full bg-slate-900/80 text-white flex items-center justify-center hover:bg-rose-600 transition-colors cursor-pointer"
+                    title="Remove image"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Upload JPG, PNG, or WEBP file for stage and portal display.
+            </p>
           </div>
         </div>
 

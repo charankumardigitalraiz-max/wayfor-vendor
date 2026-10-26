@@ -4,7 +4,8 @@ import type {
   GateScanLog,
   Venue,
   PayoutTransaction,
-  VendorProfile
+  VendorProfile,
+  Artist
 } from '../types';
 
 export const mockVendorProfile: VendorProfile = {
@@ -632,4 +633,214 @@ export const mockPayouts: PayoutTransaction[] = [
     referenceId: 'HOLD-ESCROW-COLDPLAY'
   }
 ];
+
+export const mockArtists: Artist[] = [
+  {
+    id: 'art-001',
+    name: 'Anyma',
+    stageName: 'Matteo Milleri (Tale of Us / Anyma)',
+    genre: 'EDM',
+    subGenres: ['Melodic Techno', 'Cinematic Visuals', 'Cyber Electro'],
+    bio: 'Pioneering audiovisual electronic act blending humanoid robotics, AI aesthetics, and soaring melodic techno soundscapes across global stadiums.',
+    avatar: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200&auto=format&fit=crop&q=80',
+    country: 'United States',
+    city: 'New York / Milan',
+    monthlyListeners: '14.8M',
+    status: 'touring',
+    verified: true,
+    totalConcerts: 34,
+    upcomingConcerts: 6,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/anyma',
+      instagram: 'https://instagram.com/anyma_ofc',
+      youtube: 'https://youtube.com/@anyma',
+      appleMusic: 'https://music.apple.com/artist/anyma'
+    },
+    management: {
+      managerName: 'Alessio DeVecchi',
+      agency: 'Wasserman Music Global',
+      email: 'booking@afterlife.com',
+      phone: '+1 (310) 867-4200'
+    },
+    rider: {
+      microphonePreference: 'Shure Axient Digital Dual Handheld (Custom Black)',
+      inEarMonitors: 'JH Audio Roxanne Custom Fit IEMs',
+      hospitalityNotes: 'Organic vegan catering, fresh ginger-lemon infusion, dark roast Italian espresso, zero single-use plastic',
+      stagePlotNotes: 'Center stage riser for synth & Ableton Push 3 rig, 8k LED wall sync triggers via SMPTE timecode'
+    }
+  },
+  {
+    id: 'art-002',
+    name: 'Arijit Singh',
+    stageName: 'Arijit Singh Live',
+    genre: 'Bollywood',
+    subGenres: ['Playback', 'Sufi Rock', 'Acoustic Soul', 'Classical Fusion'],
+    bio: 'India’s most streamed vocalist and legendary soul singer renowned for captivating arena performances with a 35-piece live grand orchestra.',
+    avatar: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop&q=80',
+    country: 'India',
+    city: 'Mumbai',
+    monthlyListeners: '43.2M',
+    status: 'touring',
+    verified: true,
+    totalConcerts: 52,
+    upcomingConcerts: 8,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/arijitsingh',
+      instagram: 'https://instagram.com/arijitsingh',
+      youtube: 'https://youtube.com/@arijitsinghofficial'
+    },
+    management: {
+      managerName: 'Tarsame Mittal',
+      agency: 'TM Talent Management',
+      email: 'arijit@tmtalent.in',
+      phone: '+91 98200 45890'
+    },
+    rider: {
+      microphonePreference: 'Neumann KMS 105 Condenser Microphone',
+      inEarMonitors: 'Sennheiser 2000 Series Wireless IEM',
+      hospitalityNotes: 'Warm honey-lemon water, herbal green tea, private quiet greenroom with acoustic tuning',
+      stagePlotNotes: 'Full symphonic stage layout, grand piano stage left, 12 string section risers stage right'
+    }
+  },
+  {
+    id: 'art-003',
+    name: 'Coldplay',
+    stageName: 'Coldplay (Chris, Jonny, Guy, Will)',
+    genre: 'Rock',
+    subGenres: ['Alternative Rock', 'Stadium Anthems', 'Pop Rock'],
+    bio: 'One of the best-selling music acts in history, delivering breathtaking eco-powered stadium experiences with synced LED wristbands and kinetic floors.',
+    avatar: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1200&auto=format&fit=crop&q=80',
+    country: 'United Kingdom',
+    city: 'London',
+    monthlyListeners: '86.4M',
+    status: 'touring',
+    verified: true,
+    totalConcerts: 110,
+    upcomingConcerts: 14,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/coldplay',
+      instagram: 'https://instagram.com/coldplay',
+      youtube: 'https://youtube.com/@coldplay',
+      appleMusic: 'https://music.apple.com/artist/coldplay'
+    },
+    management: {
+      managerName: 'Phil Harvey & Dave Holmes',
+      agency: 'WME Touring',
+      email: 'coldplaytour@wmeagency.com',
+      phone: '+44 20 7534 6000'
+    },
+    rider: {
+      microphonePreference: 'Sennheiser Digital 6000 with custom rainbow foam',
+      inEarMonitors: 'Ultimate Ears Pro 18+ Custom IEMs',
+      hospitalityNotes: '100% sustainable catering, solar battery charging stations, zero single-use plastics',
+      stagePlotNotes: 'Kinetic energy dance floors, confetti cannons (biodegradable), XYLO wristband RF transmitter towers'
+    }
+  },
+  {
+    id: 'art-004',
+    name: 'Diljit Dosanjh',
+    stageName: 'Dil-Luminati Tour',
+    genre: 'Punjabi',
+    subGenres: ['Punjabi Pop', 'Folk Fusion', 'Bhangra Hip-Hop'],
+    bio: 'Global Punjabi music superstar who made history selling out iconic arenas and stadiums worldwide with high-voltage folk beats and charisma.',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&auto=format&fit=crop&q=80',
+    country: 'India',
+    city: 'Chandigarh / Toronto',
+    monthlyListeners: '24.1M',
+    status: 'touring',
+    verified: true,
+    totalConcerts: 40,
+    upcomingConcerts: 10,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/diljitdosanjh',
+      instagram: 'https://instagram.com/diljitdosanjh',
+      youtube: 'https://youtube.com/@diljitdosanjh'
+    },
+    management: {
+      managerName: 'Sonali Singh',
+      agency: 'Ripple Effect Studios',
+      email: 'management@diljitdosanjh.com',
+      phone: '+91 99100 23456'
+    },
+    rider: {
+      microphonePreference: 'Shure KSM9 Wireless Handheld (Gold Plated)',
+      inEarMonitors: 'Westone ES60 Custom Monitors',
+      hospitalityNotes: 'Almond milk lattes, dry fruit platters, fresh Punjabi kulhad chai',
+      stagePlotNotes: 'Center runway thrust 25 meters into stadium crowd, CO2 jets & flame cannons'
+    }
+  },
+  {
+    id: 'art-005',
+    name: 'Martin Garrix',
+    stageName: 'Martin Garrix Live',
+    genre: 'EDM',
+    subGenres: ['Progressive House', 'Big Room', 'Festival Anthem'],
+    bio: 'World #1 DJ and Dutch electronic producer known for explosive festival headlining sets, lasers, pyrotechnics, and uplifting progressive melodies.',
+    avatar: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200&auto=format&fit=crop&q=80',
+    country: 'Netherlands',
+    city: 'Amsterdam',
+    monthlyListeners: '32.6M',
+    status: 'active',
+    verified: true,
+    totalConcerts: 65,
+    upcomingConcerts: 5,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/martingarrix',
+      instagram: 'https://instagram.com/martingarrix',
+      youtube: 'https://youtube.com/@martingarrix'
+    },
+    management: {
+      managerName: 'Scooter Braun & Watse de Jong',
+      agency: 'STMPD RCRDS / CAA',
+      email: 'info@stmpdrcrds.com',
+      phone: '+31 20 540 1200'
+    },
+    rider: {
+      microphonePreference: 'Shure SM58 Wireless DJ Mic',
+      inEarMonitors: 'Custom Audio 64 Ears',
+      hospitalityNotes: 'Red Bull Sugarfree, electrolyte sports beverages, post-show pizza delivery',
+      stagePlotNotes: 'Pioneer CDJ-3000 (x4) + DJM-V10 Mixer setup, synchronized laser array'
+    }
+  },
+  {
+    id: 'art-006',
+    name: 'Prateek Kuhad',
+    stageName: 'Prateek Kuhad (Solo Acoustic)',
+    genre: 'Indie',
+    subGenres: ['Indie Folk', 'Acoustic Ballads', 'Singer-Songwriter'],
+    bio: 'Critically acclaimed indie-folk troubadour whose intimate lyrical poetry and warm fingerstyle guitar melodies sell out theatres worldwide.',
+    avatar: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+    bannerImage: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1200&auto=format&fit=crop&q=80',
+    country: 'India',
+    city: 'Jaipur / New Delhi',
+    monthlyListeners: '4.8M',
+    status: 'available',
+    verified: true,
+    totalConcerts: 28,
+    upcomingConcerts: 2,
+    socialLinks: {
+      spotify: 'https://open.spotify.com/artist/prateekkuhad',
+      instagram: 'https://instagram.com/prateekkuhad',
+      youtube: 'https://youtube.com/@prateekkuhadmusic'
+    },
+    management: {
+      managerName: 'Dhruv Singh',
+      agency: 'Pagla World Talent',
+      email: 'contact@prateekkuhad.com',
+      phone: '+91 98110 98765'
+    },
+    rider: {
+      microphonePreference: 'DPA d:facto II Vocal Microphone',
+      inEarMonitors: 'Sensaphonics 2MAX Custom Fit',
+      hospitalityNotes: 'Sparkling mineral water, assorted fresh berries, warm steam inhaler',
+      stagePlotNotes: 'Vintage parlor carpet, warm filament warm tungsten floor lighting, acoustic DI box setup'
+    }
+  }
+];
+
 

@@ -12,7 +12,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Globe2,
-  CalendarDays
+  CalendarDays,
+  Mic2
 } from 'lucide-react';
 import type { NavigationTab } from '../../types';
 import { mockVendorProfile } from '../../data/mockVendorData';
@@ -22,13 +23,15 @@ interface VendorSidebarProps {
   onTabChange: (tab: NavigationTab) => void;
   activeConcertsCount: number;
   totalAttendeesCount: number;
+  artistsCount?: number;
 }
 
 export const VendorSidebar: React.FC<VendorSidebarProps> = ({
   activeTab,
   onTabChange,
   activeConcertsCount,
-  totalAttendeesCount
+  totalAttendeesCount,
+  artistsCount
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,6 +54,13 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
       path: '/concerts',
       icon: Music,
       badge: activeConcertsCount
+    },
+    {
+      id: 'artists' as NavigationTab,
+      label: 'Artists & Lineup',
+      path: '/artists',
+      icon: Mic2,
+      badge: artistsCount
     },
     {
       id: 'gate-scanner' as NavigationTab,

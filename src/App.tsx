@@ -12,7 +12,8 @@ import type {
   AttendeeBooking,
   Venue,
   PayoutTransaction,
-  NavigationTab
+  NavigationTab,
+  Artist
 } from './types';
 import { vendorConcertService } from './services/vendorConcertService';
 import { VendorSidebar } from './components/layout/VendorSidebar';
@@ -20,7 +21,8 @@ import { VendorHeader } from './components/layout/VendorHeader';
 import { VendorOverview } from './components/dashboard/VendorOverview';
 import { VendorConcertsList } from './components/concerts/VendorConcertsList';
 import { VendorConcertDetail } from './components/concerts/VendorConcertDetail';
-import { CreateConcertModal } from './components/concerts/CreateConcertModal';
+import { CreateConcertScreen } from './components/concerts/CreateConcertScreen';
+import { ArtistsView } from './components/artists/ArtistsView';
 import { GateScannerView } from './components/gate/GateScannerView';
 import { AttendeeManifestView } from './components/manifest/AttendeeManifestView';
 import { VenuesView } from './components/venues/VenuesView';
@@ -36,8 +38,8 @@ export function AppContent() {
   const [concerts, setConcerts] = useState<ConcertEvent[]>([]);
   const [attendees, setAttendees] = useState<AttendeeBooking[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
   const [payouts, setPayouts] = useState<PayoutTransaction[]>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -47,6 +49,7 @@ export function AppContent() {
     setConcerts(loadedConcerts);
     setAttendees(vendorConcertService.getAttendees());
     setVenues(vendorConcertService.getVenues());
+    setArtists(vendorConcertService.getArtists());
     setPayouts(vendorConcertService.getPayouts());
   };
 
@@ -59,6 +62,8 @@ export function AppContent() {
     const path = location.pathname;
     if (path.startsWith('/concerts')) {
       setActiveTab('concerts');
+    } else if (path.startsWith('/artists')) {
+      setActiveTab('artists');
     } else if (path.startsWith('/gate-scanner')) {
       setActiveTab('gate-scanner');
     } else if (path.startsWith('/attendees')) {
@@ -124,6 +129,17 @@ export function AppContent() {
     setVenues((prev) => [newVenue, ...prev]);
   };
 
+  // Artist Handlers
+  const handleCreateArtist = async (artistData: Omit<Artist, 'id'>) => {
+    const created = await vendorConcertService.createArtist(artistData);
+    setArtists((prev) => [created, ...prev]);
+  };
+
+  const handleDeleteArtist = async (id: string) => {
+    await vendorConcertService.deleteArtist(id);
+    setArtists((prev) => prev.filter((a) => a.id !== id));
+  };
+
   // Payout Handler
   const handleRequestPayout = (amount: number) => {
     const newPayout: PayoutTransaction = {
@@ -152,13 +168,14 @@ export function AppContent() {
         onTabChange={(tab) => setActiveTab(tab)}
         activeConcertsCount={activeConcertsCount}
         totalAttendeesCount={attendees.length}
+        artistsCount={artists.length}
       />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         <VendorHeader
           activeTab={activeTab}
-          onOpenCreateConcert={() => setIsCreateModalOpen(true)}
+          onOpenCreateConcert={() => navigate('/concerts/create')}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
         />
@@ -171,7 +188,7 @@ export function AppContent() {
               element={
                 <VendorOverview
                   concerts={concerts}
-                  onOpenCreateConcert={() => setIsCreateModalOpen(true)}
+                  onOpenCreateConcert={() => navigate('/concerts/create')}
                   onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
                 />
               }
@@ -184,11 +201,28 @@ export function AppContent() {
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                   onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
-                  onOpenCreateModal={() => setIsCreateModalOpen(true)}
+                  onOpenCreateModal={() => navigate('/concerts/create')}
                   onStatusChange={handleStatusChange}
                   onDeleteConcert={handleDeleteConcert}
                 />
               }
+            />
+            <Route
+              path="/concerts/create"
+              element={
+                <CreateConcertScreen
+                  onAddConcert={handleCreateConcert}
+                  venues={venues}
+                  onAddVenue={handleAddVenue}
+                  artists={artists}
+                  onAddArtist={handleCreateArtist}
+                  onShowToast={showToast}
+                />
+              }
+            />
+            <Route
+              path="/concerts/new"
+              element={<Navigate to="/concerts/create" replace />}
             />
             <Route
               path="/concerts/:concertId"
@@ -199,6 +233,17 @@ export function AppContent() {
                   onStatusChange={handleStatusChange}
                   onDeleteConcert={handleDeleteConcert}
                   onToggleCheckIn={handleToggleCheckIn}
+                  onShowToast={showToast}
+                />
+              }
+            />
+            <Route
+              path="/artists"
+              element={
+                <ArtistsView
+                  artists={artists}
+                  onAddArtist={handleCreateArtist}
+                  onDeleteArtist={handleDeleteArtist}
                   onShowToast={showToast}
                 />
               }
@@ -253,13 +298,6 @@ export function AppContent() {
           </Routes>
         </main>
       </div>
-
-      {/* Create Concert Modal */}
-      <CreateConcertModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onAddConcert={handleCreateConcert}
-      />
 
       {/* Toast System */}
       <Toast toasts={toasts} onDismiss={handleDismissToast} />
