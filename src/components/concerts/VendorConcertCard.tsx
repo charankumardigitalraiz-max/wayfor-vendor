@@ -1,0 +1,140 @@
+import React from 'react';
+import {
+  Calendar,
+  MapPin,
+  Ticket,
+  Eye,
+  Sliders,
+  DollarSign
+} from 'lucide-react';
+import type { ConcertEvent } from '../../types';
+import { Badge } from '../common/Badge';
+
+interface VendorConcertCardProps {
+  concert: ConcertEvent;
+  onSelect: (concert: ConcertEvent) => void;
+  onStatusChange?: (id: string, status: ConcertEvent['status']) => void;
+}
+
+export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
+  concert,
+  onSelect
+}) => {
+  const soldPercent = Math.round((concert.ticketsSold / concert.totalCapacity) * 100);
+
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs transition-all duration-200 hover:border-purple-300 hover:shadow-md flex flex-col justify-between">
+      {/* Visual Header */}
+      <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+        <img
+          src={concert.image}
+          alt={concert.title}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-semibold text-slate-800 shadow-xs">
+            {concert.genre}
+          </span>
+        </div>
+
+        <div className="absolute top-3 right-3">
+          <Badge status={concert.status} />
+        </div>
+
+        <div className="absolute bottom-3 left-3 right-3 text-white">
+          <h3 className="text-sm font-bold tracking-tight truncate drop-shadow-xs">
+            {concert.title}
+          </h3>
+          <p className="text-xs text-purple-200 font-medium truncate">
+            {concert.artist}
+          </p>
+        </div>
+      </div>
+
+      {/* Body Details */}
+      <div className="p-4 space-y-3.5 flex-1 flex flex-col justify-between">
+        <div className="space-y-2">
+          {/* Date & Time */}
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <Calendar className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+            <span>
+              {concert.date} • Doors {concert.doorsOpen}
+            </span>
+          </div>
+
+          {/* Location */}
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+            <span className="truncate">
+              {concert.venueName}, {concert.city}
+            </span>
+          </div>
+
+          {/* Ticket Inventory / Tier Badge */}
+          <div className="flex items-center justify-between text-xs text-purple-700 bg-purple-50 rounded-lg px-2.5 py-1.5 border border-purple-100">
+            <div className="flex items-center gap-1.5">
+              <Ticket className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span className="font-medium">
+                {concert.ticketTiers.length} Ticket Tier{concert.ticketTiers.length !== 1 ? 's' : ''} on Sale
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold text-purple-800">
+              {(concert.totalCapacity - concert.ticketsSold).toLocaleString()} left
+            </span>
+          </div>
+        </div>
+
+        {/* Capacity Bar & Price */}
+        <div className="border-t border-slate-100 pt-3 space-y-2">
+          {(() => {
+            const color =
+              soldPercent >= 90
+                ? { text: 'text-emerald-700', bar: 'bg-emerald-500' }
+                : soldPercent >= 65
+                  ? { text: 'text-blue-700', bar: 'bg-blue-600' }
+                  : soldPercent >= 40
+                    ? { text: 'text-amber-700', bar: 'bg-amber-500' }
+                    : { text: 'text-rose-600', bar: 'bg-rose-500' };
+
+            return (
+              <>
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>Capacity Allocation</span>
+                  <span className={`${color.text} font-bold`}>
+                    {soldPercent}% ({concert.ticketsSold.toLocaleString()} / {concert.totalCapacity.toLocaleString()})
+                  </span>
+                </div>
+
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${color.bar} transition-all duration-300`}
+                    style={{ width: `${Math.min(100, soldPercent)}%` }}
+                  />
+                </div>
+              </>
+            );
+          })()}
+
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs font-bold text-slate-900">
+              ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => onSelect(concert)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer shadow-2xs"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                <span>Manage Event</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
