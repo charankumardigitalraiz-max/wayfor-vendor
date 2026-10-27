@@ -19,7 +19,11 @@ import {
   SlidersHorizontal,
   X,
   LayoutGrid,
-  List
+  List,
+  Pencil,
+  RefreshCw,
+  Loader2,
+  Upload
 } from 'lucide-react';
 import type { Artist } from '../../types';
 import { CreateArtistModal } from '../common/CreateArtistModal';
@@ -28,12 +32,14 @@ import { Table, type Column } from '../common/Table';
 import { Pagination } from '../common/Pagination';
 import { Modal } from '../common/Modal';
 import { AppImage } from '../common/AppImage';
+import { vendorArtistService } from '../../services/vendorArtistService';
 
 interface ArtistsViewProps {
-  artists: Artist[];
-  onAddArtist: (artist: Omit<Artist, 'id'>) => void;
-  onDeleteArtist?: (id: string) => void;
-  onShowToast: (msg: string) => void;
+  artists?: Artist[];
+  onAddArtist?: (artist: Omit<Artist, 'id'>, avatarFile?: File | null) => Promise<void> | void;
+  onDeleteArtist?: (id: string) => Promise<void> | void;
+  onArtistsChange?: (artists: Artist[]) => void;
+  onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 const GENRE_FILTERS = [
@@ -48,12 +54,33 @@ const GENRE_FILTERS = [
 ];
 
 export const ArtistsView: React.FC<ArtistsViewProps> = ({
-  artists,
+  artists: propArtists,
   onAddArtist,
   onDeleteArtist,
-  onShowToast
+  onShowToast,
+  onArtistsChange
 }) => {
+  // Screen-level state: self-contained API data
+  const [artists, setArtists] = useState<Artist[]>(() => {
+    return propArtists && propArtists.length > 0
+      ? propArtists
+      : vendorArtistService.getStoredArtists();
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Edit Artist Modal State (PATCH API)
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editStatus, setEditStatus] = useState<Artist['status']>('active');
+  const [editGenre, setEditGenre] = useState('EDM');
+  const [editBio, setEditBio] = useState('');
+  const [editAvatarPreview, setEditAvatarPreview] = useState('');
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Filters & Controls
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All Genres');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -61,6 +88,128 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(6);
+
+  // 1. GET ALL ARTISTS API: fetch directly inside screen on mount / filter change
+  const fetchArtists = async () => {
+    try {
+      setIsLoading(true);
+      const data = await vendorArtistService.getArtists({
+        genre: selectedGenre !== 'All Genres' ? selectedGenre : undefined,
+      });
+      setArtists(data);
+      onArtistsChange?.(data);
+    } catch (err) {
+      console.error('Error fetching artists in ArtistsView:', err);
+      onShowToast('Could not sync with live backend; displaying cached roster.', 'info');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchArtists();
+  }, [selectedGenre]);
+
+  // Sync state if prop changes from outside
+  useEffect(() => {
+    if (propArtists && propArtists.length > 0) {
+      setArtists(propArtists);
+    }
+  }, [propArtists]);
+
+  // 2. CREATE ARTIST API (POST /vendor/concerts/artists) inside screen
+  const handleCreateArtist = async (
+    newArtistData: Omit<Artist, 'id'>,
+    avatarFile?: File | null
+  ) => {
+    try {
+      if (onAddArtist) {
+        await onAddArtist(newArtistData, avatarFile);
+      } else {
+        const created = await vendorArtistService.createArtist(newArtistData, avatarFile);
+        setArtists((prev) => {
+          const next = [created, ...prev.filter((a) => a.id !== created.id)];
+          onArtistsChange?.(next);
+          return next;
+        });
+      }
+      onShowToast(`Artist "${newArtistData.name}" created and saved!`, 'success');
+      setIsCreateOpen(false);
+    } catch (err) {
+      console.error('Error creating artist inside screen:', err);
+      onShowToast(err instanceof Error ? err.message : 'Failed to create artist.', 'error');
+      throw err;
+    }
+  };
+
+  // 3. UPDATE ARTIST API (PATCH /vendor/concerts/artists/:id) inside screen
+  const handleOpenEdit = (artist: Artist) => {
+    setEditingArtist(artist);
+    setEditName(artist.name);
+    setEditStatus(artist.status);
+    setEditGenre(artist.genre || 'EDM');
+    setEditBio(artist.bio || '');
+    setEditAvatarPreview(artist.avatar);
+    setEditAvatarFile(null);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingArtist || !editName.trim() || isSavingEdit) return;
+
+    try {
+      setIsSavingEdit(true);
+      const updated = await vendorArtistService.updateArtist(
+        editingArtist.id,
+        {
+          name: editName.trim(),
+          status: editStatus,
+          genre: editGenre,
+          bio: editBio.trim(),
+        },
+        editAvatarFile
+      );
+
+      setArtists((prev) => {
+        const next = prev.map((a) => (a.id === editingArtist.id ? updated : a));
+        onArtistsChange?.(next);
+        return next;
+      });
+
+      onShowToast(`Artist "${updated.name}" updated successfully!`, 'success');
+      setIsEditOpen(false);
+      setEditingArtist(null);
+    } catch (err) {
+      console.error('Error updating artist inside screen:', err);
+      onShowToast(err instanceof Error ? err.message : 'Failed to update artist.', 'error');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // 4. DELETE ARTIST API (DELETE /vendor/concerts/artists/:id) inside screen
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to remove "${name}" from your artist roster?`)) {
+      return;
+    }
+    try {
+      if (onDeleteArtist) {
+        await onDeleteArtist(id);
+      } else {
+        await vendorArtistService.deleteArtist(id);
+      }
+      setArtists((prev) => {
+        const next = prev.filter((a) => a.id !== id);
+        onArtistsChange?.(next);
+        return next;
+      });
+      onShowToast(`Artist "${name}" removed from roster.`);
+    } catch (err) {
+      console.error('Error deleting artist inside screen:', err);
+      onShowToast(err instanceof Error ? err.message : 'Failed to delete artist.', 'error');
+    }
+  };
 
   // Reset to first page when search or filters change
   useEffect(() => {
@@ -104,12 +253,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
   const availableCount = artists.filter((a) => a.status === 'available').length;
   const totalUpcomingShows = artists.reduce((acc, a) => acc + (a.upcomingConcerts || 0), 0);
 
-  const handleDelete = (id: string, name: string) => {
-    if (onDeleteArtist) {
-      onDeleteArtist(id);
-      onShowToast(`Artist "${name}" removed from roster.`);
-    }
-  };
+
 
   const columns: Column<Artist>[] = [
     {
@@ -169,18 +313,18 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
         return (
           <span
             className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${isTouring
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : artist.status === 'available'
-                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                  : 'bg-slate-100 text-slate-700 border-slate-200'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : artist.status === 'available'
+                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : 'bg-slate-100 text-slate-700 border-slate-200'
               }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${isTouring
-                  ? 'bg-emerald-500 animate-pulse'
-                  : artist.status === 'available'
-                    ? 'bg-blue-500'
-                    : 'bg-slate-400'
+                ? 'bg-emerald-500 animate-pulse'
+                : artist.status === 'available'
+                  ? 'bg-blue-500'
+                  : 'bg-slate-400'
                 }`}
             />
             {isTouring
@@ -232,21 +376,29 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => setSelectedRiderArtist(artist)}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+            title="View Technical & Hospitality Rider"
           >
             <FileText className="h-3 w-3" />
             <span>Rider</span>
           </button>
 
-          {onDeleteArtist && (
-            <button
-              type="button"
-              onClick={() => handleDelete(artist.id, artist.name)}
-              className="p-1.5 rounded-md text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-colors cursor-pointer"
-              title="Delete artist"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => handleOpenEdit(artist)}
+            className="p-1.5 rounded-md text-slate-600 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
+            title="Edit artist details (PATCH /api/vendor/concerts/artists/:id)"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleDelete(artist.id, artist.name)}
+            className="p-1.5 rounded-md text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-colors cursor-pointer"
+            title="Delete artist (DELETE /api/vendor/concerts/artists/:id)"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       )
     }
@@ -266,18 +418,31 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Touring headliners, opening acts, technical acoustic riders, Spotify profiles, and talent agency contacts.
+            Connected to <code className="text-purple-600 font-mono text-[11px]">/api/vendor/concerts/artists</code> (http://192.168.0.161:5001). Create, update status, upload rider photo, and manage touring headliners.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-xs shadow-purple-200 transition-all cursor-pointer self-start sm:self-auto shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create New Artist</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={fetchArtists}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer disabled:opacity-50"
+            title="Sync latest roster from backend API"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-purple-600' : ''}`} />
+            <span>{isLoading ? 'Syncing...' : 'Sync Live'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-xs shadow-purple-200 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create New Artist</span>
+          </button>
+        </div>
       </div>
 
       {/* Metrics Row */}
@@ -585,7 +750,16 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                         <span>Rider Specs</span>
                       </button>
 
-                      {onDeleteArtist && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(artist)}
+                          className="p-1.5 rounded text-slate-600 hover:text-purple-700 bg-white hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
+                          title="Edit artist (PATCH /api/vendor/concerts/artists/:id)"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => handleDelete(artist.id, artist.name)}
@@ -594,7 +768,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -617,13 +791,144 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
         )}
       </div>
 
-      {/* Global Create Artist Modal */}
+      {/* Global Create Artist Modal (POST /api/vendor/concerts/artists) */}
       <CreateArtistModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        onAddArtist={onAddArtist}
+        onAddArtist={handleCreateArtist}
         onShowToast={onShowToast}
       />
+
+      {/* Edit Artist Modal (PATCH /api/vendor/concerts/artists/:id) */}
+      {isEditOpen && editingArtist && (
+        <Modal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditingArtist(null);
+          }}
+          title={`Edit Artist: ${editingArtist.name}`}
+          subtitle="Update status, genre, bio, or upload new photo (PATCH /api/vendor/concerts/artists/:id)"
+          maxWidth="lg"
+        >
+          <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+            {/* Name */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-700">Artist Name *</label>
+              <input
+                type="text"
+                required
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs"
+              />
+            </div>
+
+            {/* Tour Status & Genre */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700">Tour Status</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as Artist['status'])}
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
+                >
+                  <option value="touring">Active On World Tour (touring)</option>
+                  <option value="active">Active Touring Roster (active)</option>
+                  <option value="available">Booking Available (available)</option>
+                  <option value="on-break">On Hiatus / Break (on-break)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700">Genre</label>
+                <select
+                  value={editGenre}
+                  onChange={(e) => setEditGenre(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
+                >
+                  {GENRE_FILTERS.filter((g) => g !== 'All Genres').map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Profile Photo / Avatar Upload (Supports Multipart Form-Data as in artists.txt Option A) */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-700">Profile Photo / Avatar</label>
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50/60">
+                <img
+                  src={editAvatarPreview || editingArtist.avatar}
+                  alt={editingArtist.name}
+                  className="h-12 w-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-slate-600 font-medium truncate">
+                    {editAvatarFile ? editAvatarFile.name : 'Current photo loaded'}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setEditAvatarFile(file);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setEditAvatarPreview(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-medium file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Bio / About Us */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-700">About Us / Bio</label>
+              <textarea
+                rows={3}
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                placeholder="Artist biography or touring details..."
+                className="w-full rounded-lg border border-slate-200 bg-slate-50/60 p-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs resize-y"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditingArtist(null);
+                }}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingEdit}
+                className="px-5 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {isSavingEdit ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Saving Changes...</span>
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Technical Rider Quick View Modal */}
       {selectedRiderArtist && (

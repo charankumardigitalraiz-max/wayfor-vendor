@@ -81,7 +81,7 @@ export function AppContent() {
     setConcerts(loadedConcerts);
     setAttendees(vendorConcertService.getAttendees());
     setVenues(vendorConcertService.getVenues());
-    setArtists(vendorConcertService.getArtists());
+    setArtists(vendorConcertService.getStoredArtists());
     setPayouts(vendorConcertService.getPayouts());
   };
 
@@ -163,15 +163,10 @@ export function AppContent() {
     setVenues((prev) => [newVenue, ...prev]);
   };
 
-  // Artist Handlers
+  // Artist Creation Handler for CreateConcertScreen
   const handleCreateArtist = async (artistData: Omit<Artist, 'id'>) => {
     const created = await vendorConcertService.createArtist(artistData);
     setArtists((prev) => [created, ...prev]);
-  };
-
-  const handleDeleteArtist = async (id: string) => {
-    await vendorConcertService.deleteArtist(id);
-    setArtists((prev) => prev.filter((a) => a.id !== id));
   };
 
   // Payout Handler
@@ -299,10 +294,8 @@ export function AppContent() {
               path="/artists"
               element={
                 <ArtistsView
-                  artists={artists}
-                  onAddArtist={handleCreateArtist}
-                  onDeleteArtist={handleDeleteArtist}
                   onShowToast={showToast}
+                  onArtistsChange={(updated) => setArtists(updated)}
                 />
               }
             />

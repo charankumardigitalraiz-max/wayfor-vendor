@@ -85,7 +85,7 @@ Sample Response (201 Created):
 curl -X POST "http://localhost:5000/api/vendor/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "vendor@metromobility.com",
+    "email": "testpromoter@zenith.com",
     "password": "Password@123"
   }'
 
