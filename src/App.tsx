@@ -28,6 +28,7 @@ import { AttendeeManifestView } from './components/manifest/AttendeeManifestView
 import { VenuesView } from './components/venues/VenuesView';
 import { PayoutsView } from './components/payouts/PayoutsView';
 import { VendorSettingsView } from './components/settings/VendorSettingsView';
+import { VendorProfileView } from './components/profile/VendorProfileView';
 import { VendorLogin, VendorRegister } from './components/auth';
 import { vendorAuthService } from './services/vendorAuthService';
 import type { VendorUser } from './types/auth';
@@ -105,6 +106,8 @@ export function AppContent() {
       setActiveTab('payouts');
     } else if (path.startsWith('/settings')) {
       setActiveTab('settings');
+    } else if (path.startsWith('/profile')) {
+      setActiveTab('profile');
     } else {
       setActiveTab('overview');
     }
@@ -193,7 +196,7 @@ export function AppContent() {
 
   if (!currentVendor) {
     return (
-      <div className="h-screen max-h-screen overflow-hidden bg-white font-sans selection:bg-purple-100 selection:text-purple-800">
+      <div className="min-h-screen bg-slate-50 font-sans selection:bg-purple-100 selection:text-purple-800">
         <Routes>
           <Route
             path="/login"
@@ -348,6 +351,15 @@ export function AppContent() {
             <Route
               path="/settings"
               element={<VendorSettingsView onShowToast={showToast} />}
+            />
+            <Route
+              path="/profile"
+              element={
+                <VendorProfileView
+                  currentVendor={currentVendor}
+                  onShowToast={showToast}
+                />
+              }
             />
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>

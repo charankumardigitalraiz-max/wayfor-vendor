@@ -261,159 +261,83 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
             />
           </button>
 
-          {/* Smart Moving Profile Modal */}
+          {/* Profile Dropdown Menu */}
           {showProfileModal && (
-            <div className="absolute right-0 mt-2.5 w-80 sm:w-88 rounded-xl border border-slate-200/90 bg-white shadow-xl z-50 overflow-hidden transform transition-all duration-200 origin-top-right animate-in fade-in slide-in-from-top-2">
-              {/* Profile Card Header */}
-              <div className="p-4 bg-gradient-to-br from-slate-50 via-white to-purple-50/40 border-b border-slate-100">
-                <div className="flex items-start gap-3">
+            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 py-1.5 z-50 animate-in fade-in slide-in-from-top-2">
+              {/* User Identity */}
+              <div
+                onClick={() => {
+                  setShowProfileModal(false);
+                  navigate('/profile');
+                }}
+                className="px-3.5 py-3 border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer"
+                title="View Full Promoter Profile"
+              >
+                <div className="flex items-center gap-2.5">
                   <div className="relative shrink-0">
                     <img
                       src={activeProfile.avatar}
                       alt={activeProfile.name}
-                      className="h-12 w-12 rounded-xl object-cover ring-2 ring-purple-100 shadow-2xs"
+                      className="h-9 w-9 rounded-full object-cover border border-slate-200 shadow-2xs"
                     />
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                   </div>
+
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="text-sm font-semibold text-slate-900 truncate">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-semibold text-slate-900 truncate">
                         {activeProfile.name}
-                      </h4>
-                      <span title="Verified Vendor" className="inline-flex shrink-0">
-                        <ShieldCheck className="h-4 w-4 text-emerald-600" />
                       </span>
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                     </div>
-                    <p className="text-xs text-slate-500 truncate mt-0.5">
+                    <p className="text-[11px] text-slate-500 truncate">
                       {activeProfile.email}
                     </p>
-                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200/60">
-                        {activeProfile.companyName || 'Promoter Studio'}
-                      </span>
-                      {activeProfile.gstNumber && (
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          GST: {activeProfile.gstNumber.slice(0, 8)}...
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Studio Stats */}
-                <div className="mt-3.5 grid grid-cols-3 gap-2 p-2 rounded-lg bg-white/80 border border-slate-100 text-center">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Tours</span>
-                    <span className="text-xs font-semibold text-slate-900">{activeProfile.totalConcertsHosted || 1}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Tickets</span>
-                    <span className="text-xs font-semibold text-slate-900">{((activeProfile.totalTicketsSold || 1000) / 1000).toFixed(0)}k+</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Rating</span>
-                    <span className="text-xs font-semibold text-amber-600">★ {activeProfile.rating || 5.0}</span>
+                    <p className="text-[10px] text-purple-700 font-medium truncate mt-0.5">
+                      {activeProfile.companyName || 'Promoter Studio'}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Navigation & Actions */}
-              {/* <div className="p-2 space-y-0.5 text-xs text-slate-700">
+              {/* Quick Navigation */}
+              <div className="p-1 space-y-0.5">
                 <button
                   type="button"
                   onClick={() => {
-                    navigate('/concerts');
                     setShowProfileModal(false);
+                    navigate('/profile');
                   }}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left group"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
-                      <Ticket className="h-3.5 w-3.5" />
-                    </div>
-                    <div>
-                      <span className="font-semibold block text-slate-800 group-hover:text-purple-700">Concert Roster</span>
-                      <span className="text-[10px] text-slate-400 block">Manage tours and ticket inventory</span>
-                    </div>
-                  </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-300 -rotate-90 group-hover:text-purple-600 transition-all" />
+                  <User className="h-4 w-4 text-slate-400" />
+                  <span>My Profile</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    navigate('/payouts');
                     setShowProfileModal(false);
-                  }}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <CreditCard className="h-3.5 w-3.5" />
-                    </div>
-                    <div>
-                      <span className="font-semibold block text-slate-800 group-hover:text-purple-700">Earnings & Payouts</span>
-                      <span className="text-[10px] text-slate-400 block">Bank withdrawals and sales ledger</span>
-                    </div>
-                  </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-300 -rotate-90 group-hover:text-purple-600 transition-all" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigate('/gate-scanner');
-                    setShowProfileModal(false);
-                  }}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <Scan className="h-3.5 w-3.5" />
-                    </div>
-                    <div>
-                      <span className="font-semibold block text-slate-800 group-hover:text-purple-700">Live Turnstile Scanner</span>
-                      <span className="text-[10px] text-slate-400 block">Gate entry barcode validation</span>
-                    </div>
-                  </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-300 -rotate-90 group-hover:text-purple-600 transition-all" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
                     navigate('/settings');
-                    setShowProfileModal(false);
                   }}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left group"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center">
-                      <Settings className="h-3.5 w-3.5" />
-                    </div>
-                    <div>
-                      <span className="font-semibold block text-slate-800 group-hover:text-purple-700">Studio Settings</span>
-                      <span className="text-[10px] text-slate-400 block">Bank credentials and GST info</span>
-                    </div>
-                  </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-slate-300 -rotate-90 group-hover:text-purple-600 transition-all" />
+                  <Settings className="h-4 w-4 text-slate-400" />
+                  <span>Studio Settings</span>
                 </button>
-              </div> */}
+              </div>
 
-              {/* Footer: Sign Out / Account Switch */}
-              <div className="p-2 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 pl-2">
-                  Vendor ID: {activeProfile.id}
-                </span>
+              {/* Sign Out */}
+              <div className="p-1 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => {
                     setShowProfileModal(false);
                     if (onLogout) onLogout();
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
                 >
-                  <LogOut className="h-3.5 w-3.5" />
+                  <LogOut className="h-4 w-4 text-rose-500" />
                   <span>Sign Out</span>
                 </button>
               </div>

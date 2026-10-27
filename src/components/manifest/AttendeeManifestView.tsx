@@ -6,14 +6,29 @@ import {
   CheckCircle2,
   Clock,
   Ticket,
-  Filter,
   DollarSign,
-  ChevronDown
+  ChevronDown,
+  Eye,
+  X,
+  MapPin,
+  User,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Building2,
+  Printer,
+  Calendar
 } from 'lucide-react';
 import type { AttendeeBooking, ConcertEvent } from '../../types';
 import { Table, type Column } from '../common/Table';
 import { MetricCard } from '../common/MetricCard';
 import { Pagination } from '../common/Pagination';
+import { Modal } from '../common/Modal';
+import {
+  formatUtcDate,
+  formatUtcTime,
+  formatUtcDateTime
+} from '../../utils/dateUtils';
 
 interface AttendeeManifestViewProps {
   attendees: AttendeeBooking[];
@@ -33,6 +48,7 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'checkedIn' | 'pending'>('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedAttendee, setSelectedAttendee] = useState<AttendeeBooking | null>(null);
 
   const filteredAttendees = useMemo(() => {
     return attendees.filter((item) => {
@@ -62,8 +78,27 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
   const checkedInCount = attendees.filter(a => a.checkedIn).length;
   const totalRevenue = attendees.reduce((acc, a) => acc + a.totalPaid, 0);
 
+  // Sync selected attendee with live list
+  const activeAttendee = selectedAttendee
+    ? attendees.find((a) => a.id === selectedAttendee.id) || selectedAttendee
+    : null;
+
   const handleExportCSV = () => {
-    const headers = ['Order Number', 'Ticket Code', 'Concert Title', 'Customer Name', 'Email', 'Phone', 'Ticket Tier', 'Seats', 'Total Paid (INR)', 'Checked In', 'Checked In At'];
+    const headers = [
+      'Order Number',
+      'Ticket Code',
+      'Concert Title',
+      'Customer Name',
+      'Email',
+      'Phone',
+      'Ticket Tier',
+      'Seats',
+      'Total Paid (INR)',
+      'Checked In',
+      'Gate Number',
+      'Checked In At',
+      'Gate Staff'
+    ];
     const rows = filteredAttendees.map(a => [
       a.orderNumber,
       a.ticketCode,
@@ -75,7 +110,9 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
       a.seatsCount,
       a.totalPaid,
       a.checkedIn ? 'Yes' : 'No',
-      a.checkedInAt || 'N/A'
+      `"${a.gateNumber || 'N/A'}"`,
+      a.checkedInAt || 'N/A',
+      `"${a.gateStaff || 'N/A'}"`
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -93,92 +130,182 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
     {
       key: 'ticketCode',
       header: 'Ticket Code',
+      width: 'min-w-[140px]',
       render: (item) => (
-        <span className="font-mono text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
-          {item.ticketCode}
-        </span>
+        <div>
+          <span className="font-mono text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+            {item.ticketCode}
+          </span>
+          <span className="text-[10px] text-slate-400 font-mono block mt-1">
+            #{item.orderNumber}
+          </span>
+        </div>
       )
     },
     {
       key: 'customerName',
       header: 'Attendee & Contact',
-      render: (item) => (
-        <div>
-          <span className="font-semibold text-slate-900 block">{item.customerName}</span>
-          <span className="text-[11px] text-slate-500 font-normal">{item.customerEmail} • {item.customerPhone}</span>
-        </div>
-      )
+      render: (item) => {
+        const initials = item.customerName
+          .split(' ')
+          .map(n => n[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
+
+        return (
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-medium text-xs flex items-center justify-center shrink-0">
+              {initials}
+            </div>
+            <div>
+              <span className="font-medium text-slate-900 block">{item.customerName}</span>
+              <span className="text-[11px] text-slate-500 font-normal">
+                {item.customerEmail} • {item.customerPhone}
+              </span>
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'concertTitle',
       header: 'Concert Event',
+      width: 'min-w-[190px]',
       render: (item) => (
-        <span className="font-medium text-slate-800 line-clamp-1 max-w-xs">
-          {item.concertTitle}
-        </span>
+        <div>
+          <span className="font-normal text-slate-800 line-clamp-1 max-w-xs block">
+            {item.concertTitle}
+          </span>
+          <span className="text-[10px] text-slate-400 font-normal block mt-0.5">
+            Purchased {formatUtcDate(item.purchaseDate)}
+          </span>
+        </div>
       )
     },
     {
       key: 'tier',
       header: 'Category & Seats',
+      width: 'min-w-[190px]',
       render: (item) => {
         const lower = item.ticketTier.toLowerCase();
         const tierColor = lower.includes('vvip')
-          ? 'text-amber-700'
+          ? 'text-amber-700 bg-amber-50 border-amber-200'
           : lower.includes('vip')
-            ? 'text-purple-700'
+            ? 'text-purple-700 bg-purple-50 border-purple-200'
             : lower.includes('standing') || lower.includes('phase')
-              ? 'text-blue-700'
-              : 'text-emerald-700';
+              ? 'text-blue-700 bg-blue-50 border-blue-200'
+              : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
         return (
           <div>
-            <span className={`font-semibold block ${tierColor}`}>{item.ticketTier}</span>
-            <span className="text-[11px] text-slate-500 font-medium">{item.seatsCount} admission(s) • ₹{item.totalPaid.toLocaleString()}</span>
+            <span className={`inline-block font-medium text-xs px-2 py-0.5 rounded border ${tierColor}`}>
+              {item.ticketTier}
+            </span>
+            <span className="text-[11px] text-slate-500 font-normal block mt-1">
+              {item.seatsCount} admission(s) • ₹{item.totalPaid.toLocaleString()}
+            </span>
           </div>
         );
       }
     },
     {
       key: 'status',
-      header: 'Gate Status',
-      render: (item) => (
-        item.checkedIn ? (
-          <div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Admitted
-            </span>
-            {item.checkedInAt && (
-              <span className="text-[10px] text-slate-400 block mt-0.5">
-                {new Date(item.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      header: 'Gate & Status',
+      width: 'min-w-[190px]',
+      render: (item) => {
+        const isVip = item.ticketTier.toLowerCase().includes('vip');
+        const gate = item.gateNumber || (isVip ? 'Gate 1 (VIP Fastrack)' : 'Gate 2 (General West)');
+
+        return (
+          <div className="space-y-1.5 min-w-[170px]">
+            <div>
+              {item.checkedIn ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 whitespace-nowrap">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Admitted
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 whitespace-nowrap">
+                  <Clock className="h-3.5 w-3.5 text-amber-600" /> Pending Entry
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-slate-600">
+              <span className="font-mono text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 whitespace-nowrap">
+                {gate}
               </span>
-            )}
+            </div>
           </div>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-            <Clock className="h-3.5 w-3.5 text-amber-600" /> Pending Entry
-          </span>
-        )
-      )
+        );
+      }
+    },
+    {
+      key: 'checkInDate',
+      header: 'Check-In Date & Time',
+      width: 'min-w-[190px]',
+      render: (item) => {
+        if (!item.checkedIn || !item.checkedInAt) {
+          return (
+            <div className="flex items-center gap-1.5 text-slate-400 text-xs font-normal">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+              <span className="italic">Not scanned yet</span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-800">
+              <Calendar className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span>{formatUtcDate(item.checkedInAt)}</span>
+            </div>
+            <div className="flex flex-col gap-0.5 text-[11px] text-slate-500 font-normal pl-5">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+                <span>{formatUtcTime(item.checkedInAt)}</span>
+              </div>
+              {item.gateStaff && (
+                <span className="text-slate-400 text-[10px]">({item.gateStaff})</span>
+              )}
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'action',
-      header: 'Check-In Override',
+      header: 'Actions',
       align: 'right',
       render: (item) => (
-        <button
-          type="button"
-          onClick={() => {
-            onToggleCheckIn(item.id);
-            onShowToast(item.checkedIn ? `Entry reverted for ${item.customerName}` : `Admitted ${item.customerName}!`);
-          }}
-          className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${item.checkedIn
-            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-            }`}
-        >
-          {item.checkedIn ? 'Revert' : 'Admit Now'}
-        </button>
+        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            title="View attendee pass and gate details"
+            onClick={() => setSelectedAttendee(item)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/90 hover:border-purple-300 transition-colors cursor-pointer shadow-2xs"
+          >
+            <Eye className="h-3.5 w-3.5 text-purple-600" />
+            {/* <span className="hidden sm:inline">Details</span> */}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onToggleCheckIn(item.id);
+              onShowToast(
+                item.checkedIn
+                  ? `Entry reverted for ${item.customerName}`
+                  : `Admitted ${item.customerName}!`
+              );
+            }}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer shadow-2xs ${item.checkedIn
+              ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+          >
+            {item.checkedIn ? 'Revert' : 'Admit Now'}
+          </button>
+        </div>
       )
     }
   ];
@@ -189,20 +316,20 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
       <div className="rounded-lg border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-            Attendee List
+            Attendee List & Manifest
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            View ticket holders, verify contact details, and track gate check-ins.
+            View ticket holders, verify gate turnstile entry, check-in timestamps, and inspect pass details.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleExportCSV}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer self-start sm:self-auto shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Download className="h-4 w-4" />
-          <span>Export CSV</span>
+          <span>Export Manifest CSV</span>
         </button>
       </div>
 
@@ -212,7 +339,6 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           label="Total Bookings"
           value={attendees.length}
           isPositive={true}
-          // change="All Roster"
           icon={Users}
           accentColor="purple"
         />
@@ -221,7 +347,6 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           label="Admitted to Venue"
           value={checkedInCount}
           isPositive={true}
-          // change={`${Math.round((checkedInCount / (attendees.length || 1)) * 100)}% Admitted`}
           icon={CheckCircle2}
           accentColor="emerald"
         />
@@ -230,7 +355,6 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           label="Pending Gate Arrival"
           value={attendees.length - checkedInCount}
           isPositive={true}
-          // change="Expected Tonight"
           icon={Clock}
           accentColor="amber"
         />
@@ -239,7 +363,6 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           label="Total Manifest Revenue"
           value={`₹${(totalRevenue / 100000).toFixed(1)} L`}
           isPositive={true}
-          // change="Paid via UPI / Cards"
           icon={DollarSign}
           accentColor="cyan"
         />
@@ -272,7 +395,7 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
                   setSelectedConcert(e.target.value);
                   setPage(1);
                 }}
-                className="appearance-none rounded-md border border-slate-200 bg-white pl-3 pr-8 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300 min-w-[130px] max-w-[200px] truncate"
+                className="appearance-none rounded-md border border-slate-200 bg-white pl-3 pr-8 py-2 text-xs font-medium text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300 min-w-[130px] max-w-[200px] truncate"
               >
                 <option value="all">All Concerts</option>
                 {concerts.map((c) => (
@@ -292,7 +415,7 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
                   setStatusFilter(e.target.value as 'all' | 'checkedIn' | 'pending');
                   setPage(1);
                 }}
-                className="appearance-none rounded-md border border-slate-200 bg-white pl-3 pr-8 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300 min-w-[125px]"
+                className="appearance-none rounded-md border border-slate-200 bg-white pl-3 pr-8 py-2 text-xs font-medium text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300 min-w-[125px]"
               >
                 <option value="all">All Statuses</option>
                 <option value="checkedIn">Admitted</option>
@@ -308,6 +431,7 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           columns={columns}
           data={paginatedAttendees}
           keyExtractor={(a) => a.id}
+          // onRowClick={(item) => setSelectedAttendee(item)}
           showPagination={false}
           containerClassName="border-0 rounded-none shadow-none bg-transparent"
           emptyMessage="No attendees found matching filter."
@@ -327,6 +451,281 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
           }
         />
       </div>
+
+      {/* Attendee Pass & Gate Admission Details Modal */}
+      {activeAttendee && (
+        <Modal
+          isOpen={!!activeAttendee}
+          onClose={() => setSelectedAttendee(null)}
+          title="Attendee Pass & Admission Details"
+          subtitle={`Order #${activeAttendee.orderNumber} • ${activeAttendee.ticketCode} • Booked on ${formatUtcDate(activeAttendee.purchaseDate)}`}
+          maxWidth="xl"
+        >
+          <div className="space-y-5">
+            {/* Admission Status Banner */}
+            <div
+              className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 ${activeAttendee.checkedIn
+                ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                : 'bg-amber-50/80 border-amber-200 text-amber-900'
+                }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${activeAttendee.checkedIn
+                    ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-200'
+                    : 'bg-amber-500 text-white shadow-xs shadow-amber-200'
+                    }`}
+                >
+                  {activeAttendee.checkedIn ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <Clock className="h-5 w-5" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {activeAttendee.checkedIn ? 'Admitted into Venue' : 'Pending Gate Admission'}
+                    </span>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${activeAttendee.checkedIn
+                        ? 'bg-emerald-200/80 text-emerald-800'
+                        : 'bg-amber-200/80 text-amber-800'
+                        }`}
+                    >
+                      {activeAttendee.checkedIn ? 'Verified' : 'Unscanned'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 font-normal mt-0.5">
+                    {activeAttendee.checkedIn
+                      ? `Scanned at ${activeAttendee.gateNumber || 'Gate 1'} by ${activeAttendee.gateStaff || 'Gate Terminal'}`
+                      : `Assigned to ${activeAttendee.gateNumber || 'Designated Gate'} • Awaiting turnstile entry`}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onToggleCheckIn(activeAttendee.id);
+                  onShowToast(
+                    activeAttendee.checkedIn
+                      ? `Entry status reverted for ${activeAttendee.customerName}`
+                      : `Successfully admitted ${activeAttendee.customerName}!`
+                  );
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer shrink-0 transition-colors shadow-2xs ${activeAttendee.checkedIn
+                  ? 'bg-white hover:bg-rose-50 text-rose-700 border border-rose-200'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+              >
+                {activeAttendee.checkedIn ? 'Revert Check-In' : 'Admit Attendee Now'}
+              </button>
+            </div>
+
+            {/* Gate Entry & Turnstile Verification Audit */}
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-2xs space-y-3.5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-purple-600" />
+                  <h3 className="text-xs font-medium text-slate-700 tracking-wider uppercase">
+                    Gate Entry & Turnstile Verification
+                  </h3>
+                </div>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Anti-Fraud Validated
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-100 space-y-1">
+                  <span className="text-xs text-slate-500 font-normal block">
+                    Turnstile Gate
+                  </span>
+                  <span className="text-sm font-medium text-slate-800 block">
+                    {activeAttendee.gateNumber || (activeAttendee.ticketTier.toLowerCase().includes('vip') ? 'Gate 1 (VIP Fastrack)' : 'Gate 2 (General West)')}
+                  </span>
+                  <span className="text-xs text-slate-400 font-normal block">
+                    {activeAttendee.checkedIn ? 'Physical turnstile logged' : 'Designated check-in gate'}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-100 space-y-1">
+                  <span className="text-xs text-slate-500 font-normal block">
+                    When Entered (Timestamp)
+                  </span>
+                  <span className="text-sm font-medium text-slate-800 block">
+                    {activeAttendee.checkedIn && activeAttendee.checkedInAt
+                      ? formatUtcDateTime(activeAttendee.checkedInAt, { second: '2-digit' })
+                      : 'Not yet admitted'}
+                  </span>
+                  <span className="text-xs text-slate-400 font-normal block">
+                    {activeAttendee.checkedIn ? 'Exact scan log time' : 'Awaiting turnstile scan'}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-100 space-y-1">
+                  <span className="text-xs text-slate-500 font-normal block">
+                    Staff / Scanner Terminal
+                  </span>
+                  <span className="text-sm font-medium text-slate-800 block truncate">
+                    {activeAttendee.gateStaff || (activeAttendee.checkedIn ? 'Box Office Terminal' : 'Awaiting Scanner')}
+                  </span>
+                  <span className="text-xs text-slate-400 font-normal block">
+                    Authorized operator
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Ticket & Event Information */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Event & Tier Info */}
+              <div className="rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-2xs space-y-3">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <Building2 className="h-4 w-4 text-purple-600" />
+                  <h3 className="text-xs font-medium text-slate-700 tracking-wider uppercase">
+                    Event & Tier Details
+                  </h3>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <span className="text-slate-500 text-xs font-normal block">Concert Show</span>
+                    <span className="text-sm font-medium text-slate-900 block mt-0.5">{activeAttendee.concertTitle}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-slate-500 text-xs font-normal block">Ticket Tier</span>
+                      <span className="font-medium text-xs text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 inline-block mt-0.5">
+                        {activeAttendee.ticketTier}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-slate-500 text-xs font-normal block">Seats / Admissions</span>
+                      <span className="text-sm font-medium text-slate-900 mt-0.5 block">{activeAttendee.seatsCount} Person(s)</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
+                    <div>
+                      <span className="text-slate-500 text-xs font-normal block">Total Amount Paid</span>
+                      <span className="text-base font-semibold text-slate-900">₹{activeAttendee.totalPaid.toLocaleString()}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      Paid & Settled
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Contact Details */}
+              <div className="rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-2xs space-y-3">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <User className="h-4 w-4 text-purple-600" />
+                  <h3 className="text-xs font-medium text-slate-700 tracking-wider uppercase">
+                    Attendee Contact Identity
+                  </h3>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-medium flex items-center justify-center text-sm shadow-2xs shrink-0">
+                      {activeAttendee.customerName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join('')}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-medium text-slate-900 block truncate">{activeAttendee.customerName}</span>
+                      <span className="text-xs text-slate-500 font-normal">Primary Ticket Holder</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-1 border-t border-slate-100">
+                    <div className="flex items-center gap-2 text-slate-600 font-normal">
+                      <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <a href={`mailto:${activeAttendee.customerEmail}`} className="hover:text-purple-700 hover:underline truncate">
+                        {activeAttendee.customerEmail}
+                      </a>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-slate-600 font-normal">
+                      <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <a href={`tel:${activeAttendee.customerPhone}`} className="hover:text-purple-700 hover:underline">
+                        {activeAttendee.customerPhone}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Barcode & Security Strip */}
+            <div className="rounded-xl border border-slate-200/90 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-4 space-y-3 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div>
+                  <span className="text-xs text-slate-500 font-normal block">
+                    Digital Admission Pass Token
+                  </span>
+                  <span className="font-mono text-xs sm:text-sm font-medium text-slate-800 tracking-wider">
+                    {activeAttendee.ticketCode}-SECURE-{activeAttendee.id.toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 self-start sm:self-auto">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Real-time Gate Sync Active</span>
+                </div>
+              </div>
+
+              {/* Simulated Barcode Pattern Lines */}
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1 overflow-hidden opacity-75">
+                {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 2, 3, 4, 1, 2, 1, 3, 2, 4, 1, 3, 2, 1, 4, 1, 3, 2, 4, 1, 2, 3, 1, 4, 2].map(
+                  (w, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-slate-900 rounded-xs h-8 shrink-0"
+                      style={{ width: `${w * 1.5}px` }}
+                    />
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-normal text-slate-500">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <span>Audited for gate admission control</span>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Printer className="h-3.5 w-3.5 text-slate-600" />
+                  <span>Print Slip</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedAttendee(null)}
+                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
+

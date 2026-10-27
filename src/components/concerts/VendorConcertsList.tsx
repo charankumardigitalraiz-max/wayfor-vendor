@@ -25,6 +25,8 @@ import { Table, type Column } from '../common/Table';
 import { Badge } from '../common/Badge';
 import { MetricCard } from '../common/MetricCard';
 import { Pagination } from '../common/Pagination';
+import { AppImage } from '../common/AppImage';
+import { formatUtcDate } from '../../utils/dateUtils';
 
 interface VendorConcertsListProps {
   concerts: ConcertEvent[];
@@ -167,7 +169,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
       header: 'Concert & Artist',
       render: (concert) => (
         <div className="flex items-center gap-3">
-          <img
+          <AppImage
             src={concert.image}
             alt={concert.title}
             className="h-10 w-10 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
@@ -203,7 +205,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
       width: 'min-w-[135px]',
       render: (concert) => (
         <div className="text-xs min-w-[115px] whitespace-nowrap">
-          <span className="font-medium text-slate-800 block">{concert.date}</span>
+          <span className="font-medium text-slate-800 block">{formatUtcDate(concert.date)}</span>
           <span className="text-[11px] text-slate-400">Entry: {concert.doorsOpen}</span>
         </div>
       )

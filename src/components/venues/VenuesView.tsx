@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Venue } from '../../types';
 import { AddVenueModal } from '../common/AddVenueModal';
+import { AppImage } from '../common/AppImage';
 
 interface VenuesViewProps {
   venues: Venue[];
@@ -58,7 +59,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
             <div>
               {venue.image && (
                 <div className="h-32 -mx-4.5 -mt-4.5 sm:-mx-5 sm:-mt-5 mb-3.5 rounded-t-lg overflow-hidden border-b border-slate-100 relative group">
-                  <img
+                  <AppImage
                     src={venue.image}
                     alt={venue.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

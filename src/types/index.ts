@@ -6,7 +6,8 @@ export type NavigationTab =
   | 'attendees'
   | 'venues'
   | 'payouts'
-  | 'settings';
+  | 'settings'
+  | 'profile';
 
 export type StatusType = 'active' | 'upcoming' | 'completed' | 'cancelled' | 'draft' | 'pending' | 'verified';
 
@@ -81,6 +82,7 @@ export interface AttendeeBooking {
   checkedIn: boolean;
   checkedInAt?: string;
   gateStaff?: string;
+  gateNumber?: string;
 }
 
 export interface GateScanLog {

@@ -355,6 +355,7 @@ export const mockAttendees: AttendeeBooking[] = [
     ticketCode: 'TKT-9821-VIP',
     checkedIn: true,
     checkedInAt: '2026-11-14T18:42:10Z',
+    gateNumber: 'Gate 1 (VIP Fastrack)',
     gateStaff: 'Rahul Sharma (Gate 1)'
   },
   {
@@ -373,6 +374,7 @@ export const mockAttendees: AttendeeBooking[] = [
     ticketCode: 'TKT-9822-GA',
     checkedIn: true,
     checkedInAt: '2026-11-14T18:55:00Z',
+    gateNumber: 'Gate 2 (General West)',
     gateStaff: 'Ananya Roy (Gate 2)'
   },
   {
@@ -389,7 +391,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-15',
     ticketCode: 'TKT-9823-VVIP',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 1 (VIP Fastrack)'
   },
   {
     id: 'bk-104',
@@ -405,7 +408,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-18',
     ticketCode: 'TKT-9824-COLD',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 3 (Ground Arena)'
   },
   {
     id: 'bk-105',
@@ -421,7 +425,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-19',
     ticketCode: 'TKT-9825-INF',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 1 (VIP Lounge)'
   },
   {
     id: 'bk-106',
@@ -437,7 +442,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-21',
     ticketCode: 'TKT-9826-DIL',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 2 (Stagefront East)'
   },
   {
     id: 'bk-107',
@@ -453,7 +459,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-22',
     ticketCode: 'TKT-9827-PLAT',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 1 (Hospitality Fastrack)'
   },
   {
     id: 'bk-108',
@@ -469,7 +476,8 @@ export const mockAttendees: AttendeeBooking[] = [
     currency: 'INR',
     purchaseDate: '2026-10-23',
     ticketCode: 'TKT-9828-SID',
-    checkedIn: false
+    checkedIn: false,
+    gateNumber: 'Gate 1 (VIP Fastrack)'
   },
   {
     id: 'bk-109',
@@ -487,6 +495,7 @@ export const mockAttendees: AttendeeBooking[] = [
     ticketCode: 'TKT-9829-GULLY',
     checkedIn: true,
     checkedInAt: '2026-10-18T19:30:15Z',
+    gateNumber: 'Gate North (VIP Access)',
     gateStaff: 'Kavita Menon (Gate North)'
   }
 ];

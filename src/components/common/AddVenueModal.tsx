@@ -105,13 +105,13 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
         }
         break;
 
-      case 'soundSystem':
-        if (!String(value).trim()) {
-          error = 'Audio / sound system rig specification is required';
-        } else if (String(value).trim().length < 3) {
-          error = 'Audio system description must be at least 3 characters';
-        }
-        break;
+      // case 'soundSystem':
+      //   if (!String(value).trim()) {
+      //     error = 'Audio / sound system rig specification is required';
+      //   } else if (String(value).trim().length < 3) {
+      //     error = 'Audio system description must be at least 3 characters';
+      //   }
+      //   break;
 
       default:
         break;
@@ -289,77 +289,6 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
           </div>
         )}
 
-        {/* Arena / Stage Image Upload Section */}
-        <div className="space-y-1.5">
-          <label className="font-semibold text-slate-700 flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <ImageIcon className="h-3.5 w-3.5 text-purple-600" />
-              <span>Arena / Stage Photo</span>
-            </span>
-            <span className="text-[11px] text-slate-400 font-normal">Optional (PNG, JPG up to 10MB)</span>
-          </label>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileInputChange}
-            className="hidden"
-          />
-
-          {!image ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isDragging
-                ? 'border-purple-500 bg-purple-50/50 scale-[0.99]'
-                : 'border-slate-200 hover:border-purple-300 bg-slate-50/60 hover:bg-purple-50/20'
-                }`}
-            >
-              <div className="h-10 w-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-2 shadow-2xs">
-                <Upload className="h-5 w-5 stroke-[2.2]" />
-              </div>
-              <p className="text-xs font-semibold text-slate-800">
-                Click to upload arena photo <span className="text-slate-400 font-normal">or drag & drop</span>
-              </p>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Upload stadium grandstand or concert stage photography directly from your device
-              </p>
-            </div>
-          ) : (
-            <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-2xs">
-              <img
-                src={image}
-                alt="Venue preview"
-                className="w-full h-40 object-cover"
-              />
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-2xs">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 rounded-lg bg-white/90 hover:bg-white text-slate-800 text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 text-purple-600" />
-                  <span>Change Photo</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Remove</span>
-                </button>
-              </div>
-              <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5">
-                <ImageIcon className="h-3 w-3 text-purple-300" />
-                <span className="truncate max-w-[200px]">{imageFileName || 'Arena Photo Uploaded'}</span>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Arena / Stadium Name */}
         <div className="space-y-1">
@@ -565,8 +494,86 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
           )}
         </div>
 
+
+
+
+        {/* Arena / Stage Image Upload Section */}
+        <div className="space-y-1.5">
+          <label className="font-semibold text-slate-700 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <ImageIcon className="h-3.5 w-3.5 text-purple-600" />
+              <span>Venue Image (optional)</span>
+            </span>
+            <span className="text-[11px] text-slate-400 font-normal">Optional (PNG, JPG up to 10MB)</span>
+          </label>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileInputChange}
+            className="hidden"
+          />
+
+          {!image ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isDragging
+                ? 'border-purple-500 bg-purple-50/50 scale-[0.99]'
+                : 'border-slate-200 hover:border-purple-300 bg-slate-50/60 hover:bg-purple-50/20'
+                }`}
+            >
+              <div className="h-10 w-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-2 shadow-2xs">
+                <Upload className="h-5 w-5 stroke-[2.2]" />
+              </div>
+              <p className="text-xs font-semibold text-slate-800">
+                Click to upload arena photo <span className="text-slate-400 font-normal">or drag & drop</span>
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Upload stadium grandstand or concert stage photography directly from your device
+              </p>
+            </div>
+          ) : (
+            <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-2xs">
+              <img
+                src={image}
+                alt="Venue preview"
+                className="w-full h-40 object-cover"
+              />
+              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-2xs">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-lg bg-white/90 hover:bg-white text-slate-800 text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 text-purple-600" />
+                  <span>Change Photo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Remove</span>
+                </button>
+              </div>
+              <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5">
+                <ImageIcon className="h-3 w-3 text-purple-300" />
+                <span className="truncate max-w-[200px]">{imageFileName || 'Arena Photo Uploaded'}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+
+
+
         {/* Audio / Sound System */}
-        <div className="space-y-1">
+        {/* <div className="space-y-1">
           <label className="font-semibold text-slate-700 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <Radio className="h-3.5 w-3.5 text-purple-600" />
@@ -596,7 +603,7 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
               <span>{errors.soundSystem}</span>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">

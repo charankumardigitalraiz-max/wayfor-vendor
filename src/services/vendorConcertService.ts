@@ -191,11 +191,15 @@ class VendorConcertService {
 
     const current = attendees[index];
     const newChecked = !current.checkedIn;
+    const isVip = current.ticketTier.toLowerCase().includes('vip');
+    const assignedGate = isVip ? 'Gate 1 (VIP Fastrack)' : 'Gate 2 (General West)';
+
     attendees[index] = {
       ...current,
       checkedIn: newChecked,
       checkedInAt: newChecked ? new Date().toISOString() : undefined,
-      gateStaff: newChecked ? 'Manual Console Override' : undefined
+      gateNumber: newChecked ? assignedGate : undefined,
+      gateStaff: newChecked ? `Box Office Desk • ${assignedGate}` : undefined
     };
     this.saveAttendees(attendees);
     return attendees[index];

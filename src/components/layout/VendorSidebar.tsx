@@ -72,13 +72,13 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
     //   icon: Scan,
     //   isLiveBadge: false
     // },
-    {
-      id: 'attendees' as NavigationTab,
-      label: 'Attendee Manifest',
-      path: '/attendees',
-      icon: Users,
-      badge: totalAttendeesCount
-    },
+    // {
+    //   id: 'attendees' as NavigationTab,
+    //   label: 'Attendee Manifest',
+    //   path: '/attendees',
+    //   icon: Users,
+    //   badge: totalAttendeesCount
+    // },
     {
       id: 'venues' as NavigationTab,
       label: 'Venues & Stages',
@@ -199,16 +199,20 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
 
       {/* Bottom Profile Footer */}
       <div className="shrink-0 p-3 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center justify-between p-2 rounded-xl border border-slate-200/70 bg-white">
+        <div
+          onClick={() => handleNav('profile', '/profile')}
+          className="flex items-center justify-between p-2 rounded-xl border border-slate-200/70 bg-white hover:border-purple-300 hover:shadow-2xs transition-all cursor-pointer group"
+          title="Open Promoter Profile"
+        >
           <div className="flex items-center gap-2.5 min-w-0">
             <img
               src={activeProfile.avatar}
               alt={activeProfile.name}
-              className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shrink-0"
+              className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shrink-0 group-hover:ring-purple-300 transition-all"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1">
-                <span className="text-xs font-semibold text-slate-900 truncate">
+                <span className="text-xs font-semibold text-slate-900 group-hover:text-purple-700 transition-colors truncate">
                   {activeProfile.companyName?.split(' ')[0] || 'Studio'} Live
                 </span>
                 <ShieldCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />

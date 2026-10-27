@@ -742,7 +742,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              {/* <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700">
                   Official Tour Run Name
                 </label>
@@ -753,7 +753,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                   placeholder="e.g. Genesys Global Arena Run"
                   className="w-full rounded-md border border-slate-200 bg-slate-50/60 px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-purple-500 focus:bg-white focus:outline-none transition-all shadow-2xs"
                 />
-              </div>
+              </div> */}
 
               <div className="space-y-1.5 sm:col-span-1">
                 <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
@@ -1003,7 +1003,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                   Total Hours of Show
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   value={durationHours}
                   onChange={(e) => setDurationHours(e.target.value)}
                   placeholder="e.g. 3.5 Hours, 4 Hours"

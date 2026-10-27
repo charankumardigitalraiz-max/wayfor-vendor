@@ -30,6 +30,8 @@ import { Badge } from '../common/Badge';
 import { MetricCard } from '../common/MetricCard';
 import { Table, type Column } from '../common/Table';
 import { Pagination } from '../common/Pagination';
+import { AppImage } from '../common/AppImage';
+import { formatUtcDate, formatUtcTime } from '../../utils/dateUtils';
 import { vendorConcertService } from '../../services/vendorConcertService';
 
 interface VendorConcertDetailProps {
@@ -125,12 +127,12 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
       header: 'Attendee Name',
       render: (item) => (
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-full bg-purple-100 text-purple-700 border border-purple-200/70 flex items-center justify-center font-semibold text-xs shrink-0">
+          <div className="h-7 w-7 rounded-full bg-purple-100 text-purple-700 border border-purple-200/70 flex items-center justify-center font-medium text-xs shrink-0">
             {item.customerName.charAt(0)}
           </div>
           <div>
-            <span className="font-semibold text-slate-900 block">{item.customerName}</span>
-            <span className="text-[11px] text-slate-500">{item.customerEmail}</span>
+            <span className="font-medium text-slate-900 block">{item.customerName}</span>
+            <span className="text-[11px] text-slate-500 font-normal">{item.customerEmail}</span>
           </div>
         </div>
       )
@@ -150,35 +152,73 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
         return (
           <div>
-            <span className={`font-semibold block ${tierColor}`}>{item.ticketTier}</span>
-            <span className="text-[11px] font-semibold text-slate-500">{item.seatsCount} admission(s) • ₹{item.totalPaid.toLocaleString()}</span>
+            <span className={`font-medium block ${tierColor}`}>{item.ticketTier}</span>
+            <span className="text-[11px] text-slate-500 font-normal">{item.seatsCount} admission(s) • ₹{item.totalPaid.toLocaleString()}</span>
           </div>
         );
       }
     },
     {
       key: 'checkedIn',
-      header: 'Check-In Status',
-      render: (item) => (
-        item.checkedIn ? (
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-              Admitted
-            </span>
-            {item.checkedInAt && (
-              <span className="text-[10px] text-slate-400 block mt-0.5">
-                {new Date(item.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      header: 'Gate & Status',
+      width: 'min-w-[190px]',
+      render: (item) => {
+        const isVip = item.ticketTier.toLowerCase().includes('vip');
+        const gate = item.gateNumber || (isVip ? 'Gate 1 (VIP Fastrack)' : 'Gate 2 (General West)');
+
+        return (
+          <div className="space-y-1.5 min-w-[170px]">
+            <div>
+              {item.checkedIn ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  Admitted
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
+                  Pending Entry
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-mono text-[10px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 whitespace-nowrap">
+                {gate}
               </span>
-            )}
+            </div>
           </div>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock className="h-3.5 w-3.5 text-amber-600" />
-            Pending Entry
-          </span>
-        )
-      )
+        );
+      }
+    },
+    {
+      key: 'checkInDate',
+      header: 'Check-In Date & Time',
+      render: (item) => {
+        if (!item.checkedIn || !item.checkedInAt) {
+          return (
+            <div className="flex items-center gap-1.5 text-slate-400 text-xs font-normal">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+              <span className="italic">Not scanned yet</span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-800">
+              <Calendar className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+              <span>{formatUtcDate(item.checkedInAt)}</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-slate-500 font-normal pl-5">
+              <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+              <span>{formatUtcTime(item.checkedInAt)}</span>
+              {item.gateStaff && (
+                <span className="text-slate-400 text-[10px]">({item.gateStaff})</span>
+              )}
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'action',
@@ -191,7 +231,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             onToggleCheckIn(item.id);
             onShowToast(item.checkedIn ? `Entry reverted for ${item.customerName}` : `Admitted ${item.customerName}!`);
           }}
-          className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${item.checkedIn
+          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${item.checkedIn
             ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
             : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
             }`}
@@ -255,7 +295,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Column 1: Left Poster Artwork Frame */}
           <div className="relative w-full sm:w-60 lg:w-64 aspect-[4/3] shrink-0 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100 group">
-            <img
+            <AppImage
               src={concert.image}
               alt={concert.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -313,7 +353,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <div className="flex flex-wrap items-center gap-3.5 pt-2  text-xs">
               <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-700">
                 <Calendar className="h-4 w-4 text-purple-600 shrink-0" />
-                <span className="font-semibold text-slate-900">{concert.date}</span>
+                <span className="font-semibold text-slate-900">{formatUtcDate(concert.date)}</span>
                 <span className="text-slate-400 font-normal">· Gate {concert.doorsOpen}</span>
               </div>
 
@@ -552,7 +592,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                             )}
                           </td>
 
-                          <td className="py-3.5 px-5 text-right font-semibold text-purple-700 whitespace-nowrap">
+                          <td className="py-3.5 px-5 text-right text-[13px] font-bold text-purple-700 whitespace-nowrap">
                             ₹{tierRevenue.toLocaleString()}
                           </td>
                         </tr>
@@ -587,7 +627,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                           {concert.ticketTiers.length} Active Categories
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 text-right font-semibold text-sm text-purple-800 whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right font-extrabold text-sm text-purple-800 whitespace-nowrap">
                         ₹{totalTierRevenue.toLocaleString()}
                       </td>
                     </tr>

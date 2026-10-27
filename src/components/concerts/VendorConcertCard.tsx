@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import type { ConcertEvent } from '../../types';
 import { Badge } from '../common/Badge';
+import { AppImage } from '../common/AppImage';
+import { formatUtcDate } from '../../utils/dateUtils';
 
 interface VendorConcertCardProps {
   concert: ConcertEvent;
@@ -26,7 +28,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs transition-all duration-200 hover:border-purple-300 hover:shadow-md flex flex-col justify-between">
       {/* Visual Header */}
       <div className="relative h-44 w-full overflow-hidden bg-slate-100">
-        <img
+        <AppImage
           src={concert.image}
           alt={concert.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -60,7 +62,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
           <div className="flex items-center gap-2 text-xs text-slate-600">
             <Calendar className="h-3.5 w-3.5 text-purple-600 shrink-0" />
             <span>
-              {concert.date} • Doors {concert.doorsOpen}
+              {formatUtcDate(concert.date)} • Doors {concert.doorsOpen}
             </span>
           </div>
 
