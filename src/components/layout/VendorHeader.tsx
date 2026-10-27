@@ -27,14 +27,19 @@ interface VendorHeaderProps {
   onOpenCreateConcert: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  currentVendor?: any;
+  onLogout?: () => void;
 }
 
 export const VendorHeader: React.FC<VendorHeaderProps> = ({
   activeTab: _activeTab,
   onOpenCreateConcert,
   searchQuery,
-  onSearchChange
+  onSearchChange,
+  currentVendor,
+  onLogout
 }) => {
+  const activeProfile = currentVendor || mockVendorProfile;
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -118,7 +123,7 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
             <span className="text-sm font-semibold tracking-tight text-slate-900 tabular-nums">
               {istTime}
             </span>
-            {/* <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200/70">
+            {/* <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200/70">
               IST
             </span> */}
           </div>
@@ -181,7 +186,7 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
             className="relative h-9 w-9 rounded-md border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white ring-2 ring-white">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[10px] font-semibold text-white ring-2 ring-white">
               3
             </span>
           </button>
@@ -238,22 +243,21 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
           >
             <div className="relative">
               <img
-                src={mockVendorProfile.avatar}
-                alt={mockVendorProfile.name}
+                src={activeProfile.avatar}
+                alt={activeProfile.name}
                 className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 group-hover:ring-purple-300 transition-all"
               />
               <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
             </div>
             <div className="hidden lg:block text-left">
               <p className="text-xs font-semibold text-slate-800 leading-tight group-hover:text-purple-700 transition-colors">
-                {mockVendorProfile.name.split(' ')[0]}
+                {activeProfile.name.split(' ')[0]}
               </p>
               <p className="text-[10px] text-slate-400">Head of Touring</p>
             </div>
             <ChevronDown
-              className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
-                showProfileModal ? 'rotate-180 text-purple-600' : 'group-hover:text-slate-600'
-              }`}
+              className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showProfileModal ? 'rotate-180 text-purple-600' : 'group-hover:text-slate-600'
+                }`}
             />
           </button>
 
@@ -265,31 +269,33 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
                 <div className="flex items-start gap-3">
                   <div className="relative shrink-0">
                     <img
-                      src={mockVendorProfile.avatar}
-                      alt={mockVendorProfile.name}
+                      src={activeProfile.avatar}
+                      alt={activeProfile.name}
                       className="h-12 w-12 rounded-xl object-cover ring-2 ring-purple-100 shadow-2xs"
                     />
                     <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <h4 className="text-sm font-bold text-slate-900 truncate">
-                        {mockVendorProfile.name}
+                      <h4 className="text-sm font-semibold text-slate-900 truncate">
+                        {activeProfile.name}
                       </h4>
                       <span title="Verified Vendor" className="inline-flex shrink-0">
                         <ShieldCheck className="h-4 w-4 text-emerald-600" />
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 truncate mt-0.5">
-                      {mockVendorProfile.email}
+                      {activeProfile.email}
                     </p>
                     <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200/60">
-                        Zenith Live
+                        {activeProfile.companyName || 'Promoter Studio'}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        GST: {mockVendorProfile.gstNumber.slice(0, 8)}...
-                      </span>
+                      {activeProfile.gstNumber && (
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          GST: {activeProfile.gstNumber.slice(0, 8)}...
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -298,21 +304,21 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
                 <div className="mt-3.5 grid grid-cols-3 gap-2 p-2 rounded-lg bg-white/80 border border-slate-100 text-center">
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-semibold block">Tours</span>
-                    <span className="text-xs font-bold text-slate-900">{mockVendorProfile.totalConcertsHosted}</span>
+                    <span className="text-xs font-semibold text-slate-900">{activeProfile.totalConcertsHosted || 1}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-semibold block">Tickets</span>
-                    <span className="text-xs font-bold text-slate-900">{(mockVendorProfile.totalTicketsSold / 1000).toFixed(0)}k+</span>
+                    <span className="text-xs font-semibold text-slate-900">{((activeProfile.totalTicketsSold || 1000) / 1000).toFixed(0)}k+</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-semibold block">Rating</span>
-                    <span className="text-xs font-bold text-amber-600">★ {mockVendorProfile.rating}</span>
+                    <span className="text-xs font-semibold text-amber-600">★ {activeProfile.rating || 5.0}</span>
                   </div>
                 </div>
               </div>
 
               {/* Navigation & Actions */}
-              <div className="p-2 space-y-0.5 text-xs text-slate-700">
+              {/* <div className="p-2 space-y-0.5 text-xs text-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -392,16 +398,19 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
                   </div>
                   <ChevronDown className="h-3.5 w-3.5 text-slate-300 -rotate-90 group-hover:text-purple-600 transition-all" />
                 </button>
-              </div>
+              </div> */}
 
               {/* Footer: Sign Out / Account Switch */}
               <div className="p-2 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
                 <span className="text-[11px] text-slate-400 pl-2">
-                  Vendor ID: {mockVendorProfile.id}
+                  Vendor ID: {activeProfile.id}
                 </span>
                 <button
                   type="button"
-                  onClick={() => setShowProfileModal(false)}
+                  onClick={() => {
+                    setShowProfileModal(false);
+                    if (onLogout) onLogout();
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-3.5 w-3.5" />

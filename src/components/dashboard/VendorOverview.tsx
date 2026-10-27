@@ -84,7 +84,7 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
               <Radio className="h-3 w-3 text-emerald-600 animate-pulse" />
               <span>Vendor Touring Command Center</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Welcome back, {mockVendorProfile.name.split(' ')[0]}
             </h1>
             <p className="text-xs sm:text-sm font-normal text-slate-600 leading-relaxed">
@@ -170,7 +170,7 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
       {/* <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 className="text-sm font-bold tracking-tight text-slate-900">
+            <h3 className="text-sm font-semibold tracking-tight text-slate-900">
               Live Arena Tours & Ticket Velocity
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -213,7 +213,7 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
                     </div>
                   </div>
 
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors truncate">
+                  <h4 className="text-xs font-semibold text-slate-900 group-hover:text-purple-700 transition-colors truncate">
                     {concert.title}
                   </h4>
                   <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
@@ -237,7 +237,7 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] pt-1">
-                    <span className="text-slate-700 font-bold">
+                    <span className="text-slate-700 font-semibold">
                       ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
                     </span>
                     <span className="text-purple-700 font-semibold group-hover:underline inline-flex items-center gap-1">

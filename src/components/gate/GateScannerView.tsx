@@ -96,7 +96,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
       key: 'ticketCode',
       header: 'Barcode / Code',
       render: (log) => (
-        <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+        <span className="font-mono font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
           {log.ticketCode}
         </span>
       )
@@ -122,20 +122,20 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
       render: (log) => {
         if (log.status === 'granted') {
           return (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               <CheckCircle2 className="h-3 w-3" /> Granted
             </span>
           );
         }
         if (log.status === 'duplicate') {
           return (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
               <AlertTriangle className="h-3 w-3" /> Duplicate
             </span>
           );
         }
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
             <XCircle className="h-3 w-3" /> Invalid
           </span>
         );
@@ -149,10 +149,10 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
       <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
               Live Gate Entry & Barcode Scanner Console
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
               Gate Live
             </span>
@@ -211,7 +211,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                   Ready for Optical Barcode / QR Scan
                 </p>
                 <p className="text-[11px] text-slate-500">
-                  Active Station: <span className="text-purple-300 font-bold">{selectedGate}</span>
+                  Active Station: <span className="text-purple-300 font-semibold">{selectedGate}</span>
                 </p>
               </div>
             </div>
@@ -233,7 +233,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                 <button
                   type="button"
                   onClick={() => handleValidateTicket()}
-                  className="px-5 py-2.5 rounded-md text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer"
                 >
                   Verify Ticket
                 </button>
@@ -258,13 +258,12 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
             {/* Verification Result Banner */}
             {scanResult.status && (
               <div
-                className={`p-4 rounded-xl border animate-in fade-in duration-200 ${
-                  scanResult.status === 'granted'
+                className={`p-4 rounded-xl border animate-in fade-in duration-200 ${scanResult.status === 'granted'
                     ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200'
                     : scanResult.status === 'duplicate'
-                    ? 'bg-amber-950/80 border-amber-500 text-amber-200'
-                    : 'bg-rose-950/80 border-rose-500 text-rose-200'
-                }`}
+                      ? 'bg-amber-950/80 border-amber-500 text-amber-200'
+                      : 'bg-rose-950/80 border-rose-500 text-rose-200'
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   {scanResult.status === 'granted' && (
@@ -278,12 +277,12 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                   )}
 
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold uppercase tracking-wider">
+                    <h4 className="text-sm font-semibold uppercase tracking-wider">
                       {scanResult.status === 'granted'
                         ? 'Admission Granted'
                         : scanResult.status === 'duplicate'
-                        ? 'Duplicate Scan Detected'
-                        : 'Invalid Ticket Barcode'}
+                          ? 'Duplicate Scan Detected'
+                          : 'Invalid Ticket Barcode'}
                     </h4>
                     <p className="text-xs font-medium leading-relaxed">
                       {scanResult.message}
@@ -291,7 +290,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                     {scanResult.attendee && (
                       <div className="pt-2 text-xs text-white/90 space-y-0.5">
                         <p>
-                          Holder: <span className="font-bold">{scanResult.attendee.customerName}</span> ({scanResult.attendee.ticketTier})
+                          Holder: <span className="font-semibold">{scanResult.attendee.customerName}</span> ({scanResult.attendee.ticketTier})
                         </p>
                         <p>
                           Order: <span className="font-mono">{scanResult.attendee.orderNumber}</span> • {scanResult.attendee.seatsCount} Pax
@@ -309,7 +308,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 className="text-sm font-semibold text-slate-900">
                 Gate Headcount Telemetry
               </h3>
               <Radio className="h-4 w-4 text-emerald-500 animate-pulse" />
@@ -319,7 +318,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
               <div>
                 <div className="flex justify-between text-xs font-semibold">
                   <span className="text-slate-500">Admitted / Manifest</span>
-                  <span className="text-purple-700 font-bold">
+                  <span className="text-purple-700 font-semibold">
                     {scannedCount} / {totalExpected} ({scanRate}%)
                   </span>
                 </div>
@@ -335,7 +334,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                 <span className="text-slate-400 font-semibold uppercase text-[10px]">
                   Current Arena Occupancy
                 </span>
-                <p className="text-lg font-bold text-slate-900">
+                <p className="text-lg font-semibold text-slate-900">
                   {scannedCount.toLocaleString()} Fans In-Venue
                 </p>
                 <p className="text-[11px] text-slate-500">
@@ -347,7 +346,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
                 <span className="text-purple-700 font-semibold uppercase text-[10px]">
                   Emergency Egress Status
                 </span>
-                <p className="text-xs font-bold text-purple-900">
+                <p className="text-xs font-semibold text-purple-900">
                   All 12 Stadium Exit Turnstiles Unlocked
                 </p>
                 <p className="text-[11px] text-purple-700">
@@ -363,7 +362,7 @@ export const GateScannerView: React.FC<GateScannerViewProps> = ({
       <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-semibold text-slate-900">
               Live Gate Entry Audit Stream
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">

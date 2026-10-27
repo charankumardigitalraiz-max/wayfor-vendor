@@ -139,7 +139,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
                   type="button"
                   onClick={() => onTimeframeChange(tf)}
                   className={`px-2 py-0.5 rounded-md transition-all cursor-pointer text-[11px] ${timeframe === tf
-                    ? 'bg-white text-purple-700 font-bold shadow-2xs'
+                    ? 'bg-white text-purple-700 font-semibold shadow-2xs'
                     : 'hover:text-slate-900'
                     }`}
                 >
@@ -184,12 +184,12 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
                       >
                         {isHovered && (
                           <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-40 whitespace-nowrap rounded-lg bg-slate-900 text-white px-2.5 py-1.5 shadow-lg text-center">
-                            <div className="text-[10px] font-bold text-purple-300">{d.label}</div>
+                            <div className="text-[10px] font-semibold text-purple-300">{d.label}</div>
                             <div className="text-xs font-extrabold text-white">{formatCurrency(d.revenue)}</div>
                           </div>
                         )}
 
-                        <span className={`text-[10px] font-semibold mb-1 tabular-nums ${isHovered ? 'text-purple-700 font-bold' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-semibold mb-1 tabular-nums ${isHovered ? 'text-purple-700 font-semibold' : 'text-slate-400'}`}>
                           {formatShortRev(d.revenue)}
                         </span>
 
@@ -214,7 +214,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
               {seriesData.map((d, i) => (
                 <span
                   key={i}
-                  className={`text-[11px] font-medium text-center ${hoveredRevIndex === i ? 'text-purple-700 font-bold' : 'text-slate-500'}`}
+                  className={`text-[11px] font-medium text-center ${hoveredRevIndex === i ? 'text-purple-700 font-semibold' : 'text-slate-500'}`}
                   style={{ width: `${100 / (seriesData.length + 1)}%`, maxWidth: '44px' }}
                 >
                   {d.label}
@@ -247,7 +247,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
                   type="button"
                   onClick={() => onTimeframeChange(tf)}
                   className={`px-2 py-0.5 rounded-md transition-all cursor-pointer text-[11px] ${timeframe === tf
-                    ? 'bg-white text-indigo-700 font-bold shadow-2xs'
+                    ? 'bg-white text-indigo-700 font-semibold shadow-2xs'
                     : 'hover:text-slate-900'
                     }`}
                 >
@@ -292,12 +292,12 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
                       >
                         {isHovered && (
                           <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-40 whitespace-nowrap rounded-lg bg-slate-900 text-white px-2.5 py-1.5 shadow-lg text-center">
-                            <div className="text-[10px] font-bold text-indigo-300">{d.label}</div>
+                            <div className="text-[10px] font-semibold text-indigo-300">{d.label}</div>
                             <div className="text-xs font-extrabold text-white">{d.tickets.toLocaleString()} passes</div>
                           </div>
                         )}
 
-                        <span className={`text-[10px] font-semibold mb-1 tabular-nums ${isHovered ? 'text-indigo-700 font-bold' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-semibold mb-1 tabular-nums ${isHovered ? 'text-indigo-700 font-semibold' : 'text-slate-400'}`}>
                           {formatShortTix(d.tickets)}
                         </span>
 
@@ -322,7 +322,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
               {seriesData.map((d, i) => (
                 <span
                   key={i}
-                  className={`text-[11px] font-medium text-center ${hoveredTixIndex === i ? 'text-indigo-700 font-bold' : 'text-slate-500'}`}
+                  className={`text-[11px] font-medium text-center ${hoveredTixIndex === i ? 'text-indigo-700 font-semibold' : 'text-slate-500'}`}
                   style={{ width: `${100 / (seriesData.length + 1)}%`, maxWidth: '44px' }}
                 >
                   {d.label}
@@ -426,7 +426,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-slate-400 font-mono">₹{tier.price.toLocaleString()}</span>
-                      <span className="font-bold text-slate-900">{tier.percentage}%</span>
+                      <span className="font-semibold text-slate-900">{tier.percentage}%</span>
                     </div>
                   </div>
                 );
@@ -459,7 +459,7 @@ export const VendorSalesChart: React.FC<VendorSalesChartProps> = ({
               <div key={v.id} className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/40 space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-slate-900 truncate max-w-[180px]">{v.name}</span>
+                    <span className="font-semibold text-slate-900 truncate max-w-[180px]">{v.name}</span>
                     <span className="text-[10px] text-slate-400">({v.city})</span>
                   </div>
                   <span className="font-extrabold text-slate-900">{v.fillPct}%</span>

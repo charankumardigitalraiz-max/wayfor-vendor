@@ -142,7 +142,7 @@ export const PayoutsView: React.FC<PayoutsViewProps> = ({
       key: 'amount',
       header: 'Net Payout',
       render: (item) => (
-        <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
+        <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
           {formatCurrency(item.amount)}
         </span>
       )
@@ -326,7 +326,7 @@ export const PayoutsView: React.FC<PayoutsViewProps> = ({
       >
         <form onSubmit={handleWithdrawSubmit} className="space-y-4 text-xs">
           <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Destination Account</span>
+            <span className="text-[10px] uppercase font-semibold text-slate-400">Destination Account</span>
             <p className="font-semibold text-slate-900">{mockVendorProfile.companyName}</p>
             <p className="text-slate-500">{mockVendorProfile.bankName} (A/C {mockVendorProfile.bankAccountNumber})</p>
           </div>
@@ -334,13 +334,13 @@ export const PayoutsView: React.FC<PayoutsViewProps> = ({
           <div className="space-y-1">
             <label className="font-semibold text-slate-700">Withdrawal Amount (INR) *</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">₹</span>
               <input
                 type="number"
                 required
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3.5 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3.5 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:border-purple-500"
               />
             </div>
             <p className="text-[10px] text-slate-400">Available cleared balance: ₹24.50 Cr</p>

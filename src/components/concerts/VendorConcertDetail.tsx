@@ -65,7 +65,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-12 text-center space-y-3">
         <AlertCircle className="h-10 w-10 text-rose-500 mx-auto" />
-        <h3 className="text-base font-bold text-slate-800">Concert Not Found</h3>
+        <h3 className="text-base font-semibold text-slate-800">Concert Not Found</h3>
         <p className="text-xs text-slate-500">The event could not be located in your vendor roster.</p>
         <button
           onClick={() => navigate('/concerts')}
@@ -115,7 +115,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
       key: 'ticketCode',
       header: 'Ticket Code',
       render: (item) => (
-        <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80 shadow-2xs">
+        <span className="font-mono text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80 shadow-2xs">
           {item.ticketCode}
         </span>
       )
@@ -125,7 +125,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
       header: 'Attendee Name',
       render: (item) => (
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-full bg-purple-100 text-purple-700 border border-purple-200/70 flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="h-7 w-7 rounded-full bg-purple-100 text-purple-700 border border-purple-200/70 flex items-center justify-center font-semibold text-xs shrink-0">
             {item.customerName.charAt(0)}
           </div>
           <div>
@@ -263,7 +263,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-50" />
 
             <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5">
-              <span className="rounded-md bg-white/95 backdrop-blur-md px-2 py-0.5 text-[11px] font-bold text-slate-900 shadow-xs">
+              <span className="rounded-md bg-white/95 backdrop-blur-md px-2 py-0.5 text-[11px] font-semibold text-slate-900 shadow-xs">
                 {concert.genre}
               </span>
               {concert.ageRestriction && (
@@ -396,7 +396,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             >
               <Ticket className="h-3.5 w-3.5" />
               <span>Ticket Tiers & Inventory</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold transition-colors ${activeTab === 'tiers' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold transition-colors ${activeTab === 'tiers' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
                 }`}>
                 {concert.ticketTiers.length}
               </span>
@@ -412,7 +412,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             >
               <Users className="h-3.5 w-3.5" />
               <span>Attendee Manifest</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold transition-colors ${activeTab === 'attendees' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold transition-colors ${activeTab === 'attendees' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
                 }`}>
                 {eventAttendees.length}
               </span>
@@ -502,7 +502,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                         >
                           <td className="py-3.5 px-5">
                             <div className="flex items-center gap-3">
-                              <div className={`h-8 w-8 rounded-lg border flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${tierBadgeStyle}`}>
+                              <div className={`h-8 w-8 rounded-lg border flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs ${tierBadgeStyle}`}>
                                 {tier.name.charAt(0)}
                               </div>
                               <div>
@@ -562,7 +562,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                   <tfoot className="border-t-2 border-slate-200 bg-slate-50/75 text-xs font-semibold text-slate-800">
                     <tr>
                       <td className="py-3.5 px-5">
-                        <div className="font-bold text-slate-900">Total Portfolio Allocation</div>
+                        <div className="font-semibold text-slate-900">Total Portfolio Allocation</div>
                         <div className="text-[11px] text-slate-500 font-normal">
                           {totalTierAvailable.toLocaleString()} remaining across {concert.ticketTiers.length} categories
                         </div>
@@ -572,8 +572,8 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center justify-between text-[11px] mb-1">
-                          <span className="font-bold text-slate-800">{totalTierSold.toLocaleString()} total sold</span>
-                          <span className="font-bold text-purple-700">{totalTierSoldPct}%</span>
+                          <span className="font-semibold text-slate-800">{totalTierSold.toLocaleString()} total sold</span>
+                          <span className="font-semibold text-purple-700">{totalTierSoldPct}%</span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                           <div
@@ -587,7 +587,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                           {concert.ticketTiers.length} Active Categories
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 text-right font-bold text-sm text-purple-800 whitespace-nowrap">
+                      <td className="py-3.5 px-5 text-right font-semibold text-sm text-purple-800 whitespace-nowrap">
                         ₹{totalTierRevenue.toLocaleString()}
                       </td>
                     </tr>
@@ -658,7 +658,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             {/* Tab 3: Stage & Production */}
             <div className="w-full shrink-0 min-w-full p-4 sm:p-5 lg:p-6 space-y-4">
               <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-semibold text-slate-900">
                   Stadium Acoustics & Technical Rider Specifications
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -668,7 +668,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-2">
                     <Music className="h-4 w-4 text-purple-600" />
                     <span>Audio System Rider</span>
                   </h4>
@@ -681,7 +681,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                 </div>
 
                 <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-emerald-600" />
                     <span>Security & Gate Personnel</span>
                   </h4>

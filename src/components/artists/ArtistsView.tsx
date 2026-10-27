@@ -124,7 +124,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               <Users className="h-3.5 w-3.5" />
             </span>
           </div>
-          <p className="text-lg font-bold text-slate-900 mt-1">{totalHeadliners}</p>
+          <p className="text-lg font-semibold text-slate-900 mt-1">{totalHeadliners}</p>
           <span className="text-[10px] text-slate-400 mt-0.5 block">Managed in vendor catalog</span>
         </div>
 
@@ -135,7 +135,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               <Sparkles className="h-3.5 w-3.5" />
             </span>
           </div>
-          <p className="text-lg font-bold text-emerald-700 mt-1">{touringCount}</p>
+          <p className="text-lg font-semibold text-emerald-700 mt-1">{touringCount}</p>
           <span className="text-[10px] text-emerald-600 mt-0.5 block">Stadium & arena runs live</span>
         </div>
 
@@ -146,7 +146,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               <CheckCircle2 className="h-3.5 w-3.5" />
             </span>
           </div>
-          <p className="text-lg font-bold text-blue-700 mt-1">{availableCount}</p>
+          <p className="text-lg font-semibold text-blue-700 mt-1">{availableCount}</p>
           <span className="text-[10px] text-blue-600 mt-0.5 block">Open tour dates & festivals</span>
         </div>
 
@@ -157,7 +157,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               <Radio className="h-3.5 w-3.5" />
             </span>
           </div>
-          <p className="text-lg font-bold text-amber-700 mt-1">{totalUpcomingShows}</p>
+          <p className="text-lg font-semibold text-amber-700 mt-1">{totalUpcomingShows}</p>
           <span className="text-[10px] text-amber-600 mt-0.5 block">Scheduled arena dates</span>
         </div>
       </div>
@@ -213,8 +213,8 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                 type="button"
                 onClick={() => setSelectedGenre(g)}
                 className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer shrink-0 border ${isSelected
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                   }`}
               >
                 {g}
@@ -277,11 +277,11 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                     {/* Status Pill */}
                     <div className="absolute top-2.5 right-2.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs backdrop-blur-md ${isTouring
-                            ? 'bg-emerald-500/90 text-white border-emerald-400/50'
-                            : artist.status === 'available'
-                              ? 'bg-blue-500/90 text-white border-blue-400/50'
-                              : 'bg-slate-700/80 text-slate-200 border-slate-600'
+                        className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full border shadow-2xs backdrop-blur-md ${isTouring
+                          ? 'bg-emerald-500/90 text-white border-emerald-400/50'
+                          : artist.status === 'available'
+                            ? 'bg-blue-500/90 text-white border-blue-400/50'
+                            : 'bg-slate-700/80 text-slate-200 border-slate-600'
                           }`}
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
@@ -295,7 +295,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
                     {/* Monthly Listeners badge */}
                     {artist.monthlyListeners && (
-                      <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 text-[11px] font-bold text-white bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
+                      <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 text-[11px] font-semibold text-white bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
                         <Headphones className="h-3 w-3 text-emerald-400" />
                         <span>{artist.monthlyListeners}</span>
                       </div>
@@ -323,14 +323,14 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                         )}
                       </div>
 
-                      <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                         {artist.genre}
                       </span>
                     </div>
 
                     {/* Artist Title & Alias */}
                     <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-slate-900 truncate" title={artist.name}>
+                      <h3 className="text-sm font-semibold text-slate-900 truncate" title={artist.name}>
                         {artist.name}
                       </h3>
                       {artist.stageName && (
@@ -455,7 +455,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">{selectedRiderArtist.name}</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">{selectedRiderArtist.name}</h3>
                   <p className="text-xs text-purple-600 font-medium">Stage & Hospitality Rider</p>
                 </div>
               </div>
@@ -470,7 +470,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
             <div className="space-y-3">
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Vocal Microphone
                 </span>
                 <p className="text-xs font-semibold text-slate-800">
@@ -479,7 +479,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               </div>
 
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                   In-Ear Monitoring (IEM)
                 </span>
                 <p className="text-xs font-semibold text-slate-800">
@@ -488,7 +488,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               </div>
 
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Hospitality & Greenroom Catering
                 </span>
                 <p className="text-xs text-slate-700 leading-relaxed">
@@ -497,7 +497,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               </div>
 
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Management Contact
                 </span>
                 <div className="text-xs text-slate-700 space-y-0.5">

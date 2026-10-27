@@ -94,7 +94,7 @@ export const AttendeeManifestView: React.FC<AttendeeManifestViewProps> = ({
       key: 'ticketCode',
       header: 'Ticket Code',
       render: (item) => (
-        <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+        <span className="font-mono text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
           {item.ticketCode}
         </span>
       )

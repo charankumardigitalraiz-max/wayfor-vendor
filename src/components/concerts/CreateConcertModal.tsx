@@ -291,7 +291,7 @@ export const CreateConcertModal: React.FC<CreateConcertModalProps> = ({
         <div className="pt-2 border-t border-slate-200 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-bold text-slate-900">Ticket Tiers & Pricing Configuration</h4>
+              <h4 className="font-semibold text-slate-900">Ticket Tiers & Pricing Configuration</h4>
               <p className="text-[11px] text-slate-400">Define ticket categories, seat allocations, and INR prices.</p>
             </div>
             <button

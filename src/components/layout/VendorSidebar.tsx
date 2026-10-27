@@ -24,6 +24,7 @@ interface VendorSidebarProps {
   activeConcertsCount: number;
   totalAttendeesCount: number;
   artistsCount?: number;
+  currentVendor?: any;
 }
 
 export const VendorSidebar: React.FC<VendorSidebarProps> = ({
@@ -31,8 +32,10 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
   onTabChange,
   activeConcertsCount,
   totalAttendeesCount,
-  artistsCount
+  artistsCount,
+  currentVendor
 }) => {
+  const activeProfile = currentVendor || mockVendorProfile;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -62,13 +65,13 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
       icon: Mic2,
       badge: artistsCount
     },
-    {
-      id: 'gate-scanner' as NavigationTab,
-      label: 'Live Gate Scanner',
-      path: '/gate-scanner',
-      icon: Scan,
-      isLiveBadge: false
-    },
+    // {
+    //   id: 'gate-scanner' as NavigationTab,
+    //   label: 'Live Gate Scanner',
+    //   path: '/gate-scanner',
+    //   icon: Scan,
+    //   isLiveBadge: false
+    // },
     {
       id: 'attendees' as NavigationTab,
       label: 'Attendee Manifest',
@@ -108,10 +111,10 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-base font-bold tracking-tight text-slate-900">
+              <span className="text-base font-semibold tracking-tight text-slate-900">
                 DigitalRaiz
               </span>
-              {/* <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
+              {/* <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700 border border-purple-200">
                 VENDOR
               </span> */}
             </div>
@@ -164,12 +167,12 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                 </span>
               )}
 
-              {item.isLiveBadge && (
-                <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200/80">
+              {/* {item.isLiveBadge && (
+                <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200/80">
                   <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
                   Live
                 </span>
-              )}
+              )} */}
             </button>
           );
         })}
@@ -199,19 +202,19 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
         <div className="flex items-center justify-between p-2 rounded-xl border border-slate-200/70 bg-white">
           <div className="flex items-center gap-2.5 min-w-0">
             <img
-              src={mockVendorProfile.avatar}
-              alt={mockVendorProfile.name}
+              src={activeProfile.avatar}
+              alt={activeProfile.name}
               className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shrink-0"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1">
                 <span className="text-xs font-semibold text-slate-900 truncate">
-                  {mockVendorProfile.companyName.split(' ')[0]} Live
+                  {activeProfile.companyName?.split(' ')[0] || 'Studio'} Live
                 </span>
                 <ShieldCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />
               </div>
               <p className="text-[10px] text-slate-400 truncate">
-                GST: {mockVendorProfile.gstNumber}
+                GST: {activeProfile.gstNumber || 'Verified Promoter'}
               </p>
             </div>
           </div>

@@ -56,6 +56,19 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
             className="rounded-lg border border-slate-200/90 bg-white p-4.5 sm:p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between gap-4"
           >
             <div>
+              {venue.image && (
+                <div className="h-32 -mx-4.5 -mt-4.5 sm:-mx-5 sm:-mt-5 mb-3.5 rounded-t-lg overflow-hidden border-b border-slate-100 relative group">
+                  <img
+                    src={venue.image}
+                    alt={venue.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded-md bg-slate-900/75 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-0.5">
+                    {venue.type}
+                  </span>
+                </div>
+              )}
+
               {/* Header: Venue Icon, Name, City/Type & Status */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
@@ -84,7 +97,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                   <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">
                     Capacity
                   </span>
-                  <span className="text-xs font-bold text-slate-900 mt-0.5 block">
+                  <span className="text-xs font-semibold text-slate-900 mt-0.5 block">
                     {venue.capacity.toLocaleString()} seats
                   </span>
                 </div>

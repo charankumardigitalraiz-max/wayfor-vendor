@@ -44,7 +44,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
         </div>
 
         <div className="absolute bottom-3 left-3 right-3 text-white">
-          <h3 className="text-sm font-bold tracking-tight truncate drop-shadow-xs">
+          <h3 className="text-sm font-semibold tracking-tight truncate drop-shadow-xs">
             {concert.title}
           </h3>
           <p className="text-xs text-purple-200 font-medium truncate">
@@ -102,7 +102,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
               <>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
                   <span>Capacity Allocation</span>
-                  <span className={`${color.text} font-bold`}>
+                  <span className={`${color.text} font-semibold`}>
                     {soldPercent}% ({concert.ticketsSold.toLocaleString()} / {concert.totalCapacity.toLocaleString()})
                   </span>
                 </div>
@@ -118,7 +118,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
           })()}
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-bold text-slate-900">
+            <span className="text-xs font-semibold text-slate-900">
               ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
             </span>
 

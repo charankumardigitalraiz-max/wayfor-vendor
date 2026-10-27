@@ -688,9 +688,8 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                                 key={a.id}
                                 type="button"
                                 onClick={() => handleSelectArtist(a)}
-                                className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors cursor-pointer ${
-                                  isSelected ? 'bg-purple-50/80 text-purple-900' : 'hover:bg-slate-50 text-slate-800'
-                                }`}
+                                className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors cursor-pointer ${isSelected ? 'bg-purple-50/80 text-purple-900' : 'hover:bg-slate-50 text-slate-800'
+                                  }`}
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                   <div className="h-8 w-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
@@ -698,7 +697,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                                   </div>
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-xs font-bold text-slate-900 truncate">{a.name}</span>
+                                      <span className="text-xs font-semibold text-slate-900 truncate">{a.name}</span>
                                       {a.verified && <CheckCircle2 className="h-3 w-3 text-purple-600 shrink-0" />}
                                     </div>
                                     <p className="text-[10px] text-slate-500 truncate">
@@ -732,7 +731,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                             setIsArtistDropdownOpen(false);
                             setIsCreateArtistOpen(true);
                           }}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 hover:text-purple-700 hover:underline cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 hover:text-purple-700 hover:underline cursor-pointer"
                         >
                           <Plus className="h-3 w-3 stroke-[2.5]" />
                           <span>Register New Artist</span>
@@ -906,7 +905,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                               <span>{g}</span>
                             </span>
                             {isSelected && (
-                              <span className="text-[10px] font-bold text-purple-600 bg-purple-100/60 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] font-semibold text-purple-600 bg-purple-100/60 px-1.5 py-0.2 rounded">
                                 Selected
                               </span>
                             )}
@@ -1141,7 +1140,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                               <span>{lang}</span>
                             </span>
                             {isSelected && (
-                              <span className="text-[10px] font-bold text-blue-600 bg-blue-100/60 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] font-semibold text-blue-600 bg-blue-100/60 px-1.5 py-0.2 rounded">
                                 Selected
                               </span>
                             )}
@@ -1253,7 +1252,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3 space-y-1">
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">City & Territory</span>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <div className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5 text-purple-600 shrink-0" />
                     <span>{city}, {country}</span>
                   </div>
@@ -1261,7 +1260,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
 
                 <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3 space-y-1">
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Arena Max Capacity</span>
-                  <div className="text-xs font-bold text-purple-700 flex items-center gap-1.5">
+                  <div className="text-xs font-semibold text-purple-700 flex items-center gap-1.5">
                     <Building className="h-3.5 w-3.5 text-purple-600 shrink-0" />
                     <span>{totalCapacity.toLocaleString()} Attendees</span>
                   </div>
@@ -1304,11 +1303,11 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
             {/* <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="text-xs text-slate-600">
                 <span className="font-semibold text-slate-900">Total Quota Allocated: </span>
-                <span className="font-bold text-purple-700">{totalAllocatedSeats.toLocaleString()}</span> / {totalCapacity.toLocaleString()} arena capacity
+                <span className="font-semibold text-purple-700">{totalAllocatedSeats.toLocaleString()}</span> / {totalCapacity.toLocaleString()} arena capacity
               </div>
               <div className="text-xs text-slate-600">
                 <span className="font-semibold text-slate-900">Estimated Gross Box Office: </span>
-                <span className="font-bold text-emerald-700">₹{(estGrossRevenue / 10000000).toFixed(2)} Cr</span>
+                <span className="font-semibold text-emerald-700">₹{(estGrossRevenue / 10000000).toFixed(2)} Cr</span>
               </div>
             </div> */}
 
@@ -1337,7 +1336,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                     <div className="space-y-1 flex-1 min-w-0">
                       <label className="text-xs font-semibold text-slate-700">Price per Pass (₹)</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₹</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-semibold">₹</span>
                         <input
                           type="number"
                           value={tier.price}
@@ -1445,7 +1444,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                    <span className="absolute bottom-1.5 left-1.5 text-[10px] font-bold text-white leading-tight">
+                    <span className="absolute bottom-1.5 left-1.5 text-[10px] font-semibold text-white leading-tight">
                       {preset.label}
                     </span>
                   </button>
@@ -1564,7 +1563,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                   <p className="text-[11px] text-slate-500">Official teaser, trailer or concert aftermovie</p>
                 </div>
                 {getYouTubeVideoId(videoUrl) && (
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
                     Stream Ready
                   </span>
@@ -1614,7 +1613,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
           {/* 3. Live Customer View Preview Card */}
           {/* <div className="rounded-lg border border-slate-200/90 bg-white p-5 shadow-2xs space-y-3.5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-purple-600" />
                 Live Card Preview
               </span>
@@ -1635,7 +1634,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
 
                 <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
                   {selectedGenres.map((g) => (
-                    <span key={g} className="rounded-md bg-white/95 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-slate-900 shadow-2xs">
+                    <span key={g} className="rounded-md bg-white/95 backdrop-blur-md px-2 py-0.5 text-[10px] font-semibold text-slate-900 shadow-2xs">
                       {g}
                     </span>
                   ))}
@@ -1647,7 +1646,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
      
                 <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
                   {getYouTubeVideoId(videoUrl) && (
-                    <span className="rounded-md bg-rose-600/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-white shadow-2xs flex items-center gap-1">
+                    <span className="rounded-md bg-rose-600/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-semibold text-white shadow-2xs flex items-center gap-1">
                       <Play className="h-2.5 w-2.5 fill-current" />
                       Trailer
                     </span>
@@ -1664,7 +1663,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                   <span className="text-[11px] font-medium text-purple-300 block">
                     {artist || 'Artist Name'}
                   </span>
-                  <h4 className="text-sm font-bold text-white leading-snug line-clamp-1">
+                  <h4 className="text-sm font-semibold text-white leading-snug line-clamp-1">
                     {title || 'Tour Stop Headline'}
                   </h4>
                 </div>
@@ -1725,7 +1724,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-md text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-sm shadow-purple-200 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-sm shadow-purple-200 transition-all cursor-pointer"
           >
             <Check className="h-4 w-4" />
             <span>Publish Tour Stop Live</span>

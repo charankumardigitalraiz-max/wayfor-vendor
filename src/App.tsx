@@ -28,11 +28,19 @@ import { AttendeeManifestView } from './components/manifest/AttendeeManifestView
 import { VenuesView } from './components/venues/VenuesView';
 import { PayoutsView } from './components/payouts/PayoutsView';
 import { VendorSettingsView } from './components/settings/VendorSettingsView';
+import { VendorLogin, VendorRegister } from './components/auth';
+import { vendorAuthService } from './services/vendorAuthService';
+import type { VendorUser } from './types/auth';
 import { Toast, type ToastMessage } from './components/common/Toast';
 
 export function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Authentication state
+  const [currentVendor, setCurrentVendor] = useState<VendorUser | null>(() => {
+    return vendorAuthService.getCurrentVendor();
+  });
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [concerts, setConcerts] = useState<ConcertEvent[]>([]);
@@ -42,6 +50,29 @@ export function AppContent() {
   const [payouts, setPayouts] = useState<PayoutTransaction[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Listen to cross-component auth state changes
+  useEffect(() => {
+    const handleAuthChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ user?: VendorUser | null }>;
+      setCurrentVendor(customEvent.detail?.user || null);
+    };
+    window.addEventListener('vendor:auth-changed', handleAuthChange);
+    return () => window.removeEventListener('vendor:auth-changed', handleAuthChange);
+  }, []);
+
+  const handleLogin = (user: VendorUser) => {
+    setCurrentVendor(user);
+    showToast(`Welcome back, ${user.name}!`);
+    navigate('/overview', { replace: true });
+  };
+
+  const handleLogout = () => {
+    vendorAuthService.logout();
+    setCurrentVendor(null);
+    showToast('Signed out of promoter console safely.', 'info');
+    navigate('/login', { replace: true });
+  };
 
   // Initialize data from service
   const loadData = async () => {
@@ -160,6 +191,25 @@ export function AppContent() {
 
   const activeConcertsCount = concerts.filter((c) => c.status === 'active').length;
 
+  if (!currentVendor) {
+    return (
+      <div className="h-screen max-h-screen overflow-hidden bg-white font-sans selection:bg-purple-100 selection:text-purple-800">
+        <Routes>
+          <Route
+            path="/login"
+            element={<VendorLogin onLogin={handleLogin} onShowToast={showToast} />}
+          />
+          <Route
+            path="/register"
+            element={<VendorRegister onRegister={handleLogin} onShowToast={showToast} />}
+          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <Toast toasts={toasts} onDismiss={handleDismissToast} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-slate-800 font-sans selection:bg-purple-100 selection:text-purple-800">
       {/* Sidebar */}
@@ -169,6 +219,7 @@ export function AppContent() {
         activeConcertsCount={activeConcertsCount}
         totalAttendeesCount={attendees.length}
         artistsCount={artists.length}
+        currentVendor={currentVendor}
       />
 
       {/* Main Container */}
@@ -178,11 +229,15 @@ export function AppContent() {
           onOpenCreateConcert={() => navigate('/concerts/create')}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          currentVendor={currentVendor}
+          onLogout={handleLogout}
         />
 
         <main className="flex-1 p-5 sm:p-7 max-w-7xl w-full mx-auto">
           <Routes>
             <Route path="/" element={<Navigate to="/overview" replace />} />
+            <Route path="/login" element={<Navigate to="/overview" replace />} />
+            <Route path="/register" element={<Navigate to="/overview" replace />} />
             <Route
               path="/overview"
               element={

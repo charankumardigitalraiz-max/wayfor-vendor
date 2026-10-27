@@ -173,7 +173,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
             className="h-10 w-10 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
           />
           <div className="min-w-0">
-            <span className="font-bold text-slate-900 block truncate">
+            <span className="font-semibold text-slate-900 block truncate">
               {concert.title}
             </span>
             <span className="text-[11px] text-slate-500 font-normal">
@@ -213,21 +213,21 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
       header: 'Capacity Sold',
       render: (concert) => {
         const pct = Math.min(100, Math.round((concert.ticketsSold / concert.totalCapacity) * 100));
-        
+
         // Dynamic colors based on sales volume / percentage sold
-        const color = 
+        const color =
           pct >= 90
             ? { text: 'text-emerald-700', bar: 'bg-emerald-500' }
             : pct >= 65
-            ? { text: 'text-blue-700', bar: 'bg-blue-600' }
-            : pct >= 40
-            ? { text: 'text-amber-700', bar: 'bg-amber-500' }
-            : { text: 'text-rose-600', bar: 'bg-rose-500' };
+              ? { text: 'text-blue-700', bar: 'bg-blue-600' }
+              : pct >= 40
+                ? { text: 'text-amber-700', bar: 'bg-amber-500' }
+                : { text: 'text-rose-600', bar: 'bg-rose-500' };
 
         return (
           <div className="space-y-1 w-36">
             <div className="flex justify-between text-[11px]">
-              <span className={`font-bold ${color.text}`}>{pct}%</span>
+              <span className={`font-semibold ${color.text}`}>{pct}%</span>
               <span className="text-slate-400">
                 {concert.ticketsSold.toLocaleString()} / {concert.totalCapacity.toLocaleString()}
               </span>
@@ -247,7 +247,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
       header: 'Price Range',
       width: 'min-w-[145px]',
       render: (concert) => (
-        <span className="font-bold min-w-[115px] text-slate-900">
+        <span className="font-semibold min-w-[115px] text-slate-900">
           ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
         </span>
       )

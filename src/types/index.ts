@@ -10,6 +10,8 @@ export type NavigationTab =
 
 export type StatusType = 'active' | 'upcoming' | 'completed' | 'cancelled' | 'draft' | 'pending' | 'verified';
 
+export * from './auth';
+
 export interface TicketTier {
   id: string;
   name: string;
@@ -102,6 +104,7 @@ export interface Venue {
   type: 'Stadium' | 'Arena' | 'Open Grounds' | 'Club' | 'Auditorium';
   contactPerson: string;
   status: 'active' | 'maintenance';
+  image?: string;
 }
 
 export interface PayoutTransaction {

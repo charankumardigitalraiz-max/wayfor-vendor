@@ -42,7 +42,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
     <div className="space-y-5 max-w-4xl">
       {/* Top Banner */}
       <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xs">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">
           Organizer Profile & Studio Settings
         </h1>
         <p className="text-xs text-slate-500 mt-0.5">
@@ -55,7 +55,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-2xs space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <Globe2 className="h-4 w-4 text-purple-600" />
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-semibold text-slate-900">
               Tour Promoter Agency Details
             </h3>
           </div>
@@ -68,8 +68,8 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-900">{companyName}</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span className="text-sm font-semibold text-slate-900">{companyName}</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                   <ShieldCheck className="h-3 w-3" /> Verified Promoter
                 </span>
               </div>
@@ -136,7 +136,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-2xs space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <Building className="h-4 w-4 text-purple-600" />
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-semibold text-slate-900">
               Corporate Bank Settlement Account
             </h3>
           </div>
@@ -178,7 +178,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         <div className="rounded-xl border border-slate-200/90 bg-white p-6 shadow-2xs space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <Key className="h-4 w-4 text-purple-600" />
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-semibold text-slate-900">
               Gate Scanner Device Tokens
             </h3>
           </div>
@@ -208,7 +208,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         <div className="flex items-center justify-end pt-2">
           <button
             type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-md text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-200 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-200 transition-all cursor-pointer"
           >
             <Save className="h-4 w-4" />
             <span>Save Studio Settings</span>
