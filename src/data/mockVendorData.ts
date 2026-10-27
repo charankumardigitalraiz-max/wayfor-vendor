@@ -20,6 +20,7 @@ export const mockVendorProfile: VendorProfile = {
   bankAccountNumber: '50200084918231',
   ifscCode: 'HDFC0000240',
   isVerified: true,
+  isRegistered: true,
   rating: 4.9,
   totalConcertsHosted: 28,
   totalTicketsSold: 184500

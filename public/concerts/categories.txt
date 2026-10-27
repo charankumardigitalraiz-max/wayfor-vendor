@@ -1,0 +1,143 @@
+================================================================================
+WAYFER API CURL COMMANDS - VENDOR MUSIC CATEGORIES LIST
+Base URL: http://localhost:5000/api/vendor
+================================================================================
+
+All endpoints require a Bearer token of an authenticated vendor:
+Header:
+Authorization: Bearer YOUR_VENDOR_TOKEN
+
+Vendors use these read-only category endpoints to populate concert music category/genre
+dropdowns, pickers, and filter pills during concert creation and editing.
+
+================================================================================
+1. LIST ACTIVE MUSIC CATEGORIES
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/concerts/categories" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+# Query parameters supported:
+# - search: Filter by keyword (e.g. ?search=rock)
+# - limit: Limit count (default 100)
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/categories" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+Response (200 OK):
+{
+  "status": "success",
+  "message": "Active music categories retrieved successfully.",
+  "data": [
+    {
+      "id": "1",
+      "name": "EDM / Electronic",
+      "slug": "edm-electronic",
+      "description": "Electronic Dance Music, House, Techno, Trance & Dubstep",
+      "image": null,
+      "icon": "zap",
+      "color": "#8b5cf6",
+      "displayOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "2",
+      "name": "Rock / Alternative",
+      "slug": "rock-alternative",
+      "description": "Classic Rock, Indie, Alternative, Punk & Metal",
+      "image": null,
+      "icon": "disc",
+      "color": "#ef4444",
+      "displayOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "3",
+      "name": "Hip-Hop / Rap",
+      "slug": "hip-hop-rap",
+      "description": "Hip-Hop, Rap, Trap, Lo-fi & Urban Beats",
+      "image": null,
+      "icon": "radio",
+      "color": "#f59e0b",
+      "displayOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "4",
+      "name": "Pop & Commercial",
+      "slug": "pop-commercial",
+      "description": "Mainstream Pop, Chart Toppers, Dance Pop",
+      "image": null,
+      "icon": "music",
+      "color": "#ec4899",
+      "displayOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "5",
+      "name": "Bollywood & Sufi",
+      "slug": "bollywood-sufi",
+      "description": "Bollywood Chartbusters, Sufi, Hindi Retro & Fusion",
+      "image": null,
+      "icon": "sparkles",
+      "color": "#10b981",
+      "displayOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "6",
+      "name": "Jazz & Blues",
+      "slug": "jazz-blues",
+      "description": "Smooth Jazz, Soul, Funk, Rhythm & Blues",
+      "image": null,
+      "icon": "coffee",
+      "color": "#3b82f6",
+      "displayOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "7",
+      "name": "Classical & Acoustic",
+      "slug": "classical-acoustic",
+      "description": "Indian Classical, Western Symphonies, Unplugged & Acoustic",
+      "image": null,
+      "icon": "volume-2",
+      "color": "#06b6d4",
+      "displayOrder": 7,
+      "isActive": true
+    }
+  ],
+  "total": 7
+}
+
+================================================================================
+2. GET ACTIVE MUSIC CATEGORY BY ID OR SLUG
+--------------------------------------------------------------------------------
+# By numeric ID:
+curl -X GET "http://localhost:5000/api/vendor/concerts/categories/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+# By slug:
+curl -X GET "http://localhost:5000/api/vendor/concerts/categories/edm-electronic" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/categories/1" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+Response (200 OK):
+{
+  "status": "success",
+  "data": {
+    "id": "1",
+    "name": "EDM / Electronic",
+    "slug": "edm-electronic",
+    "description": "Electronic Dance Music, House, Techno, Trance & Dubstep",
+    "image": null,
+    "icon": "zap",
+    "color": "#8b5cf6",
+    "displayOrder": 1,
+    "isActive": true,
+    "metadata": null,
+    "createdAt": "2026-10-27T06:28:40.000Z",
+    "updatedAt": "2026-10-27T06:28:40.000Z"
+  }
+}

@@ -1,0 +1,184 @@
+================================================================================
+WAYFER API CURL COMMANDS - VENDOR CONCERT MANAGEMENT
+Base URL: http://localhost:5000/api/vendor
+================================================================================
+
+All endpoints require a Bearer token of an authenticated vendor:
+Header:
+Authorization: Bearer YOUR_VENDOR_TOKEN
+
+Fields synced with CreateConcertScreen.tsx:
+- title: string *required*
+- artist: string *required*
+- supportingActs: string[] or comma-separated string (e.g. "Justin Mylo, Brooks")
+- tourName: string (e.g. "Genesys Global Arena Run")
+- genre: string (e.g. "EDM")
+- genres: string[] (e.g. ["EDM", "Techno", "House"])
+- venueName: string *required*
+- venueAddress: string
+- city: string *required*
+- country: string (default: "India")
+- totalCapacity: number
+- eventDate / date: string *required* (e.g. "2026-12-20")
+- doorsOpenTime / doorsOpen: string (e.g. "17:00")
+- showStartTime / showTime: string (e.g. "19:30")
+- durationHours: string (e.g. "3.5 Hours")
+- languages: string[] (e.g. ["English", "Hindi"])
+- bannerImage / image: multipart file upload or image URL string
+- gallery: string[] (image URLs)
+- videoUrl: string (YouTube promo link)
+- organizer: string (e.g. "Zenith Live Touring & Entertainment")
+- ageRestriction: string (e.g. "16+ (Valid ID Required)")
+- soundSystem: string (e.g. "L-Acoustics K1 Stadium Array")
+- ticketTiers: Array of { id, name, price, seats/total, available, description, perks }
+- currency: string (default "INR")
+- status: 'active' | 'upcoming' | 'draft' | 'completed' | 'cancelled'
+
+================================================================================
+1. PUBLISH NEW CONCERT TOUR STOP (From CreateConcertScreen UI)
+--------------------------------------------------------------------------------
+# Option A: JSON Payload:
+curl -X POST "http://localhost:5000/api/vendor/concerts" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Echoes in Eternity World Tour",
+    "artist": "Martin Garrix",
+    "supportingActs": ["Justin Mylo", "Brooks", "Julian Jordan"],
+    "tourName": "Echoes in Eternity Global Arena Run",
+    "genre": "EDM",
+    "genres": ["EDM", "House", "Electro"],
+    "venueName": "Narendra Modi Stadium",
+    "venueAddress": "Stadium Rd, Motera, Ahmedabad, Gujarat 380005",
+    "city": "Ahmedabad",
+    "country": "India",
+    "totalCapacity": 25000,
+    "eventDate": "2026-12-20",
+    "doorsOpenTime": "17:00",
+    "showStartTime": "19:30",
+    "durationHours": "3.5 Hours",
+    "languages": ["English", "Hindi"],
+    "bannerImage": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=900&auto=format&fit=crop&q=80"
+    ],
+    "videoUrl": "https://www.youtube.com/watch?v=kOCkne-Bku4",
+    "organizer": "Zenith Live Touring & Entertainment",
+    "ageRestriction": "16+ (Valid ID Required)",
+    "soundSystem": "L-Acoustics K1 Stadium Array",
+    "ticketTiers": [
+      {
+        "id": "tier-1",
+        "name": "General Admission Floor",
+        "price": 1999,
+        "total": 15000,
+        "available": 15000,
+        "description": "Open lawn standing area with dual LED screen sightlines",
+        "perks": ["Standard Arena Entry", "F&B Zone Access"]
+      },
+      {
+        "id": "tier-2",
+        "name": "VIP Front Stage Pit",
+        "price": 4999,
+        "total": 8000,
+        "available": 8000,
+        "description": "Dedicated front row barricade enclosure closest to stage",
+        "perks": ["Express Gate 2 Check-in", "Dedicated Bar Counter"]
+      },
+      {
+        "id": "tier-3",
+        "name": "VVIP Hospitality Deck",
+        "price": 12999,
+        "total": 2000,
+        "available": 2000,
+        "description": "Elevated AC lounge terrace with panoramic soundstage view",
+        "perks": ["Complimentary Gourmet Buffet", "Valet Parking Pass"]
+      }
+    ],
+    "currency": "INR",
+    "status": "active"
+  }'
+
+# Option B: Multipart/Form-Data with direct bannerImage file upload:
+curl -X POST "http://localhost:5000/api/vendor/concerts" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -F "title=Echoes in Eternity World Tour" \
+  -F "artist=Martin Garrix" \
+  -F "supportingActs=Justin Mylo, Brooks, Julian Jordan" \
+  -F "tourName=Echoes in Eternity Global Arena Run" \
+  -F "genre=EDM" \
+  -F "venueName=Narendra Modi Stadium" \
+  -F "city=Ahmedabad" \
+  -F "totalCapacity=25000" \
+  -F "eventDate=2026-12-20" \
+  -F "doorsOpenTime=17:00" \
+  -F "showStartTime=19:30" \
+  -F "bannerImage=@/path/to/concert_banner.jpg" \
+  -F 'ticketTiers=[{"name":"General Admission Floor","price":1999,"total":15000},{"name":"VIP Front Stage Pit","price":4999,"total":8000}]'
+
+PowerShell:
+$body = @{
+  title = "Echoes in Eternity World Tour"
+  artist = "Martin Garrix"
+  supportingActs = @("Justin Mylo", "Brooks", "Julian Jordan")
+  tourName = "Echoes in Eternity Global Arena Run"
+  genre = "EDM"
+  genres = @("EDM", "House")
+  venueName = "Narendra Modi Stadium"
+  venueAddress = "Stadium Rd, Motera, Ahmedabad, Gujarat 380005"
+  city = "Ahmedabad"
+  country = "India"
+  totalCapacity = 25000
+  eventDate = "2026-12-20"
+  doorsOpenTime = "17:00"
+  showStartTime = "19:30"
+  durationHours = "3.5 Hours"
+  languages = @("English", "Hindi")
+  bannerImage = "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop&q=80"
+  videoUrl = "https://www.youtube.com/watch?v=kOCkne-Bku4"
+  ticketTiers = @(
+    @{ id = "tier-1"; name = "General Admission Floor"; price = 1999; total = 15000; available = 15000 },
+    @{ id = "tier-2"; name = "VIP Front Stage Pit"; price = 4999; total = 8000; available = 8000 }
+  )
+  currency = "INR"
+  status = "active"
+} | ConvertTo-Json -Depth 6
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts" -Method Post -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+================================================================================
+2. GET VENDOR CONCERTS (List with filters & stats)
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/concerts?page=1&limit=50&search=Martin" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts?page=1&limit=50" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+================================================================================
+3. GET CONCERT DETAILS BY ID
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/concerts/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/1" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+================================================================================
+4. UPDATE CONCERT
+--------------------------------------------------------------------------------
+curl -X PATCH "http://localhost:5000/api/vendor/concerts/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalCapacity": 30000,
+    "showStartTime": "20:00",
+    "durationHours": "4.0 Hours"
+  }'
+
+================================================================================
+5. DELETE CONCERT
+--------------------------------------------------------------------------------
+curl -X DELETE "http://localhost:5000/api/vendor/concerts/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"

@@ -130,11 +130,16 @@ export interface VendorProfile {
   email: string;
   phone: string;
   avatar: string;
+  serviceModule?: string;
+  serviceModules?: string[];
   gstNumber: string;
+  panNumber?: string;
+  panPhoto?: string;
   bankName: string;
   bankAccountNumber: string;
   ifscCode: string;
   isVerified: boolean;
+  isRegistered?: boolean;
   rating: number;
   totalConcertsHosted: number;
   totalTicketsSold: number;

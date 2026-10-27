@@ -19,7 +19,7 @@ export const SERVER_BASE_URL: string = (
   (rawApiUrl ? rawApiUrl.replace(/\/api\/?$/, '') : '') ||
   (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
     ? window.location.origin
-    : 'http://localhost:5000')
+    : 'http://192.168.0.161:5001')
 ).replace(/\/$/, '');
 
 /**

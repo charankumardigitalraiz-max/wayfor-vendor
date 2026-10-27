@@ -5,13 +5,12 @@ import {
   mockGateScanLogs,
   mockPayouts,
   mockVenues,
-  mockArtists
 } from '../data/mockVendorData';
+import { vendorArtistService } from './vendorArtistService';
 
 const CONCERTS_STORAGE_KEY = 'digitalraiz_vendor_concerts';
 const ATTENDEES_STORAGE_KEY = 'digitalraiz_vendor_attendees';
 const SCAN_LOGS_STORAGE_KEY = 'digitalraiz_vendor_scan_logs';
-const ARTISTS_STORAGE_KEY = 'digitalraiz_vendor_artists';
 
 class VendorConcertService {
   private getStoredConcerts(): ConcertEvent[] {
@@ -213,51 +212,33 @@ class VendorConcertService {
     return mockPayouts;
   }
 
-  // Artists Management
-  getArtists(): Artist[] {
-    const raw = localStorage.getItem(ARTISTS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(ARTISTS_STORAGE_KEY, JSON.stringify(mockArtists));
-      return mockArtists;
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return mockArtists;
-    }
+  // Artists Management (delegated to vendorArtistService)
+  async getArtists(): Promise<Artist[]> {
+    return vendorArtistService.getArtists();
   }
 
-  saveArtists(artists: Artist[]) {
-    localStorage.setItem(ARTISTS_STORAGE_KEY, JSON.stringify(artists));
+  getStoredArtists(): Artist[] {
+    return vendorArtistService.getStoredArtists();
   }
 
-  async createArtist(artist: Omit<Artist, 'id'>): Promise<Artist> {
-    const artists = this.getArtists();
-    const newArtist: Artist = {
-      ...artist,
-      id: `art-${Date.now().toString().slice(-4)}`
-    };
-    const updated = [newArtist, ...artists];
-    this.saveArtists(updated);
-    return newArtist;
+  saveArtists(artists: Artist[]): void {
+    vendorArtistService.saveArtists(artists);
   }
 
-  async updateArtist(id: string, updates: Partial<Artist>): Promise<Artist> {
-    const artists = this.getArtists();
-    const index = artists.findIndex(a => a.id === id);
-    if (index === -1) throw new Error('Artist not found');
+  async createArtist(artist: Omit<Artist, 'id'>, avatarFile?: File | null): Promise<Artist> {
+    return vendorArtistService.createArtist(artist, avatarFile);
+  }
 
-    const updatedArtist = { ...artists[index], ...updates };
-    artists[index] = updatedArtist;
-    this.saveArtists(artists);
-    return updatedArtist;
+  async updateArtist(
+    id: string,
+    updates: Partial<Artist>,
+    avatarFile?: File | null
+  ): Promise<Artist> {
+    return vendorArtistService.updateArtist(id, updates, avatarFile);
   }
 
   async deleteArtist(id: string): Promise<boolean> {
-    const artists = this.getArtists();
-    const filtered = artists.filter(a => a.id !== id);
-    this.saveArtists(filtered);
-    return true;
+    return vendorArtistService.deleteArtist(id);
   }
 }
 

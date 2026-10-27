@@ -1,0 +1,150 @@
+================================================================================
+WAYFER API CURL COMMANDS - VENDOR VENUES & STAGES MANAGEMENT
+Base URL: http://localhost:5000/api/vendor
+================================================================================
+
+All endpoints require a Bearer token of an authenticated vendor:
+Header:
+Authorization: Bearer YOUR_VENDOR_TOKEN
+
+Fields aligned with Vendor AddVenueModal:
+- name: string (3-100 characters) *required*
+- city: string *required*
+- capacity: number (min 100, max 300000) *required*
+- address: string (min 5 characters) *required*
+- type: 'Stadium' | 'Arena' | 'Open Grounds' | 'Club' | 'Auditorium' (default: "Stadium")
+- contactPerson: string / 10-digit phone number (e.g. "9876543210") *required*
+- status: 'active' | 'maintenance' (default: "active")
+
+================================================================================
+1. REGISTER NEW PARTNER VENUE (AddVenueModal)
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/venues" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Narendra Modi Stadium",
+    "city": "Ahmedabad",
+    "capacity": 132000,
+    "address": "Stadium Rd, Motera, Ahmedabad, Gujarat 380005",
+    "type": "Stadium",
+    "contactPerson": "9876543210",
+    "status": "active"
+  }'
+
+PowerShell:
+$body = @{
+  name = "Narendra Modi Stadium"
+  city = "Ahmedabad"
+  capacity = 132000
+  address = "Stadium Rd, Motera, Ahmedabad, Gujarat 380005"
+  type = "Stadium"
+  contactPerson = "9876543210"
+  status = "active"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/venues" -Method Post -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+Response (201 Created):
+{
+  "status": "success",
+  "message": "Partner venue \"Narendra Modi Stadium\" registered successfully!",
+  "data": {
+    "venue": {
+      "id": "1",
+      "vendorId": "1",
+      "name": "Narendra Modi Stadium",
+      "city": "Ahmedabad",
+      "capacity": 132000,
+      "address": "Stadium Rd, Motera, Ahmedabad, Gujarat 380005",
+      "type": "Stadium",
+      "contactPerson": "9876543210",
+      "phone": "9876543210",
+      "email": null,
+      "status": "active",
+      "metadata": null,
+      "createdAt": "2026-10-27T07:05:00.000Z",
+      "updatedAt": "2026-10-27T07:05:00.000Z"
+    }
+  }
+}
+
+================================================================================
+2. GET ALL VENUES & STAGES
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/venues?page=1&limit=20" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+# Query parameters supported:
+# - search: Filter by keyword (name, city, address, contactPerson)
+# - city: Filter by city (e.g. ?city=Ahmedabad)
+# - type: Filter by venue type (e.g. ?type=Stadium)
+# - status: 'active' | 'maintenance'
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/venues?page=1&limit=20" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+Response (200 OK):
+{
+  "status": "success",
+  "message": "Venues retrieved successfully.",
+  "data": {
+    "venues": [
+      {
+        "id": "1",
+        "name": "Narendra Modi Stadium",
+        "city": "Ahmedabad",
+        "capacity": 132000,
+        "address": "Stadium Rd, Motera, Ahmedabad, Gujarat 380005",
+        "type": "Stadium",
+        "contactPerson": "9876543210",
+        "phone": "9876543210",
+        "email": null,
+        "status": "active"
+      }
+    ],
+    "pagination": {
+      "total": 1,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 1
+    }
+  }
+}
+
+================================================================================
+3. GET VENUE DETAILS BY ID
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/venues/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/venues/1" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+================================================================================
+4. UPDATE VENUE SPECIFICATIONS
+--------------------------------------------------------------------------------
+curl -X PATCH "http://localhost:5000/api/vendor/venues/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 135000,
+    "contactPerson": "9825011920"
+  }'
+
+PowerShell:
+$body = @{
+  capacity = 135000
+  contactPerson = "9825011920"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/venues/1" -Method Patch -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+================================================================================
+5. DELETE VENUE
+--------------------------------------------------------------------------------
+curl -X DELETE "http://localhost:5000/api/vendor/venues/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/venues/1" -Method Delete -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}

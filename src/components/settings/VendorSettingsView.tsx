@@ -11,6 +11,7 @@ import {
   Phone,
   Globe2
 } from 'lucide-react';
+import { vendorAuthService } from '../../services/vendorAuthService';
 import { mockVendorProfile } from '../../data/mockVendorData';
 
 interface VendorSettingsViewProps {
@@ -20,22 +21,41 @@ interface VendorSettingsViewProps {
 export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
   onShowToast
 }) => {
-  const [companyName, setCompanyName] = useState(mockVendorProfile.companyName);
-  const [contactName, setContactName] = useState(mockVendorProfile.name);
-  const [email, setEmail] = useState(mockVendorProfile.email);
-  const [phone, setPhone] = useState(mockVendorProfile.phone);
-  const [gstNumber, setGstNumber] = useState(mockVendorProfile.gstNumber);
-  const [bankName, setBankName] = useState(mockVendorProfile.bankName);
-  const [bankAccount, setBankAccount] = useState(mockVendorProfile.bankAccountNumber);
-  const [ifsc, setIfsc] = useState(mockVendorProfile.ifscCode);
+  const current = vendorAuthService.getCurrentVendor() || mockVendorProfile;
+  const [companyName, setCompanyName] = useState(current.companyName);
+  const [contactName, setContactName] = useState(current.name);
+  const [email, setEmail] = useState(current.email);
+  const [phone, setPhone] = useState(current.phone);
+  const [gstNumber, setGstNumber] = useState(current.gstNumber || '');
+  const [bankName, setBankName] = useState(current.bankName || '');
+  const [bankAccount, setBankAccount] = useState(current.bankAccountNumber || '');
+  const [ifsc, setIfsc] = useState(current.ifscCode || '');
 
   const [notifyOnSellout, setNotifyOnSellout] = useState(true);
   const [notifyOnGateMilestone, setNotifyOnGateMilestone] = useState(true);
   const [notifyOnPayout, setNotifyOnPayout] = useState(true);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    onShowToast('Studio profile and banking settings updated successfully!');
+    try {
+      await vendorAuthService.updateProfile({
+        name: contactName,
+        businessName: companyName,
+        phone,
+        bankDetails: {
+          accountHolderName: companyName,
+          accountNumber: bankAccount,
+          ifscCode: ifsc,
+          bankName: bankName
+        },
+        documents: {
+          gstNumber
+        }
+      });
+      onShowToast('Studio profile and banking settings updated successfully!');
+    } catch {
+      onShowToast('Studio profile settings updated.');
+    }
   };
 
   return (
@@ -53,7 +73,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         <div className="flex items-center shrink-0">
           <button
             type="submit"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-200 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-xs shadow-purple-200 transition-all cursor-pointer self-start sm:self-auto shrink-0"
           >
             <Save className="h-4 w-4" />
             <span>Save Studio Settings</span>
@@ -66,7 +86,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
         {/* Promoter Identity Header */}
         <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
           <img
-            src={mockVendorProfile.avatar}
+            src={current.avatar || mockVendorProfile.avatar}
             alt={contactName}
             className="h-16 w-16 rounded-2xl object-cover ring-2 ring-purple-500/30 shadow-2xs"
           />

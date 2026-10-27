@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -113,14 +113,14 @@ export function AppContent() {
     }
   }, [location.pathname]);
 
-  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const showToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
     const newToast: ToastMessage = {
       id: `toast-${Date.now()}-${Math.random()}`,
       text,
       type
     };
     setToasts((prev) => [...prev, newToast]);
-  };
+  }, []);
 
   const handleDismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));

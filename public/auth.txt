@@ -1,0 +1,325 @@
+================================================================================
+WAYFER API CURL COMMANDS - VENDOR AUTHENTICATION
+Base URL: http://localhost:5000/api/vendor/auth
+================================================================================
+
+================================================================================
+1. VENDOR REGISTER (Self Onboarding)
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Metro Travels",
+    "businessName": "Metro Mobility Solutions Pvt Ltd",
+    "email": "vendor@metromobility.com",
+    "phone": "+919876543210",
+    "password": "Password@123",
+    "address": {
+      "street": "Plot 42, Hitec City",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India",
+      "postalCode": "500081"
+    },
+    "bankDetails": {
+      "accountHolderName": "Metro Mobility Solutions Pvt Ltd",
+      "accountNumber": "987654321012",
+      "ifscCode": "HDFC0001234",
+      "bankName": "HDFC Bank"
+    },
+    "documents": {
+      "panNumber": "ABCDE1234F",
+      "gstNumber": "36ABCDE1234F1Z5"
+    }
+  }'
+
+PowerShell:
+$body = @{
+  name = "Metro Travels"
+  businessName = "Metro Mobility Solutions Pvt Ltd"
+  email = "vendor@metromobility.com"
+  phone = "+919876543210"
+  password = "Password@123"
+  address = @{
+    street = "Plot 42, Hitec City"
+    city = "Hyderabad"
+    state = "Telangana"
+    country = "India"
+    postalCode = "500081"
+  }
+  bankDetails = @{
+    accountHolderName = "Metro Mobility Solutions Pvt Ltd"
+    accountNumber = "987654321012"
+    ifscCode = "HDFC0001234"
+    bankName = "HDFC Bank"
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/register" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (201 Created):
+{
+  "status": "success",
+  "message": "Vendor registered successfully. Your account is pending verification.",
+  "data": {
+    "vendor": {
+      "id": "1",
+      "name": "Metro Travels",
+      "businessName": "Metro Mobility Solutions Pvt Ltd",
+      "email": "vendor@metromobility.com",
+      "phone": "+919876543210",
+      "role": "vendor",
+      "status": "pending",
+      "isVerified": false
+    },
+    "token": "eyJhbGciOi...",
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "4a71...",
+    "expiresIn": "15m"
+  }
+}
+
+================================================================================
+2. VENDOR LOGIN
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "vendor@metromobility.com",
+    "password": "Password@123"
+  }'
+
+# Or login by phone:
+curl -X POST "http://localhost:5000/api/vendor/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone": "+919876543210",
+    "password": "Password@123"
+  }'
+
+PowerShell:
+$body = @{
+  email = "vendor@metromobility.com"
+  password = "Password@123"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/login" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Vendor login successful",
+  "data": {
+    "vendor": {
+      "id": "1",
+      "name": "Metro Travels",
+      "businessName": "Metro Mobility Solutions Pvt Ltd",
+      "email": "vendor@metromobility.com",
+      "phone": "+919876543210",
+      "role": "vendor",
+      "status": "active",
+      "isVerified": true
+    },
+    "token": "eyJhbGciOi...",
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "4a71...",
+    "expiresIn": "15m"
+  }
+}
+
+================================================================================
+3. GET CURRENT VENDOR PROFILE
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/auth/me" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/me" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "data": {
+    "vendor": {
+      "id": "1",
+      "name": "Metro Travels",
+      "businessName": "Metro Mobility Solutions Pvt Ltd",
+      "email": "vendor@metromobility.com",
+      "phone": "+919876543210",
+      "role": "vendor",
+      "address": {
+        "street": "Plot 42, Hitec City",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "country": "India",
+        "postalCode": "500081"
+      },
+      "commissionRate": 10.0,
+      "rating": 4.8,
+      "totalOrders": 120,
+      "totalRevenue": 245000.0,
+      "isVerified": true,
+      "status": "active"
+    }
+  }
+}
+
+================================================================================
+4. UPDATE VENDOR PROFILE
+--------------------------------------------------------------------------------
+curl -X PATCH "http://localhost:5000/api/vendor/auth/profile" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "businessName": "Metro Mobility Global Pvt Ltd",
+    "address": {
+      "street": "Plot 55, Cyber Towers",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India",
+      "postalCode": "500081"
+    }
+  }'
+
+PowerShell:
+$body = @{
+  businessName = "Metro Mobility Global Pvt Ltd"
+  address = @{
+    street = "Plot 55, Cyber Towers"
+    city = "Hyderabad"
+    state = "Telangana"
+    country = "India"
+    postalCode = "500081"
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/profile" -Method Patch -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Vendor profile updated successfully.",
+  "data": {
+    "vendor": {
+      "id": "1",
+      "name": "Metro Travels",
+      "businessName": "Metro Mobility Global Pvt Ltd",
+      "email": "vendor@metromobility.com",
+      "phone": "+919876543210",
+      "isVerified": true,
+      "status": "active"
+    }
+  }
+}
+
+================================================================================
+5. CHANGE PASSWORD
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/change-password" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currentPassword": "Password@123",
+    "newPassword": "NewPassword@123"
+  }'
+
+PowerShell:
+$body = @{
+  currentPassword = "Password@123"
+  newPassword = "NewPassword@123"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/change-password" -Method Post -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Password changed successfully"
+}
+
+================================================================================
+6. FORGOT PASSWORD
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/forgot-password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "vendor@metromobility.com"
+  }'
+
+PowerShell:
+$body = @{ email = "vendor@metromobility.com" } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/forgot-password" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Password reset link and token have been sent to your email address."
+}
+
+================================================================================
+7. RESET PASSWORD
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/reset-password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "YOUR_RESET_TOKEN",
+    "newPassword": "NewPassword@123"
+  }'
+
+PowerShell:
+$body = @{
+  token = "YOUR_RESET_TOKEN"
+  newPassword = "NewPassword@123"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/reset-password" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Password has been reset successfully. You can now login with your new password."
+}
+
+================================================================================
+8. REFRESH ACCESS TOKEN
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/refresh-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
+
+PowerShell:
+$body = @{ refreshToken = "YOUR_REFRESH_TOKEN" } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/refresh-token" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Vendor access token refreshed successfully",
+  "data": {
+    "token": "eyJhbGciOi...",
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "9b12...",
+    "expiresIn": "15m"
+  }
+}
+
+================================================================================
+9. LOGOUT
+--------------------------------------------------------------------------------
+curl -X POST "http://localhost:5000/api/vendor/auth/logout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
+
+PowerShell:
+$body = @{ refreshToken = "YOUR_REFRESH_TOKEN" } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/auth/logout" -Method Post -Headers @{"Content-Type"="application/json"} -Body $body
+
+Sample Response (200 OK):
+{
+  "status": "success",
+  "message": "Vendor logged out successfully"
+}

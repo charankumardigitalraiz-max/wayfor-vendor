@@ -1,0 +1,101 @@
+================================================================================
+WAYFER API CURL COMMANDS - VENDOR ARTIST MANAGEMENT
+Base URL: http://localhost:5000/api/vendor
+================================================================================
+
+All endpoints require a Bearer token of an authenticated vendor:
+Header:
+Authorization: Bearer YOUR_VENDOR_TOKEN
+
+================================================================================
+1. CREATE ARTIST (Fields: name*, email, phone, avatar/image, aboutus)
+--------------------------------------------------------------------------------
+# Option A: Multipart/Form-Data File Upload (name*, email, phone, avatar file, aboutus):
+curl -X POST "http://localhost:5000/api/vendor/concerts/artists" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -F "name=Martin Garrix" \
+  -F "email=contact@martingarrix.com" \
+  -F "phone=+919876543210" \
+  -F "avatar=@/path/to/artist_photo.jpg" \
+  -F "aboutus=Dutch DJ and record producer who was ranked number one DJ in the world."
+
+# Option B: JSON payload with direct image URL:
+curl -X POST "http://localhost:5000/api/vendor/concerts/artists" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Martin Garrix",
+    "email": "contact@martingarrix.com",
+    "phone": "+919876543210",
+    "avatar": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=300",
+    "aboutus": "Dutch DJ and record producer who was ranked number one DJ in the world."
+  }'
+
+PowerShell (Multipart File Upload):
+$form = @{
+  name = "Martin Garrix"
+  email = "contact@martingarrix.com"
+  phone = "+919876543210"
+  avatar = Get-Item -Path "C:\path\to\artist_photo.jpg"
+  aboutus = "Dutch DJ and record producer who was ranked number one DJ in the world."
+}
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists" -Method Post -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"} -Form $form
+
+================================================================================
+2. GET ALL ARTISTS
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/concerts/artists?page=1&limit=20&genre=EDM" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists?page=1&limit=20" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+================================================================================
+3. GET ARTIST BY ID (Includes upcoming concert stops)
+--------------------------------------------------------------------------------
+curl -X GET "http://localhost:5000/api/vendor/concerts/artists/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists/1" -Method Get -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}
+
+================================================================================
+4. UPDATE ARTIST (Supports Multipart/Form-Data File Upload or JSON)
+--------------------------------------------------------------------------------
+# Option A: Update Artist with a new Avatar Image file (Multipart Form-Data):
+curl -X PATCH "http://localhost:5000/api/vendor/concerts/artists/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -F "avatar=@/path/to/new_avatar.jpg" \
+  -F "status=touring" \
+  -F "isFeatured=true"
+
+# Option B: Update Artist with JSON payload (e.g. status, bio, bookingRatePerShow):
+curl -X PATCH "http://localhost:5000/api/vendor/concerts/artists/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "touring",
+    "isFeatured": true,
+    "bookingRatePerShow": 6000000
+  }'
+
+PowerShell (Multipart File Upload for Updating Avatar):
+$form = @{
+  avatar = Get-Item -Path "C:\path\to\new_avatar.jpg"
+  status = "touring"
+  isFeatured = "true"
+}
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists/1" -Method Patch -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"} -Form $form
+
+PowerShell (JSON Update):
+$body = @{ status = "touring"; isFeatured = $true } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists/1" -Method Patch -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"; "Content-Type"="application/json"} -Body $body
+
+================================================================================
+5. DELETE ARTIST
+--------------------------------------------------------------------------------
+curl -X DELETE "http://localhost:5000/api/vendor/concerts/artists/1" \
+  -H "Authorization: Bearer YOUR_VENDOR_TOKEN"
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:5000/api/vendor/concerts/artists/1" -Method Delete -Headers @{"Authorization"="Bearer YOUR_VENDOR_TOKEN"}

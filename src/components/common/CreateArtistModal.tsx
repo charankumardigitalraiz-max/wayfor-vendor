@@ -6,7 +6,7 @@ import type { Artist } from '../../types';
 interface CreateArtistModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddArtist: (artist: Omit<Artist, 'id'>) => void;
+  onAddArtist: (artist: Omit<Artist, 'id'>, avatarFile?: File | null) => Promise<void> | void;
   onShowToast?: (message: string) => void;
 }
 
@@ -22,18 +22,22 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
   // Required field
   const [name, setName] = useState('');
 
-  // Optional fields requested: email, phone, imageUpload, aboutus (textarea)
+  // Optional fields: email, phone, avatarFile, aboutus (textarea), genre
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [aboutUs, setAboutUs] = useState('');
+  const [genre, setGenre] = useState('EDM');
   const [avatar, setAvatar] = useState<string>('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -47,24 +51,26 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
   const handleRemoveImage = () => {
     setAvatar('');
     setAvatarPreview('');
+    setAvatarFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || isSubmitting) return;
 
     const trimmedName = name.trim();
     const finalAvatar = avatar || DEFAULT_AVATAR;
 
-    const newArtistData: Omit<Artist, 'id'> = {
+    const newArtistData: Omit<Artist, 'id'> & { aboutus?: string } = {
       name: trimmedName,
       stageName: trimmedName,
-      genre: 'General Music',
-      subGenres: ['Live Performance'],
+      genre: genre || 'General Music',
+      subGenres: [genre || 'General Music', 'Live Performance'],
       bio: aboutUs.trim() || `${trimmedName} is an artist and performer.`,
+      aboutus: aboutUs.trim() || `${trimmedName} is an artist and performer.`,
       avatar: finalAvatar,
       country: 'India',
       city: 'Mumbai',
@@ -78,24 +84,33 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
       }
     };
 
-    onAddArtist(newArtistData);
+    try {
+      setIsSubmitting(true);
+      await onAddArtist(newArtistData, avatarFile);
 
-    if (onShowToast) {
-      onShowToast(`Artist "${trimmedName}" created successfully!`);
+      if (onShowToast) {
+        onShowToast(`Artist "${trimmedName}" created successfully!`);
+      }
+
+      // Reset fields
+      setName('');
+      setEmail('');
+      setPhone('');
+      setAboutUs('');
+      setGenre('EDM');
+      setAvatar('');
+      setAvatarPreview('');
+      setAvatarFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      onClose();
+    } catch (err) {
+      console.error('Failed to submit artist:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Reset fields
-    setName('');
-    setEmail('');
-    setPhone('');
-    setAboutUs('');
-    setAvatar('');
-    setAvatarPreview('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
-    onClose();
   };
 
   return (
@@ -238,9 +253,17 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
           </button>
           <button
             type="submit"
-            className="px-5 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer"
+            disabled={isSubmitting}
+            className="px-5 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
-            Create Artist
+            {isSubmitting ? (
+              <>
+                <span className="inline-block h-3 w-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                <span>Creating Artist...</span>
+              </>
+            ) : (
+              'Create Artist'
+            )}
           </button>
         </div>
       </form>
