@@ -1,0 +1,125 @@
+import React from 'react';
+import {
+  ArrowRight,
+  Calendar,
+  Users,
+  Eye,
+  Trash2,
+  MapPin,
+  Sparkles
+} from 'lucide-react';
+import type { TripPlan } from '../../types';
+import { Badge } from '../common/Badge';
+
+interface TripCardProps {
+  trip: TripPlan;
+  onSelect: (trip: TripPlan) => void;
+  onDelete?: (id: string) => void;
+}
+
+export const TripCard: React.FC<TripCardProps> = ({
+  trip,
+  onSelect,
+  onDelete
+}) => {
+  return (
+    <div className="group rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs transition-all duration-200 hover:border-amber-300 hover:shadow-md flex flex-col justify-between">
+      <div>
+        {/* Category & Status */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="rounded-full bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 text-[11px] font-medium text-amber-700">
+            {trip.category}
+          </span>
+          <Badge status={trip.status} />
+        </div>
+
+        {/* Title & Route */}
+        <h3
+          onClick={() => onSelect(trip)}
+          className="text-sm font-semibold tracking-tight text-slate-900 group-hover:text-amber-700 transition-colors cursor-pointer"
+        >
+          {trip.title}
+        </h3>
+
+        <div className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-800">
+          <span className="truncate">{trip.origin}</span>
+          <ArrowRight className="h-3 w-3 text-slate-400 shrink-0" />
+          <span className="truncate text-amber-800">{trip.destination}</span>
+        </div>
+
+        {/* Creator Info */}
+        <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/70 p-2 text-xs">
+          <img
+            src={trip.creatorAvatar}
+            alt={trip.creatorName}
+            className="h-7 w-7 rounded-lg object-cover ring-1 ring-slate-200 shrink-0"
+          />
+          <div className="truncate">
+            <span className="text-slate-800 font-medium block truncate">{trip.creatorName}</span>
+            <span className="text-[11px] text-slate-400 block truncate">{trip.creatorBio}</span>
+          </div>
+        </div>
+
+        {/* Waypoints Preview */}
+        <div className="mt-3 flex flex-wrap gap-1">
+          {trip.waypoints.slice(0, 3).map((w, idx) => (
+            <span
+              key={idx}
+              className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600 font-normal"
+            >
+              • {w}
+            </span>
+          ))}
+          {trip.waypoints.length > 3 && (
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] text-slate-400">
+              +{trip.waypoints.length - 3} more
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Footer Details */}
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <div className="flex items-center justify-between text-xs text-slate-500 mb-2.5">
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3 text-slate-400" />
+            {trip.totalDays} Days ({trip.startDate.slice(5)})
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3 text-slate-400" />
+            {trip.joinedTravelers.length} / {trip.maxTravelers} buddies
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[11px] text-slate-400">Package Budget: </span>
+            <span className="text-xs font-semibold text-amber-600">
+              ₹{trip.estimatedBudget.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onSelect(trip)}
+              className="rounded-md p-1.5 text-slate-500 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer"
+              title="Inspect Itinerary"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(trip.id)}
+                className="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Archive Trip"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -9,10 +9,15 @@ import {
   CheckCircle2,
   Mail,
   Phone,
-  Globe2
+  Globe2,
+  Layers,
+  Music,
+  Car,
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 import { vendorAuthService } from '../../services/vendorAuthService';
-import { mockVendorProfile } from '../../data/mockVendorData';
+import { mockVendorProfile, ALL_WAYFOR_MODULES } from '../../data/mockVendorData';
 
 interface VendorSettingsViewProps {
   onShowToast: (msg: string) => void;
@@ -204,6 +209,75 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Section 3: Platform Service Modules (Admin Assigned) */}
+        <div className="pt-6 border-t border-slate-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-purple-600" />
+              <h3 className="text-sm font-semibold text-slate-900">
+                Platform Service Modules (Admin Assigned)
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+              {(current.serviceModules?.length || 1)} Modules Configured
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500">
+            These vertical service modules have been configured and assigned to your agency by WayFor Operations SuperAdmin.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+            {ALL_WAYFOR_MODULES.map((mod) => {
+              const isAssigned = (current.serviceModules || ['concerts']).includes(mod.id);
+              const isPrimary = (current.serviceModule || 'concerts') === mod.id;
+              const IconComp = mod.id === 'concerts' ? Music : mod.id === 'carpooling' ? Car : mod.id === 'trips' ? MapPin : Sparkles;
+
+              return (
+                <div
+                  key={mod.id}
+                  className={`p-3.5 rounded-xl border transition-all ${
+                    isAssigned
+                      ? isPrimary
+                        ? 'border-purple-300 bg-purple-50/50 ring-1 ring-purple-200'
+                        : 'border-slate-200 bg-slate-50/60'
+                      : 'border-dashed border-slate-200 bg-slate-50/20 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-lg ${isAssigned ? (isPrimary ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-700') : 'bg-slate-100 text-slate-400'}`}>
+                        <IconComp className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-900">
+                        {mod.name}
+                      </span>
+                    </div>
+                    {isAssigned ? (
+                      isPrimary ? (
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                          Primary
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          Assigned
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                        Unassigned
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 line-clamp-2">
+                    {mod.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

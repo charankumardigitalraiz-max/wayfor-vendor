@@ -7,18 +7,23 @@ import {
   useLocation,
   useNavigate
 } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
 import type {
   ConcertEvent,
   AttendeeBooking,
   Venue,
   PayoutTransaction,
   NavigationTab,
-  Artist
+  Artist,
+  TripPlan,
+  StrangerMeet
 } from './types';
+import { mockVendorTrips, mockVendorStrangerMeets } from './data/mockVendorData';
 import { vendorConcertService } from './services/vendorConcertService';
 import { VendorSidebar } from './components/layout/VendorSidebar';
 import { VendorHeader } from './components/layout/VendorHeader';
 import { VendorOverview } from './components/dashboard/VendorOverview';
+import { ConcertsOverview } from './components/concerts/ConcertsOverview';
 import { VendorConcertsList } from './components/concerts/VendorConcertsList';
 import { VendorConcertDetail } from './components/concerts/VendorConcertDetail';
 import { CreateConcertScreen } from './components/concerts/CreateConcertScreen';
@@ -29,6 +34,10 @@ import { VenuesView } from './components/venues/VenuesView';
 import { PayoutsView } from './components/payouts/PayoutsView';
 import { VendorSettingsView } from './components/settings/VendorSettingsView';
 import { VendorProfileView } from './components/profile/VendorProfileView';
+import { TripsOverview } from './components/trips/TripsOverview';
+import { VendorTripsView } from './components/trips/VendorTripsView';
+import { StrangerMeetsOverview } from './components/stranger-meets/StrangerMeetsOverview';
+import { VendorStrangerMeetsView } from './components/stranger-meets/VendorStrangerMeetsView';
 import { VendorLogin, VendorRegister } from './components/auth';
 import { vendorAuthService } from './services/vendorAuthService';
 import type { VendorUser } from './types/auth';
@@ -51,6 +60,25 @@ export function AppContent() {
   const [payouts, setPayouts] = useState<PayoutTransaction[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Multi-Module States: Trips & Stranger Meets
+  const [trips, setTrips] = useState<TripPlan[]>(() => {
+    try {
+      const saved = localStorage.getItem('wayfor_vendor_trips');
+      return saved ? JSON.parse(saved) : mockVendorTrips;
+    } catch {
+      return mockVendorTrips;
+    }
+  });
+
+  const [strangerMeets, setStrangerMeets] = useState<StrangerMeet[]>(() => {
+    try {
+      const saved = localStorage.getItem('wayfor_vendor_meets');
+      return saved ? JSON.parse(saved) : mockVendorStrangerMeets;
+    } catch {
+      return mockVendorStrangerMeets;
+    }
+  });
 
   // Listen to cross-component auth state changes
   useEffect(() => {
@@ -92,7 +120,9 @@ export function AppContent() {
   // Sync active tab with location
   useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/concerts')) {
+    if (path === '/concerts/overview') {
+      setActiveTab('concerts-overview');
+    } else if (path.startsWith('/concerts')) {
       setActiveTab('concerts');
     } else if (path.startsWith('/artists')) {
       setActiveTab('artists');
@@ -102,6 +132,18 @@ export function AppContent() {
       setActiveTab('attendees');
     } else if (path.startsWith('/venues')) {
       setActiveTab('venues');
+    } else if (path === '/trips/overview') {
+      setActiveTab('trips-overview');
+    } else if (path.startsWith('/trips/companions')) {
+      setActiveTab('trip-companions');
+    } else if (path.startsWith('/trips')) {
+      setActiveTab('trips');
+    } else if (path === '/stranger-meets/overview') {
+      setActiveTab('stranger-meets-overview');
+    } else if (path.startsWith('/stranger-meets/buddies')) {
+      setActiveTab('stranger-buddies');
+    } else if (path.startsWith('/stranger-meets')) {
+      setActiveTab('stranger-meets');
     } else if (path.startsWith('/payouts')) {
       setActiveTab('payouts');
     } else if (path.startsWith('/settings')) {
@@ -150,6 +192,48 @@ export function AppContent() {
     navigate('/concerts');
   };
 
+  // Trip Handlers
+  const handleAddTrip = (newTrip: TripPlan) => {
+    setTrips((prev) => {
+      const updated = [newTrip, ...prev];
+      try {
+        localStorage.setItem('wayfor_vendor_trips', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleDeleteTrip = (id: string) => {
+    setTrips((prev) => {
+      const updated = prev.filter((t) => t.id !== id);
+      try {
+        localStorage.setItem('wayfor_vendor_trips', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  // Stranger Meets Handlers
+  const handleAddMeet = (newMeet: StrangerMeet) => {
+    setStrangerMeets((prev) => {
+      const updated = [newMeet, ...prev];
+      try {
+        localStorage.setItem('wayfor_vendor_meets', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleDeleteMeet = (id: string) => {
+    setStrangerMeets((prev) => {
+      const updated = prev.filter((m) => m.id !== id);
+      try {
+        localStorage.setItem('wayfor_vendor_meets', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   // Attendee Checkin handler
   const handleToggleCheckIn = (bookingId: string) => {
     const updated = vendorConcertService.toggleCheckInManual(bookingId);
@@ -189,6 +273,38 @@ export function AppContent() {
 
   const activeConcertsCount = concerts.filter((c) => c.status === 'active').length;
 
+  // Module authorization check
+  const assignedModules: string[] = currentVendor?.serviceModules && currentVendor.serviceModules.length > 0
+    ? currentVendor.serviceModules
+    : [currentVendor?.serviceModule || 'concerts'];
+
+  const isAuthorized = (modId: string) => assignedModules.includes(modId);
+
+  const UnauthorizedNotice = ({ moduleName }: { moduleName: string }) => (
+    <div className="p-8 text-center rounded-2xl border border-slate-200 bg-white max-w-lg mx-auto my-12 shadow-sm space-y-4">
+      <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+        <ShieldAlert className="h-6 w-6" />
+      </div>
+      <div>
+        <h2 className="text-base font-bold text-slate-900">Module Access Restricted</h2>
+        <p className="text-xs text-slate-600 mt-1">
+          Your agency account currently does not have access authorization for the <strong>{moduleName}</strong> module.
+        </p>
+      </div>
+      <div className="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+        Active modules assigned by Admin: <strong className="text-purple-700">{assignedModules.join(', ')}</strong>
+      </div>
+      <div className="pt-2">
+        <button
+          onClick={() => navigate('/overview')}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 cursor-pointer"
+        >
+          Return to Studio Dashboard
+        </button>
+      </div>
+    </div>
+  );
+
   if (!currentVendor) {
     return (
       <div className="min-h-screen bg-slate-50 font-sans selection:bg-purple-100 selection:text-purple-800">
@@ -210,14 +326,17 @@ export function AppContent() {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-slate-800 font-sans selection:bg-purple-100 selection:text-purple-800">
-      {/* Sidebar */}
+      {/* Sidebar with Collapsible Modules according to Vendor Module Access */}
       <VendorSidebar
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
         activeConcertsCount={activeConcertsCount}
         totalAttendeesCount={attendees.length}
         artistsCount={artists.length}
+        tripsCount={trips.length}
+        meetsCount={strangerMeets.length}
         currentVendor={currentVendor}
+        onLogout={handleLogout}
       />
 
       {/* Main Container */}
@@ -241,36 +360,63 @@ export function AppContent() {
               element={
                 <VendorOverview
                   concerts={concerts}
+                  trips={trips}
+                  strangerMeets={strangerMeets}
+                  currentVendor={currentVendor}
                   onOpenCreateConcert={() => navigate('/concerts/create')}
                   onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
                 />
               }
             />
+
+            {/* Concerts & Events Module Routes */}
+            <Route
+              path="/concerts/overview"
+              element={
+                isAuthorized('concerts') ? (
+                  <ConcertsOverview
+                    concerts={concerts}
+                    onOpenCreateConcert={() => navigate('/concerts/create')}
+                    onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Concerts & Events" />
+                )
+              }
+            />
             <Route
               path="/concerts"
               element={
-                <VendorConcertsList
-                  concerts={concerts}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
-                  onOpenCreateModal={() => navigate('/concerts/create')}
-                  onStatusChange={handleStatusChange}
-                  onDeleteConcert={handleDeleteConcert}
-                />
+                isAuthorized('concerts') ? (
+                  <VendorConcertsList
+                    concerts={concerts}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    onSelectConcert={(c) => navigate(`/concerts/${c.id}`)}
+                    onOpenCreateModal={() => navigate('/concerts/create')}
+                    onStatusChange={handleStatusChange}
+                    onDeleteConcert={handleDeleteConcert}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Concerts & Events" />
+                )
               }
             />
             <Route
               path="/concerts/create"
               element={
-                <CreateConcertScreen
-                  onAddConcert={handleCreateConcert}
-                  venues={venues}
-                  onAddVenue={handleAddVenue}
-                  artists={artists}
-                  onAddArtist={handleCreateArtist}
-                  onShowToast={showToast}
-                />
+                isAuthorized('concerts') ? (
+                  <CreateConcertScreen
+                    onAddConcert={handleCreateConcert}
+                    venues={venues}
+                    onAddVenue={handleAddVenue}
+                    artists={artists}
+                    onAddArtist={handleCreateArtist}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Concerts & Events" />
+                )
               }
             />
             <Route
@@ -280,57 +426,181 @@ export function AppContent() {
             <Route
               path="/concerts/:concertId"
               element={
-                <VendorConcertDetail
-                  concerts={concerts}
-                  attendees={attendees}
-                  onStatusChange={handleStatusChange}
-                  onDeleteConcert={handleDeleteConcert}
-                  onToggleCheckIn={handleToggleCheckIn}
-                  onShowToast={showToast}
-                />
+                isAuthorized('concerts') ? (
+                  <VendorConcertDetail
+                    concerts={concerts}
+                    attendees={attendees}
+                    onStatusChange={handleStatusChange}
+                    onDeleteConcert={handleDeleteConcert}
+                    onToggleCheckIn={handleToggleCheckIn}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Concerts & Events" />
+                )
               }
             />
             <Route
               path="/artists"
               element={
-                <ArtistsView
-                  onShowToast={showToast}
-                  onArtistsChange={(updated) => setArtists(updated)}
-                />
+                isAuthorized('concerts') ? (
+                  <ArtistsView
+                    onShowToast={showToast}
+                    onArtistsChange={(updated) => setArtists(updated)}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Artists & Headliners" />
+                )
               }
             />
             <Route
               path="/gate-scanner"
               element={
-                <GateScannerView
-                  concerts={concerts}
-                  attendees={attendees}
-                  onRefreshData={loadData}
-                  onShowToast={showToast}
-                />
+                isAuthorized('concerts') ? (
+                  <GateScannerView
+                    concerts={concerts}
+                    attendees={attendees}
+                    onRefreshData={loadData}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Gate Scanner" />
+                )
               }
             />
             <Route
               path="/attendees"
               element={
-                <AttendeeManifestView
-                  attendees={attendees}
-                  concerts={concerts}
-                  onToggleCheckIn={handleToggleCheckIn}
-                  onShowToast={showToast}
-                />
+                isAuthorized('concerts') ? (
+                  <AttendeeManifestView
+                    attendees={attendees}
+                    concerts={concerts}
+                    onToggleCheckIn={handleToggleCheckIn}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Attendee Manifest" />
+                )
               }
             />
             <Route
               path="/venues"
               element={
-                <VenuesView
-                  venues={venues}
-                  onAddVenue={handleAddVenue}
-                  onShowToast={showToast}
-                />
+                isAuthorized('concerts') ? (
+                  <VenuesView
+                    venues={venues}
+                    onAddVenue={handleAddVenue}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Venues & Stages" />
+                )
               }
             />
+
+            {/* Trip Planner Module Routes */}
+            <Route
+              path="/trips/overview"
+              element={
+                isAuthorized('trips') ? (
+                  <TripsOverview
+                    trips={trips}
+                    onAddTrip={handleAddTrip}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Trip Planner & Group Travel" />
+                )
+              }
+            />
+            <Route
+              path="/trips"
+              element={
+                isAuthorized('trips') ? (
+                  <VendorTripsView
+                    trips={trips}
+                    onAddTrip={handleAddTrip}
+                    onDeleteTrip={handleDeleteTrip}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                    activeSubTab="all-trips"
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Trip Planner & Group Travel" />
+                )
+              }
+            />
+            <Route
+              path="/trips/companions"
+              element={
+                isAuthorized('trips') ? (
+                  <VendorTripsView
+                    trips={trips}
+                    onAddTrip={handleAddTrip}
+                    onDeleteTrip={handleDeleteTrip}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                    activeSubTab="companions"
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Trip Companions" />
+                )
+              }
+            />
+
+            {/* Stranger Meets Module Routes */}
+            <Route
+              path="/stranger-meets/overview"
+              element={
+                isAuthorized('stranger-meets') ? (
+                  <StrangerMeetsOverview
+                    meets={strangerMeets}
+                    onAddMeet={handleAddMeet}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Stranger Meets & Community Mixers" />
+                )
+              }
+            />
+            <Route
+              path="/stranger-meets"
+              element={
+                isAuthorized('stranger-meets') ? (
+                  <VendorStrangerMeetsView
+                    meets={strangerMeets}
+                    onAddMeet={handleAddMeet}
+                    onDeleteMeet={handleDeleteMeet}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                    activeSubTab="all-meets"
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Stranger Meets & Socials" />
+                )
+              }
+            />
+            <Route
+              path="/stranger-meets/buddies"
+              element={
+                isAuthorized('stranger-meets') ? (
+                  <VendorStrangerMeetsView
+                    meets={strangerMeets}
+                    onAddMeet={handleAddMeet}
+                    onDeleteMeet={handleDeleteMeet}
+                    onShowToast={showToast}
+                    currentVendorName={currentVendor.companyName || currentVendor.name}
+                    activeSubTab="buddies"
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Stranger Meets Buddies Roster" />
+                )
+              }
+            />
+
+            {/* Financials & Settings Routes */}
             <Route
               path="/payouts"
               element={

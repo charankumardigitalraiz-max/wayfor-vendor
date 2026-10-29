@@ -386,7 +386,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => handleOpenEdit(artist)}
             className="p-1.5 rounded-md text-slate-600 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
-            title="Edit artist details (PATCH /api/vendor/concerts/artists/:id)"
+            title="Edit artist details"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -395,7 +395,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => handleDelete(artist.id, artist.name)}
             className="p-1.5 rounded-md text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-colors cursor-pointer"
-            title="Delete artist (DELETE /api/vendor/concerts/artists/:id)"
+            title="Delete artist from roster"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -418,7 +418,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Connected to <code className="text-purple-600 font-mono text-[11px]">/api/vendor/concerts/artists</code> (http://192.168.0.161:5001). Create, update status, upload rider photo, and manage touring headliners.
+            Manage touring headliners, update performance status, upload technical riders, and coordinate tour lineups.
           </p>
         </div>
 
@@ -755,7 +755,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                           type="button"
                           onClick={() => handleOpenEdit(artist)}
                           className="p-1.5 rounded text-slate-600 hover:text-purple-700 bg-white hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
-                          title="Edit artist (PATCH /api/vendor/concerts/artists/:id)"
+                          title="Edit artist details"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -808,7 +808,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             setEditingArtist(null);
           }}
           title={`Edit Artist: ${editingArtist.name}`}
-          subtitle="Update status, genre, bio, or upload new photo (PATCH /api/vendor/concerts/artists/:id)"
+          subtitle="Update status, genre, bio, or upload a new headshot photo"
           maxWidth="lg"
         >
           <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">

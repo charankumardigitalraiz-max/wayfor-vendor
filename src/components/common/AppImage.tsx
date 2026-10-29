@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from '../../utils/imageUtils';
 
-export interface AppImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface AppImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src?: string | null;
   alt?: string;
   fallbackSrc?: string;

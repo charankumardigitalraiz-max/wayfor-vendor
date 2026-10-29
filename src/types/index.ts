@@ -1,10 +1,17 @@
 export type NavigationTab =
   | 'overview'
+  | 'concerts-overview'
   | 'concerts'
   | 'artists'
   | 'gate-scanner'
   | 'attendees'
   | 'venues'
+  | 'trips-overview'
+  | 'trips'
+  | 'trip-companions'
+  | 'stranger-meets-overview'
+  | 'stranger-meets'
+  | 'stranger-buddies'
   | 'payouts'
   | 'settings'
   | 'profile';
@@ -123,6 +130,22 @@ export interface PayoutTransaction {
   referenceId: string;
 }
 
+export type VendorModule = 'concerts' | 'carpooling' | 'trips' | 'stranger-meets';
+
+export interface VendorAssignedModule {
+  id: VendorModule;
+  name: string;
+  badge: string;
+  category: string;
+  description: string;
+  isPrimary: boolean;
+  status: 'active' | 'pending' | 'suspended';
+  assignedDate: string;
+  assignedBy?: string;
+  totalActivities?: number;
+  totalRevenue?: number;
+}
+
 export interface VendorProfile {
   id: string;
   name: string;
@@ -130,8 +153,13 @@ export interface VendorProfile {
   email: string;
   phone: string;
   avatar: string;
-  serviceModule?: string;
-  serviceModules?: string[];
+  city?: string;
+  country?: string;
+  serviceModule?: VendorModule | string;
+  serviceModules?: (VendorModule | string)[];
+  assignedModules?: VendorAssignedModule[];
+  status?: string;
+  kycStatus?: string;
   gstNumber: string;
   panNumber?: string;
   panPhoto?: string;
@@ -143,6 +171,13 @@ export interface VendorProfile {
   rating: number;
   totalConcertsHosted: number;
   totalTicketsSold: number;
+  totalActivities?: number;
+  totalRevenue?: number;
+  pendingPayout?: number;
+  joinedDate?: string;
+  lastActive?: string;
+  website?: string;
+  notes?: string;
 }
 
 export interface ArtistSocialLinks {
@@ -186,4 +221,83 @@ export interface Artist {
   totalConcerts?: number;
   upcomingConcerts?: number;
   verified?: boolean;
+}
+
+export interface TripItineraryDay {
+  dayNumber: number;
+  title: string;
+  destination: string;
+  description: string;
+  highlights: string[];
+}
+
+export interface TripTraveler {
+  id: string;
+  name: string;
+  avatar: string;
+  joinedAt: string;
+  pickupStop?: string;
+  seatsBooked?: number;
+}
+
+export interface TripPlan {
+  id: string;
+  title: string;
+  creatorName: string;
+  creatorAvatar: string;
+  creatorBio: string;
+  origin: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  totalDays: number;
+  estimatedBudget: number;
+  currency: string;
+  category: 'Roadtrip' | 'Music Tour' | 'Nature & Trek' | 'City Hopping' | 'Weekend Escape' | string;
+  maxTravelers: number;
+  joinedTravelers: TripTraveler[];
+  itinerary: TripItineraryDay[];
+  waypoints: string[];
+  linkedCarpoolRideId?: string;
+  status: 'active' | 'upcoming' | 'completed' | 'cancelled';
+  coverImage?: string;
+  organizerCompany?: string;
+}
+
+export interface StrangerMeetParticipant {
+  id: string;
+  name: string;
+  avatar: string;
+  age: number;
+  gender: string;
+  city: string;
+  bio: string;
+  verifiedKYC: boolean;
+  interests: string[];
+  joinedAt: string;
+  status: 'confirmed' | 'pending';
+  socialScore: number;
+}
+
+export interface StrangerMeet {
+  id: string;
+  title: string;
+  description: string;
+  hostName: string;
+  hostAvatar: string;
+  hostRating: number;
+  hostVerified: boolean;
+  category: 'Coffee & Chill' | 'Weekend Roadtrip' | 'Trek & Adventure' | 'Music & Nightlife' | 'City Walk & Food' | string;
+  city: string;
+  meetingPoint: string;
+  meetDate: string;
+  meetTime: string;
+  maxParticipants: number;
+  participants: StrangerMeetParticipant[];
+  safetyGuidelines: string[];
+  status: 'upcoming' | 'active' | 'completed' | 'cancelled';
+  vibeTags: string[];
+  coverImage?: string;
+  pricePerPerson?: number;
+  currency?: string;
 }

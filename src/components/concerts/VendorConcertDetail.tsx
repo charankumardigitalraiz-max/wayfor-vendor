@@ -471,10 +471,10 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
+          {/* <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <span>Real-time Gate & Box Office Sync</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Sliding Tab Panes Container */}

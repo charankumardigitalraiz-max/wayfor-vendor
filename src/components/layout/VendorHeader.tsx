@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -41,6 +41,7 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
 }) => {
   const activeProfile = currentVendor || mockVendorProfile;
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isLiveEventMode, setIsLiveEventMode] = useState(true);
@@ -166,14 +167,40 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
         </button> */}
 
 
-        <button
-          type="button"
-          onClick={onOpenCreateConcert}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer shrink-0"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span>New Concert</span>
-        </button>
+        {location.pathname.startsWith('/trips') ? (
+          <button
+            type="button"
+            onClick={() => {
+              const evt = new CustomEvent('vendor:open-create-trip');
+              window.dispatchEvent(evt);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 shadow-sm shadow-amber-200 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>New Expedition</span>
+          </button>
+        ) : location.pathname.startsWith('/stranger-meets') ? (
+          <button
+            type="button"
+            onClick={() => {
+              const evt = new CustomEvent('vendor:open-create-meet');
+              window.dispatchEvent(evt);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 shadow-sm shadow-teal-200 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Host Mixer</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenCreateConcert}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>New Concert</span>
+          </button>
+        )}
 
         {/* Notifications */}
         <div className="relative" ref={notificationsRef}>
@@ -293,12 +320,42 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
                     <p className="text-[11px] text-slate-500 truncate">
                       {activeProfile.email}
                     </p>
-                    <p className="text-[10px] text-purple-700 font-medium truncate mt-0.5">
+                    {/* <p className="text-[10px] text-purple-700 font-medium truncate mt-0.5">
                       {activeProfile.companyName || 'Promoter Studio'}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               </div>
+
+              {/* Authorized Modules Badges */}
+              {/* <div className="px-3 py-2 bg-slate-50/70 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Authorized Modules
+                  </span>
+                  <span className="text-[9px] font-bold text-purple-700 bg-purple-100/60 px-1.5 py-0.2 rounded border border-purple-200">
+                    {(activeProfile.serviceModules?.length || 1)} Active
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {(activeProfile.serviceModules || ['concerts']).map((mod: string) => (
+                    <span
+                      key={mod}
+                      className={`text-[9px] px-2 py-0.5 rounded font-semibold ${
+                        mod === 'concerts'
+                          ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                          : mod === 'trips'
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                          : mod === 'stranger-meets'
+                          ? 'bg-teal-50 text-teal-800 border border-teal-200'
+                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                      }`}
+                    >
+                      {mod === 'concerts' ? 'Concerts' : mod === 'trips' ? 'Trip Planner' : mod === 'stranger-meets' ? 'Stranger Meets' : 'Carpooling'}
+                    </span>
+                  ))}
+                </div>
+              </div> */}
 
               {/* Quick Navigation */}
               <div className="p-1 space-y-0.5">

@@ -5,16 +5,100 @@ import type {
   Venue,
   PayoutTransaction,
   VendorProfile,
-  Artist
+  Artist,
+  VendorModule,
+  VendorAssignedModule,
+  TripPlan,
+  StrangerMeet
 } from '../types';
+
+export const ALL_WAYFOR_MODULES = [
+  {
+    id: 'concerts' as VendorModule,
+    name: 'Concerts & Live Events',
+    badge: 'Concerts & Events',
+    category: 'Live Entertainment',
+    description: 'Promote arena shows, manage stadium venues, curate artist lineups & sell box office passes.'
+  },
+  {
+    id: 'carpooling' as VendorModule,
+    name: 'Carpooling & Rides',
+    badge: 'Carpooling & Fleet',
+    category: 'Mobility & Fleet',
+    description: 'Manage intercity carpooling, corporate commute lines, passenger bookings & fleet operations.'
+  },
+  {
+    id: 'trips' as VendorModule,
+    name: 'Trip Planner & Group Travel',
+    badge: 'Trip Planner',
+    category: 'Tours & Packages',
+    description: 'Design multi-day group itineraries, travel companion expeditions & adventure packages.'
+  },
+  {
+    id: 'stranger-meets' as VendorModule,
+    name: 'Stranger Meets & Socials',
+    badge: 'Stranger Meets',
+    category: 'Community Experiences',
+    description: 'Host verified community icebreakers, weekend mixers, networking sessions & social gatherings.'
+  }
+];
+
+export const mockAssignedModules: VendorAssignedModule[] = [
+  {
+    id: 'concerts',
+    name: 'Concerts & Live Events',
+    badge: 'Concerts & Events',
+    category: 'Live Entertainment',
+    description: 'Promote arena shows, manage stadium venues, curate artist lineups & sell box office passes.',
+    isPrimary: true,
+    status: 'active',
+    assignedDate: '2025-08-15',
+    assignedBy: 'WayFor Admin Operations',
+    totalActivities: 28,
+    totalRevenue: 84500000
+  },
+  {
+    id: 'trips',
+    name: 'Trip Planner & Group Travel',
+    badge: 'Trip Planner',
+    category: 'Tours & Packages',
+    description: 'Design multi-day group itineraries, travel companion expeditions & adventure packages.',
+    isPrimary: false,
+    status: 'active',
+    assignedDate: '2026-01-10',
+    assignedBy: 'WayFor Admin Operations',
+    totalActivities: 8,
+    totalRevenue: 12400000
+  },
+  {
+    id: 'stranger-meets',
+    name: 'Stranger Meets & Socials',
+    badge: 'Stranger Meets',
+    category: 'Community Experiences',
+    description: 'Host verified community icebreakers, weekend mixers, networking sessions & social gatherings.',
+    isPrimary: false,
+    status: 'active',
+    assignedDate: '2026-04-20',
+    assignedBy: 'WayFor Admin Operations',
+    totalActivities: 15,
+    totalRevenue: 3800000
+  }
+];
 
 export const mockVendorProfile: VendorProfile = {
   id: 'vnd-801',
   name: 'Vikramaditya Singhania',
-  companyName: 'Zenith Live Touring & Entertainment',
+  companyName: 'Zenith Live Touring & Entertainment Ltd.',
   email: 'vikram@zenithentertainment.in',
   phone: '+91 98450 82910',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+  city: 'Mumbai',
+  country: 'India',
+  serviceModule: 'concerts',
+  serviceModules: ['concerts', 'trips', 'stranger-meets'],
+  assignedModules: mockAssignedModules,
+  status: 'active',
+  kycStatus: 'verified',
   gstNumber: '36AAACZ8912P1ZV',
   bankName: 'HDFC Bank Ltd - Corporate Banking',
   bankAccountNumber: '50200084918231',
@@ -23,8 +107,169 @@ export const mockVendorProfile: VendorProfile = {
   isRegistered: true,
   rating: 4.9,
   totalConcertsHosted: 28,
-  totalTicketsSold: 184500
+  totalTicketsSold: 184500,
+  totalActivities: 28,
+  totalRevenue: 84500000,
+  pendingPayout: 1420000,
+  joinedDate: '2025-08-15',
+  lastActive: '2026-10-27T10:14:00Z',
+  website: 'https://zenithlive.in',
+  notes: 'Primary concert organizer for EDM and Rock stadium tours in West Zone.'
 };
+
+export const mockVendors: VendorProfile[] = [
+  mockVendorProfile,
+  {
+    id: 'vnd-802',
+    name: 'Rohan Deshmukh',
+    companyName: 'Genesys Global Touring Infrastructure',
+    email: 'production@genesystour.com',
+    phone: '+91 98200 44109',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    city: 'Pune',
+    country: 'India',
+    serviceModule: 'concerts',
+    serviceModules: ['concerts'],
+    status: 'active',
+    kycStatus: 'verified',
+    isVerified: true,
+    isRegistered: true,
+    gstNumber: '27AABCG9104K1ZT',
+    bankName: 'Kotak Mahindra Bank',
+    bankAccountNumber: '941200481920',
+    ifscCode: 'KKBK0000421',
+    rating: 4.85,
+    totalConcertsHosted: 14,
+    totalTicketsSold: 92400,
+    totalActivities: 14,
+    totalRevenue: 42100000,
+    pendingPayout: 850000,
+    joinedDate: '2025-11-02',
+    lastActive: '2026-10-26T18:20:00Z',
+    website: 'https://genesystour.com',
+    notes: 'Tour stage production, line-array acoustics, and arena operations partner.'
+  },
+  {
+    id: 'vnd-803',
+    name: 'Captain Amitav Roy',
+    companyName: 'Expressway Intercity Fleet Services',
+    email: 'fleet@expresswayrides.in',
+    phone: '+91 98101 23456',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+    city: 'Bengaluru',
+    country: 'India',
+    serviceModule: 'carpooling',
+    serviceModules: ['carpooling'],
+    status: 'active',
+    kycStatus: 'verified',
+    isVerified: true,
+    isRegistered: true,
+    gstNumber: '29AABCE5678Q1Z3',
+    bankName: 'State Bank of India - Commercial',
+    bankAccountNumber: '381920048192',
+    ifscCode: 'SBIN0001420',
+    rating: 4.92,
+    totalConcertsHosted: 0,
+    totalTicketsSold: 0,
+    totalActivities: 3120,
+    totalRevenue: 15400000,
+    pendingPayout: 320000,
+    joinedDate: '2025-06-10',
+    lastActive: '2026-10-27T11:45:00Z',
+    website: 'https://expresswayrides.in',
+    notes: 'Operating EV & premium MPV carpooling routes on BLR-CHN and BLR-HYD corridors.'
+  },
+  {
+    id: 'vnd-804',
+    name: 'Kavita Nair',
+    companyName: 'Western Ghats & Himalayan Expeditions',
+    email: 'kavita@westernghatstreks.org',
+    phone: '+91 94470 12890',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
+    city: 'Kochi',
+    country: 'India',
+    serviceModule: 'trips',
+    serviceModules: ['trips'],
+    status: 'active',
+    kycStatus: 'verified',
+    isVerified: true,
+    isRegistered: true,
+    gstNumber: '32AABCK4819R1Z1',
+    bankName: 'Federal Bank Ltd',
+    bankAccountNumber: '102900381920',
+    ifscCode: 'FDRL0001002',
+    rating: 4.94,
+    totalConcertsHosted: 0,
+    totalTicketsSold: 0,
+    totalActivities: 64,
+    totalRevenue: 28900000,
+    pendingPayout: 640000,
+    joinedDate: '2025-09-01',
+    lastActive: '2026-10-26T14:10:00Z',
+    website: 'https://westernghatstreks.org',
+    notes: 'Verified certified mountain leaders for group eco-trips and companion expeditions.'
+  },
+  {
+    id: 'vnd-805',
+    name: 'Sameer Sheikh',
+    companyName: 'SocialCircle Community Gatherings',
+    email: 'sameer@socialcircle.co.in',
+    phone: '+91 98210 98765',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80',
+    city: 'New Delhi',
+    country: 'India',
+    serviceModule: 'stranger-meets',
+    serviceModules: ['stranger-meets'],
+    status: 'active',
+    kycStatus: 'verified',
+    isVerified: true,
+    isRegistered: true,
+    gstNumber: '07AAACS1122P1Z6',
+    bankName: 'Axis Bank Ltd',
+    bankAccountNumber: '91201004819201',
+    ifscCode: 'UTIB0000014',
+    rating: 4.88,
+    totalConcertsHosted: 0,
+    totalTicketsSold: 0,
+    totalActivities: 142,
+    totalRevenue: 7800000,
+    pendingPayout: 180000,
+    joinedDate: '2025-10-18',
+    lastActive: '2026-10-27T08:30:00Z',
+    website: 'https://socialcircle.co.in',
+    notes: 'Curates verified weekend speed-networking, book clubs & startup mixers in Delhi NCR.'
+  },
+  {
+    id: 'vnd-807',
+    name: 'Ananya Mehra',
+    companyName: 'Sunwave Live & Festival Co.',
+    email: 'ananya@sunshinelive.in',
+    phone: '+91 97110 58231',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    city: 'Goa',
+    country: 'India',
+    serviceModule: 'concerts',
+    serviceModules: ['concerts', 'stranger-meets'],
+    status: 'active',
+    kycStatus: 'verified',
+    isVerified: true,
+    isRegistered: true,
+    gstNumber: '30AAACS4192L1Z4',
+    bankName: 'ICICI Bank Ltd - Panaji',
+    bankAccountNumber: '001205018932',
+    ifscCode: 'ICIC0000012',
+    rating: 4.95,
+    totalConcertsHosted: 21,
+    totalTicketsSold: 142000,
+    totalActivities: 21,
+    totalRevenue: 68400000,
+    pendingPayout: 1100000,
+    joinedDate: '2025-07-20',
+    lastActive: '2026-10-27T12:00:00Z',
+    website: 'https://sunwavelive.com',
+    notes: 'Hosts beach music festivals and open-air sunset amphitheater sessions.'
+  }
+];
 
 export const mockVendorConcerts: ConcertEvent[] = [
   {
@@ -853,4 +1098,274 @@ export const mockArtists: Artist[] = [
   }
 ];
 
+export const mockVendorTrips: TripPlan[] = [
+  {
+    id: 'v-trip-101',
+    title: 'Sunwave Beach Festival & Coastal Trail Expedition',
+    creatorName: 'Zenith Touring & Expeditions',
+    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    creatorBio: 'Curated by Zenith Touring — connecting music festivals with scenic coastal camping and carpooling.',
+    origin: 'Mumbai (BKC Hub)',
+    destination: 'Goa (Vagator & Anjuna)',
+    startDate: '2026-11-18',
+    endDate: '2026-11-23',
+    totalDays: 5,
+    estimatedBudget: 8500,
+    currency: 'INR',
+    category: 'Music Tour',
+    maxTravelers: 12,
+    coverImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+    joinedTravelers: [
+      { id: 'usr-101', name: 'Kabir Singhania', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', joinedAt: 'Lead Host', seatsBooked: 1 },
+      { id: 'usr-102', name: 'Rhea Sen', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80', joinedAt: '2 days ago', seatsBooked: 2 },
+      { id: 'usr-103', name: 'Devendra Joshi', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', joinedAt: 'Yesterday', seatsBooked: 1 }
+    ],
+    waypoints: ['Mumbai BKC', 'Pune Expressway', 'Kolhapur Heritage Stop', 'Amona Ghats', 'North Goa Vagator Arena'],
+    status: 'active',
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Mumbai to Kolhapur Escort Run',
+        destination: 'Kolhapur',
+        description: 'Morning rendezvous at BKC concert hub, group convoy drive with curated audio playlist and lunch stop.',
+        highlights: ['Expressway convoy', 'Maharaja Palace visit', 'Regional misal brunch']
+      },
+      {
+        dayNumber: 2,
+        title: 'Western Ghats Descent into Goa',
+        destination: 'Vagator, Goa',
+        description: 'Scenic hill driving through lush Amboli/Chorla passes, campsite check-in and sunset acoustic session.',
+        highlights: ['Ghats photography stop', 'Campsite check-in', 'Sunset sundowner']
+      },
+      {
+        dayNumber: 3,
+        title: 'Festival Stage Day & Backstage Access',
+        destination: 'Sunwave Festival Arena',
+        description: 'Full day admission to partner stage festivals with reserved partner viewing deck and lineup meet & greet.',
+        highlights: ['Exclusive festival lounge', 'Artist soundcheck preview', 'Headliner set']
+      }
+    ]
+  },
+  {
+    id: 'v-trip-102',
+    title: 'Himalayan High Altitude Stargazing & Acoustic Camp',
+    creatorName: 'Zenith Live Touring',
+    creatorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    creatorBio: 'Wilderness expeditions team combining acoustic indie sessions under Milky Way skies.',
+    origin: 'New Delhi (Aerocity)',
+    destination: 'Spiti Valley & Chandratal Lake',
+    startDate: '2026-12-05',
+    endDate: '2026-12-12',
+    totalDays: 7,
+    estimatedBudget: 18500,
+    currency: 'INR',
+    category: 'Nature & Trek',
+    maxTravelers: 8,
+    coverImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80',
+    joinedTravelers: [
+      { id: 'usr-201', name: 'Vikramaditya Singhania', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', joinedAt: 'Tour Host', seatsBooked: 1 },
+      { id: 'usr-202', name: 'Aarav Mehta', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80', joinedAt: '3 days ago', seatsBooked: 1 }
+    ],
+    waypoints: ['Delhi Aerocity', 'Chandigarh', 'Shimla', 'Kaza High Pass', 'Chandratal Lake Base'],
+    status: 'active',
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Delhi to Chandigarh Rendezvous',
+        destination: 'Chandigarh',
+        description: 'Meet travelers at Aerocity hub, transit up to foothills.',
+        highlights: ['Comfort luxury coach', 'Welcome briefing']
+      },
+      {
+        dayNumber: 2,
+        title: 'Kinnaur Valley Ascent',
+        destination: 'Kalpa',
+        description: 'Drive along Satluj river canyon, view Kinner Kailash peak.',
+        highlights: ['Apple orchard drive', 'Monastery tour']
+      }
+    ]
+  },
+  {
+    id: 'v-trip-103',
+    title: 'Rajasthan Royal Forts & Sufi Night Expedition',
+    creatorName: 'Zenith Live Touring',
+    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    creatorBio: 'Cultural journeys discovering palace courtyards and private desert performances.',
+    origin: 'Jaipur',
+    destination: 'Jaisalmer & Sam Sand Dunes',
+    startDate: '2026-12-22',
+    endDate: '2026-12-27',
+    totalDays: 6,
+    estimatedBudget: 14200,
+    currency: 'INR',
+    category: 'Weekend Escape',
+    maxTravelers: 10,
+    coverImage: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800&auto=format&fit=crop&q=80',
+    joinedTravelers: [
+      { id: 'usr-301', name: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80', joinedAt: 'Curator', seatsBooked: 1 }
+    ],
+    waypoints: ['Jaipur Pink City', 'Jodhpur Blue City', 'Pokhran', 'Jaisalmer Golden Fort', 'Sam Dunes'],
+    status: 'upcoming',
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Arrival in Jaipur & Folk Dinner',
+        destination: 'Jaipur',
+        description: 'Evening meet up at heritage haveli with traditional musicians.',
+        highlights: ['Heritage haveli stay', 'Rajasthani cuisine banquet']
+      }
+    ]
+  }
+];
 
+export const mockVendorStrangerMeets: StrangerMeet[] = [
+  {
+    id: 'v-meet-201',
+    title: 'Electronic Music Producers & Sound Engineers Mixer',
+    description: 'An exclusive networking evening for sound designers, modular synth hobbyists, audio engineers and EDM promoters to share tracks and collaborate on stadium sound rigs.',
+    hostName: 'Zenith Live Studio',
+    hostAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    hostRating: 4.95,
+    hostVerified: true,
+    category: 'Music & Nightlife',
+    city: 'Mumbai',
+    meetingPoint: 'Zenith Studio Terrace, Bandra West, Mumbai',
+    meetDate: '2026-11-10',
+    meetTime: '19:30 - 22:30',
+    maxParticipants: 16,
+    coverImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
+    pricePerPerson: 499,
+    currency: 'INR',
+    status: 'upcoming',
+    vibeTags: ['Synth Wave', 'Ableton & Logic', 'Audio Networking', 'Rooftop Mixer'],
+    safetyGuidelines: [
+      'Govt photo ID verification compulsory upon arrival',
+      'Zero alcohol driving policy — carpooling cabs facilitated',
+      'Code of conduct enforced by verified community coordinators'
+    ],
+    participants: [
+      {
+        id: 'bp-1',
+        name: 'Armaan Kulkarni',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+        age: 26,
+        gender: 'Male',
+        city: 'Mumbai',
+        bio: 'Analog modular synth producer and mastering assistant at Bandra Studios.',
+        verifiedKYC: true,
+        interests: ['Electronic Music', 'Modular Synths', 'Sound Design'],
+        joinedAt: '3 days ago',
+        status: 'confirmed',
+        socialScore: 98
+      },
+      {
+        id: 'bp-2',
+        name: 'Neha Chawla',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80',
+        age: 24,
+        gender: 'Female',
+        city: 'Mumbai',
+        bio: 'Live acoustic vocalist and indie electronic lyricist.',
+        verifiedKYC: true,
+        interests: ['Vocals', 'Live Gigs', 'Songwriting'],
+        joinedAt: '2 days ago',
+        status: 'confirmed',
+        socialScore: 96
+      },
+      {
+        id: 'bp-3',
+        name: 'Siddharth Rao',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
+        age: 29,
+        gender: 'Male',
+        city: 'Pune',
+        bio: 'FOH sound engineer for outdoor rock & jazz festivals.',
+        verifiedKYC: true,
+        interests: ['Line Arrays', 'Audio Acoustics', 'Festivals'],
+        joinedAt: 'Yesterday',
+        status: 'confirmed',
+        socialScore: 99
+      }
+    ]
+  },
+  {
+    id: 'v-meet-202',
+    title: 'Weekend Sunset Rooftop Acoustic Jam & Coffee Mixer',
+    description: 'Bring your acoustic guitar, cajón, ukulele or simply your love for acoustic indie ballads. An intimate weekend gathering overlooking the Arabian Sea.',
+    hostName: 'Zenith Acoustic Club',
+    hostAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    hostRating: 4.9,
+    hostVerified: true,
+    category: 'Coffee & Chill',
+    city: 'Mumbai',
+    meetingPoint: 'Carter Road Promenade Amphitheater, Bandra West',
+    meetDate: '2026-11-15',
+    meetTime: '17:00 - 19:30',
+    maxParticipants: 20,
+    coverImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
+    pricePerPerson: 299,
+    currency: 'INR',
+    status: 'active',
+    vibeTags: ['Acoustic Jam', 'Coffee & Tea', 'Sunset Vibe', 'Songwriters'],
+    safetyGuidelines: [
+      'Pre-vetted registration via WayFor stranger meet pass',
+      'Peaceful acoustic decibel limits respected',
+      'Verified promoter hosts on site throughout the session'
+    ],
+    participants: [
+      {
+        id: 'bp-4',
+        name: 'Rohan Deshmukh',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80',
+        age: 28,
+        gender: 'Male',
+        city: 'Mumbai',
+        bio: 'Fingerstyle guitarist and coffee roaster enthusiast.',
+        verifiedKYC: true,
+        interests: ['Fingerstyle', 'Cold Brew', 'Indie Folk'],
+        joinedAt: '4 days ago',
+        status: 'confirmed',
+        socialScore: 97
+      },
+      {
+        id: 'bp-5',
+        name: 'Tanvi Parikh',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        age: 25,
+        gender: 'Female',
+        city: 'Mumbai',
+        bio: 'Ukulele player and weekend wanderer.',
+        verifiedKYC: true,
+        interests: ['Ukulele', 'Travel Stories', 'Photography'],
+        joinedAt: '3 days ago',
+        status: 'confirmed',
+        socialScore: 95
+      }
+    ]
+  },
+  {
+    id: 'v-meet-203',
+    title: 'Indie Film & Travel Storytelling Circle',
+    description: 'Share your unscripted travel stories, roadtrip memories, and meet fellow backpackers over warm artisanal chai and bonfire snacks.',
+    hostName: 'Zenith Community Desk',
+    hostAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    hostRating: 4.88,
+    hostVerified: true,
+    category: 'City Walk & Food',
+    city: 'Bengaluru',
+    meetingPoint: 'Indiranagar Creative Studio, 100ft Road, Bengaluru',
+    meetDate: '2026-11-25',
+    meetTime: '18:00 - 21:00',
+    maxParticipants: 14,
+    coverImage: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80',
+    pricePerPerson: 350,
+    currency: 'INR',
+    status: 'upcoming',
+    vibeTags: ['Travel Stories', 'Chai & Snacks', 'Filmmakers', 'Icebreakers'],
+    safetyGuidelines: [
+      'Strict verification of all attendees',
+      'Respectful and inclusive group discussion etiquette'
+    ],
+    participants: []
+  }
+];

@@ -473,7 +473,9 @@ export const VendorLogin: React.FC<VendorLoginProps> = ({ onLogin, onShowToast }
                       {otpDigits.map((digit, index) => (
                         <input
                           key={index}
-                          ref={(el) => (otpInputRefs.current[index] = el)}
+                          ref={(el) => {
+                            otpInputRefs.current[index] = el;
+                          }}
                           type="text"
                           inputMode="numeric"
                           maxLength={6}
