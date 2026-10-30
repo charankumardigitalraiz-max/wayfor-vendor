@@ -44,8 +44,9 @@ export interface ConcertEvent {
   artist: string;
   supportingActs?: string[];
   tourName?: string;
-  genre: 'EDM' | 'Rock' | 'Pop' | 'Hip-Hop' | 'Indie' | 'Classical' | 'Jazz';
+  genre: 'EDM' | 'Rock' | 'Pop' | 'Hip-Hop' | 'Indie' | 'Classical' | 'Jazz' | string;
   genres?: string[];
+  eventCategory?: 'music' | 'comedy' | 'dance' | 'theatre' | 'dj-electronic' | 'magic-variety' | string;
   date: string;
   doorsOpen: string;
   showTime?: string;
@@ -58,6 +59,7 @@ export interface ConcertEvent {
   ticketsSold: number;
   minPrice: number;
   maxPrice: number;
+  isFree?: boolean;
   currency: string;
   status: 'active' | 'upcoming' | 'completed' | 'cancelled' | 'draft';
   ticketTiers: TicketTier[];
@@ -214,7 +216,7 @@ export interface Artist {
   country: string;
   city?: string;
   monthlyListeners?: string;
-  status: 'touring' | 'active' | 'available' | 'on-break';
+  status: 'active' | 'inactive';
   socialLinks?: ArtistSocialLinks;
   management?: ArtistManagement;
   rider?: ArtistRider;

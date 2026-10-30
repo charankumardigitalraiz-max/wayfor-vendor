@@ -124,7 +124,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
@@ -134,7 +134,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
@@ -144,7 +144,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
@@ -154,17 +154,17 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-2 sm:col-span-1">
               <label className="block font-medium text-slate-700">Statutory GSTIN Number</label>
               <input
                 type="text"
                 value={gstNumber}
                 onChange={(e) => setGstNumber(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
           </div>
@@ -186,7 +186,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
@@ -196,7 +196,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
 
@@ -206,7 +206,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                 type="text"
                 value={ifsc}
                 onChange={(e) => setIfsc(e.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500"
+                className="w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 font-mono focus:outline-none focus:border-purple-500 shadow-2xs"
               />
             </div>
           </div>
@@ -217,18 +217,21 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-purple-600" />
-              <h3 className="text-sm font-semibold text-slate-900">
-                Platform Service Modules (Admin Assigned)
-              </h3>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  Platform Service Modules (Admin Assigned)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  These vertical service modules have been configured and assigned to your agency by WayFor Operations SuperAdmin.
+                </p>
+              </div>
             </div>
             <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
               {(current.serviceModules?.length || 1)} Modules Configured
             </span>
           </div>
 
-          <p className="text-xs text-slate-500">
-            These vertical service modules have been configured and assigned to your agency by WayFor Operations SuperAdmin.
-          </p>
+
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
             {ALL_WAYFOR_MODULES.map((mod) => {
@@ -239,13 +242,10 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
               return (
                 <div
                   key={mod.id}
-                  className={`p-3.5 rounded-xl border transition-all ${
-                    isAssigned
-                      ? isPrimary
-                        ? 'border-purple-300 bg-purple-50/50 ring-1 ring-purple-200'
-                        : 'border-slate-200 bg-slate-50/60'
-                      : 'border-dashed border-slate-200 bg-slate-50/20 opacity-60'
-                  }`}
+                  className={`p-3.5 rounded-xl border transition-all ${isAssigned
+                    ? 'border-slate-200 bg-slate-50/60'
+                    : 'border-dashed border-slate-200 bg-slate-50/20 opacity-60'
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
@@ -256,21 +256,7 @@ export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
                         {mod.name}
                       </span>
                     </div>
-                    {isAssigned ? (
-                      isPrimary ? (
-                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
-                          Primary
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                          Assigned
-                        </span>
-                      )
-                    ) : (
-                      <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                        Unassigned
-                      </span>
-                    )}
+
                   </div>
                   <p className="text-[11px] text-slate-500 line-clamp-2">
                     {mod.description}

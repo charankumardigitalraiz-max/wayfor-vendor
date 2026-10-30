@@ -57,7 +57,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
   const [country, setCountry] = useState('India');
   const [city, setCity] = useState('Mumbai');
   const [monthlyListeners, setMonthlyListeners] = useState('12.5M');
-  const [status, setStatus] = useState<Artist['status']>('touring');
+  const [status, setStatus] = useState<Artist['status']>('active');
   const [bio, setBio] = useState('');
 
   // Media
@@ -178,8 +178,8 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             type="button"
             onClick={() => setActiveTab('profile')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs transition-all cursor-pointer ${activeTab === 'profile'
-                ? 'bg-white text-purple-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-purple-700 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
               }`}
           >
             <User className="h-3.5 w-3.5" />
@@ -190,8 +190,8 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             type="button"
             onClick={() => setActiveTab('management')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs transition-all cursor-pointer ${activeTab === 'management'
-                ? 'bg-white text-purple-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-purple-700 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
               }`}
           >
             <Building className="h-3.5 w-3.5" />
@@ -202,8 +202,8 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             type="button"
             onClick={() => setActiveTab('rider')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs transition-all cursor-pointer ${activeTab === 'rider'
-                ? 'bg-white text-purple-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-purple-700 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
               }`}
           >
             <Mic2 className="h-3.5 w-3.5" />
@@ -374,8 +374,8 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
                     type="button"
                     onClick={() => setAvatar(p.url)}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-semibold border transition-all cursor-pointer shrink-0 ${avatar === p.url
-                        ? 'bg-purple-50 text-purple-700 border-purple-300'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                      ? 'bg-purple-50 text-purple-700 border-purple-300'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                       }`}
                   >
                     <img src={p.url} alt={p.label} className="h-3.5 w-3.5 rounded-full object-cover" />

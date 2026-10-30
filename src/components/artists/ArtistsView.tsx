@@ -15,6 +15,7 @@ import {
   Trash2,
   Radio,
   FileText,
+  Eye,
   Globe2,
   SlidersHorizontal,
   X,
@@ -23,7 +24,9 @@ import {
   Pencil,
   RefreshCw,
   Loader2,
-  Upload
+  Upload,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import type { Artist } from '../../types';
 import { CreateArtistModal } from '../common/CreateArtistModal';
@@ -247,11 +250,10 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
     return filteredArtists.slice(startIndex, startIndex + pageSize);
   }, [filteredArtists, safeCurrentPage, pageSize]);
 
-  // Calculate metrics
-  const totalHeadliners = artists.length;
-  const touringCount = artists.filter((a) => a.status === 'touring').length;
-  const availableCount = artists.filter((a) => a.status === 'available').length;
-  const totalUpcomingShows = artists.reduce((acc, a) => acc + (a.upcomingConcerts || 0), 0);
+  // Calculate metrics: Total, Active, and Inactive artists
+  const totalArtists = artists.length;
+  const activeCount = artists.filter((a) => a.status === 'active').length;
+  const inactiveCount = artists.filter((a) => a.status === 'inactive').length;
 
 
 
@@ -277,14 +279,14 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             )}
           </div>
           <div className="min-w-0">
-            <span className="font-semibold text-slate-900 block truncate hover:text-purple-600 transition-colors">
+            <span className="font-semibold text-md text-slate-900 block truncate hover:text-purple-600 transition-colors">
               {artist.name}
             </span>
-            {artist.stageName && (
+            {/* {artist.stageName && (
               <span className="text-[11px] text-slate-400 block truncate">
                 {artist.stageName}
               </span>
-            )}
+            )} */}
           </div>
         </div>
       )
@@ -307,31 +309,20 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
     },
     {
       key: 'status',
-      header: 'Tour Status',
+      header: 'Status',
       render: (artist) => {
-        const isTouring = artist.status === 'touring';
+        const isActive = artist.status === 'active';
         return (
           <span
-            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${isTouring
+            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${isActive
               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              : artist.status === 'available'
-                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                : 'bg-slate-100 text-slate-700 border-slate-200'
+              : 'bg-slate-100 text-slate-600 border-slate-200'
               }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${isTouring
-                ? 'bg-emerald-500 animate-pulse'
-                : artist.status === 'available'
-                  ? 'bg-blue-500'
-                  : 'bg-slate-400'
-                }`}
+              className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}
             />
-            {isTouring
-              ? 'On World Tour'
-              : artist.status === 'available'
-                ? 'Booking Available'
-                : 'Roster Ready'}
+            {isActive ? 'Active' : 'Inactive'}
           </span>
         );
       }
@@ -340,14 +331,16 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
       key: 'location',
       header: 'Location & Agency',
       render: (artist) => (
-        <div className="text-slate-600">
-          <div className="flex items-center gap-1 truncate">
-            <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">{artist.city ? `${artist.city}, ` : ''}{artist.country}</span>
+        <div className="space-y-0.5 min-w-0">
+          <div className="flex items-center gap-1.5 truncate">
+            <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+            <span className="text-xs font-semibold text-slate-800 truncate">
+              {artist.city ? `${artist.city}, ` : ''}{artist.country}
+            </span>
           </div>
           {artist.management?.agency && (
-            <div className="text-[11px] text-slate-400 truncate mt-0.5">
-              {artist.management.agency.split('/')[0]}
+            <div className="text-[11px] font-medium text-slate-600 truncate pl-5">
+              {artist.management.agency.split('/')[0].trim()}
             </div>
           )}
         </div>
@@ -375,17 +368,16 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           <button
             type="button"
             onClick={() => setSelectedRiderArtist(artist)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-purple-700 hover:text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
             title="View Technical & Hospitality Rider"
           >
-            <FileText className="h-3 w-3" />
-            <span>Rider</span>
+            <Eye className="h-3.5 w-3.5" />
           </button>
 
           <button
             type="button"
             onClick={() => handleOpenEdit(artist)}
-            className="p-1.5 rounded-md text-slate-600 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors cursor-pointer"
             title="Edit artist details"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -445,38 +437,30 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Metrics Row: Total Artists, Active Artists, Inactive Artists */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <MetricCard
           label="Total Artists"
-          value={totalHeadliners}
+          value={totalArtists}
           subtext="Managed in vendor catalog"
           icon={Users}
           accentColor="purple"
         />
 
         <MetricCard
-          label="Actively On Tour"
-          value={touringCount}
-          subtext="Stadium & arena runs live"
-          icon={Sparkles}
+          label="Active Artists"
+          value={activeCount}
+          subtext="Available & touring on platform"
+          icon={UserCheck}
           accentColor="emerald"
         />
 
         <MetricCard
-          label="Ready For Booking"
-          value={availableCount}
-          subtext="Open tour dates & festivals"
-          icon={CheckCircle2}
-          accentColor="cyan"
-        />
-
-        <MetricCard
-          label="Upcoming Tour Stops"
-          value={totalUpcomingShows}
-          subtext="Scheduled arena dates"
-          icon={Radio}
-          accentColor="amber"
+          label="Inactive Artists"
+          value={inactiveCount}
+          subtext="On hiatus, break or paused"
+          icon={UserX}
+          accentColor="rose"
         />
       </div>
 
@@ -526,11 +510,9 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="h-10 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:border-purple-500 cursor-pointer shadow-2xs"
             >
-              <option value="all">All Tour Statuses</option>
-              <option value="touring">Active On World Tour</option>
-              <option value="active">Active Touring Roster</option>
-              <option value="available">Booking Available</option>
-              <option value="on-break">On Hiatus / Break</option>
+              <option value="all">All Statuses ({totalArtists})</option>
+              <option value="active">Active ({activeCount})</option>
+              <option value="inactive">Inactive ({inactiveCount})</option>
             </select>
 
             {/* View Mode Toggle */}
@@ -620,7 +602,6 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           <div>
             <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginatedArtists.map((artist) => {
-                const isTouring = artist.status === 'touring';
                 return (
                   <div
                     key={artist.id}
@@ -639,19 +620,16 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                         {/* Status Pill */}
                         <div className="absolute top-2.5 right-2.5">
                           <span
-                            className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full border shadow-2xs backdrop-blur-md ${isTouring
+                            className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border shadow-2xs backdrop-blur-md ${artist.status === 'active'
                               ? 'bg-emerald-500/90 text-white border-emerald-400/50'
-                              : artist.status === 'available'
-                                ? 'bg-blue-500/90 text-white border-blue-400/50'
-                                : 'bg-slate-700/80 text-slate-200 border-slate-600'
+                              : 'bg-slate-800/90 text-slate-300 border-slate-700'
                               }`}
                           >
-                            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                            {isTouring
-                              ? 'On World Tour'
-                              : artist.status === 'available'
-                                ? 'Booking Available'
-                                : 'Roster Ready'}
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${artist.status === 'active' ? 'bg-white' : 'bg-slate-400'
+                                }`}
+                            />
+                            {artist.status === 'active' ? 'Active' : 'Inactive'}
                           </span>
                         </div>
 
@@ -719,21 +697,28 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                         </div>
 
                         {/* Bio Snippet */}
-                        <p className="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                          {artist.bio}
-                        </p>
+                        <div className="mt-2.5 p-2 rounded-md bg-slate-50/80 border border-slate-100/80">
+                          <p className="text-[11.5px] leading-relaxed text-slate-500 line-clamp-2 font-normal">
+                            {artist.bio}
+                          </p>
+                        </div>
 
                         {/* Subgenre Tags */}
                         {artist.subGenres && artist.subGenres.length > 0 && (
-                          <div className="mt-2.5 flex flex-wrap gap-1">
+                          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                             {artist.subGenres.slice(0, 3).map((sg, i) => (
                               <span
                                 key={i}
-                                className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"
+                                className="inline-flex items-center text-[10px] font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/80 transition-colors shadow-2xs"
                               >
                                 {sg}
                               </span>
                             ))}
+                            {artist.subGenres.length > 3 && (
+                              <span className="text-[10px] font-semibold text-slate-400 pl-0.5">
+                                +{artist.subGenres.length - 3} more
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -744,17 +729,17 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedRiderArtist(artist)}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+                        className="p-1.5 inline-flex items-center gap-1.5 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+                        title="View technical and hospitality rider"
                       >
-                        <FileText className="h-3 w-3" />
-                        <span>Rider Specs</span>
+                        <Eye className="h-3.5 w-3.5" />
                       </button>
 
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(artist)}
-                          className="p-1.5 rounded text-slate-600 hover:text-purple-700 bg-white hover:bg-purple-50 border border-slate-200 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-md text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors cursor-pointer"
                           title="Edit artist details"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -827,16 +812,14 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             {/* Tour Status & Genre */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700">Tour Status</label>
+                <label className="font-semibold text-slate-700">Status</label>
                 <select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value as Artist['status'])}
                   className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
                 >
-                  <option value="touring">Active On World Tour (touring)</option>
-                  <option value="active">Active Touring Roster (active)</option>
-                  <option value="available">Booking Available (available)</option>
-                  <option value="on-break">On Hiatus / Break (on-break)</option>
+                  <option value="active">Active (Available for Concerts)</option>
+                  <option value="inactive">Inactive (Unavailable)</option>
                 </select>
               </div>
 
@@ -930,77 +913,130 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
         </Modal>
       )}
 
-      {/* Technical Rider Quick View Modal */}
+      {/* Artist Details View Modal */}
       {selectedRiderArtist && (
         <Modal
           isOpen={!!selectedRiderArtist}
           onClose={() => setSelectedRiderArtist(null)}
-          title={`${selectedRiderArtist.name} — Technical Rider`}
-          subtitle="Stage & Hospitality Rider Specifications"
+          title="Artist Details"
+          subtitle="Profile overview and contact information"
           maxWidth="md"
         >
           <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50/50 border border-purple-100">
-              <div className="h-12 w-12 rounded-lg overflow-hidden border border-purple-200 bg-white shrink-0 shadow-2xs">
+            {/* Header: Photo, Name, Genre, Status */}
+            <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 shadow-2xs">
                 <AppImage
                   src={selectedRiderArtist.avatar}
                   alt={selectedRiderArtist.name}
                   className="h-full w-full object-cover"
                 />
               </div>
-              <div className="min-w-0">
-                <h4 className="text-sm font-bold text-slate-900 truncate">{selectedRiderArtist.name}</h4>
-                <p className="text-xs text-purple-700 font-medium">Headlining Live Artist</p>
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Vocal Microphone
-                </span>
-                <p className="text-xs font-semibold text-slate-800">
-                  {selectedRiderArtist.rider?.microphonePreference || 'Standard Axient Digital Wireless Handheld'}
-                </p>
-              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-base font-bold text-slate-900 truncate">
+                    {selectedRiderArtist.name}
+                  </h3>
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shrink-0 ${
+                      selectedRiderArtist.status === 'active'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        selectedRiderArtist.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'
+                      }`}
+                    />
+                    {selectedRiderArtist.status === 'active' ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
 
-              <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  In-Ear Monitoring (IEM)
-                </span>
-                <p className="text-xs font-semibold text-slate-800">
-                  {selectedRiderArtist.rider?.inEarMonitors || 'Sennheiser Wireless IEM'}
-                </p>
-              </div>
-
-              <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Hospitality & Greenroom Catering
-                </span>
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  {selectedRiderArtist.rider?.hospitalityNotes || 'Quiet greenroom with organic refreshments, hot water, lemon and honey.'}
-                </p>
-              </div>
-
-              <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Management Contact
-                </span>
-                <div className="text-xs text-slate-700 space-y-0.5">
-                  <p className="font-semibold">{selectedRiderArtist.management?.managerName || 'Operations Desk'}</p>
-                  <p className="text-slate-500">{selectedRiderArtist.management?.agency || 'Talent Management'}</p>
-                  <p className="text-purple-600">{selectedRiderArtist.management?.email || 'booking@agency.com'}</p>
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                  <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/80">
+                    {selectedRiderArtist.genre}
+                  </span>
+                  {(selectedRiderArtist.city || selectedRiderArtist.country) && (
+                    <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-slate-400" />
+                      <span>{selectedRiderArtist.city ? `${selectedRiderArtist.city}, ` : ''}{selectedRiderArtist.country}</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-100">
+            {/* Contact Details (Email & Phone from Create Form) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg border border-slate-200/80 bg-white space-y-1">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-purple-600" />
+                  <span>Email Address</span>
+                </span>
+                {selectedRiderArtist.management?.email ? (
+                  <a
+                    href={`mailto:${selectedRiderArtist.management.email}`}
+                    className="text-xs font-semibold text-purple-700 hover:underline block truncate pt-0.5"
+                  >
+                    {selectedRiderArtist.management.email}
+                  </a>
+                ) : (
+                  <span className="text-xs text-slate-400 block pt-0.5">Not provided</span>
+                )}
+              </div>
+
+              <div className="p-3 rounded-lg border border-slate-200/80 bg-white space-y-1">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Phone className="h-3.5 w-3.5 text-purple-600" />
+                  <span>Phone Number</span>
+                </span>
+                {selectedRiderArtist.management?.phone ? (
+                  <a
+                    href={`tel:${selectedRiderArtist.management.phone}`}
+                    className="text-xs font-semibold text-slate-800 hover:text-purple-600 block truncate pt-0.5"
+                  >
+                    {selectedRiderArtist.management.phone}
+                  </a>
+                ) : (
+                  <span className="text-xs text-slate-400 block pt-0.5">Not provided</span>
+                )}
+              </div>
+            </div>
+
+            {/* About Us / Bio */}
+            <div className="p-3.5 rounded-lg border border-slate-200/80 bg-white space-y-1.5">
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-purple-600" />
+                <span>About Us / Bio</span>
+              </span>
+              <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line pt-0.5">
+                {selectedRiderArtist.bio || 'No bio provided for this artist.'}
+              </p>
+            </div>
+
+            {/* Actions: Edit & Close */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  const current = selectedRiderArtist;
+                  setSelectedRiderArtist(null);
+                  handleOpenEdit(current);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors cursor-pointer"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Edit Artist</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setSelectedRiderArtist(null)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white transition-colors cursor-pointer shadow-2xs"
+                className="px-4 py-1.5 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
               >
-                Close Rider
+                Close
               </button>
             </div>
           </div>

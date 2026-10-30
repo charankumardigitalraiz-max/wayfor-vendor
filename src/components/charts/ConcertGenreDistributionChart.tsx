@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Music, MapPin } from 'lucide-react';
 import type { ConcertEvent } from '../../types';
 
@@ -13,9 +13,20 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
   formatCurrency: customFormatCurrency,
   className = ''
 }) => {
-  const [dimension, setDimension] = useState<'genre' | 'city'>('genre');
+  const [dimension, setDimension] = useState<'genre' | 'city'>('city');
   const [metricMode, setMetricMode] = useState<'revenue' | 'volume'>('revenue');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
 
   const formatCurrency = customFormatCurrency || ((val: number) => {
     if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
@@ -138,72 +149,44 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
             <div className="h-6 w-6 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
               {dimension === 'genre' ? <Music className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
             </div>
-            <h3 className="text-sm font-semibold tracking-tight text-slate-900">
-              {dimension === 'genre' ? 'Genre Box Office Distribution' : 'Tour Cities Admissions Share'}
-            </h3>
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+                {dimension === 'genre' ? 'Genre Box Office Distribution' : 'Tour Cities Admissions Share'}
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {dimension === 'genre'
+                  ? 'Revenue & ticket admissions split across music genres'
+                  : 'Geographic demand & attendance density by host city'}
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {dimension === 'genre'
-              ? 'Revenue & ticket admissions split across music genres'
-              : 'Geographic demand & attendance density by host city'}
-          </p>
+
         </div>
 
         {/* Dimension & Metric Switchers */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Dimension Selector (Genre vs City) */}
-          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
-            <button
-              type="button"
-              onClick={() => {
-                setDimension('genre');
-                setHoveredId(null);
-              }}
-              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${
-                dimension === 'genre'
-                  ? 'bg-white text-purple-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              By Genre
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDimension('city');
-                setHoveredId(null);
-              }}
-              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${
-                dimension === 'city'
-                  ? 'bg-white text-purple-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              By City
-            </button>
-          </div>
+
 
           {/* Metric Selector (Revenue vs Tickets) */}
           <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
             <button
               type="button"
               onClick={() => setMetricMode('revenue')}
-              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${
-                metricMode === 'revenue'
-                  ? 'bg-white text-purple-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${metricMode === 'revenue'
+                ? 'bg-white text-purple-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
               Revenue
             </button>
             <button
               type="button"
               onClick={() => setMetricMode('volume')}
-              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${
-                metricMode === 'volume'
-                  ? 'bg-white text-purple-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`px-2.5 py-1 font-semibold rounded-md transition-all cursor-pointer ${metricMode === 'volume'
+                ? 'bg-white text-purple-700 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
               Tickets
             </button>
@@ -212,7 +195,78 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
       </div>
 
       {/* Main Content Area: Donut Chart + Breakdown List */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 py-3 flex-1">
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => {
+          setHoveredId(null);
+          setMousePos(null);
+        }}
+        className="relative flex flex-col sm:flex-row items-center gap-6 py-3 flex-1"
+      >
+        {/* Floating Interactive Tooltip */}
+        {activeSegment && mousePos && (
+          <div
+            className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-1.5 min-w-56 transition-transform duration-75"
+            style={{
+              left: `${mousePos.x}px`,
+              top: `${mousePos.y}px`,
+              transform: `translate(${mousePos.x < 130
+                ? '8px'
+                : containerRef.current && mousePos.x > containerRef.current.clientWidth - 130
+                  ? 'calc(-100% - 8px)'
+                  : '-50%'
+                }, ${mousePos.y < 125 ? '15px' : 'calc(-100% - 12px)'})`
+            }}
+          >
+            {/* Tooltip Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="h-2.5 w-2.5 rounded-full shrink-0 shadow-2xs"
+                  style={{ backgroundColor: activeSegment.color }}
+                />
+                <span className="font-bold text-slate-900 truncate">
+                  {activeSegment.label}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 shrink-0">
+                {activeSegment.percentage}% share
+              </span>
+            </div>
+
+            {/* Metrics Breakdown */}
+            <div className="space-y-1 pt-0.5 text-[11px]">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Box Office Gross:</span>
+                <span className="font-bold text-slate-900">
+                  {formatCurrency(activeSegment.revenue)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Tickets Sold:</span>
+                <span className="font-semibold text-slate-800">
+                  {activeSegment.volume.toLocaleString()} tix
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Total Events:</span>
+                <span className="font-semibold text-slate-800">
+                  {activeSegment.count} {activeSegment.count === 1 ? 'event' : 'events'}
+                </span>
+              </div>
+              {activeSegment.volume > 0 && (
+                <div className="flex items-center justify-between border-t border-slate-100 pt-1 text-slate-400">
+                  <span>Avg Ticket Price:</span>
+                  <span className="font-medium text-slate-700">
+                    {formatCurrency(Math.round(activeSegment.revenue / activeSegment.volume))}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* SVG Donut */}
         <div className="relative shrink-0 w-48 h-48">
           <svg viewBox="0 0 200 200" className="w-full h-full select-none">
@@ -232,8 +286,15 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
                     filter: isHovered ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.18))' : 'none',
                     opacity: hoveredId && !isHovered ? 0.6 : 1
                   }}
-                  onMouseEnter={() => setHoveredId(seg.id)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  onMouseEnter={(e) => {
+                    setHoveredId(seg.id);
+                    handleMouseMove(e);
+                  }}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => {
+                    setHoveredId(null);
+                    setMousePos(null);
+                  }}
                 />
               );
             })}
@@ -253,8 +314,8 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
                   ? formatCurrency(activeSegment.revenue)
                   : `${activeSegment.volume.toLocaleString()} tix`
                 : metricMode === 'revenue'
-                ? formatCurrency(totalCalculated)
-                : `${totalCalculated.toLocaleString()} tix`}
+                  ? formatCurrency(totalCalculated)
+                  : `${totalCalculated.toLocaleString()} tix`}
             </span>
           </div>
         </div>
@@ -266,13 +327,19 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
             return (
               <div
                 key={seg.id}
-                onMouseEnter={() => setHoveredId(seg.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={`rounded-lg border px-3 py-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                  isHovered
-                    ? 'border-purple-300 bg-purple-50/60 shadow-2xs'
-                    : 'border-slate-100 bg-slate-50/60 hover:bg-white'
-                }`}
+                onMouseEnter={(e) => {
+                  setHoveredId(seg.id);
+                  handleMouseMove(e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={() => {
+                  setHoveredId(null);
+                  setMousePos(null);
+                }}
+                className={`rounded-lg border px-3 py-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${isHovered
+                  ? 'border-purple-300 bg-purple-50/60 shadow-2xs'
+                  : 'border-slate-100 bg-slate-50/60 hover:bg-white'
+                  }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span

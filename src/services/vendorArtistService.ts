@@ -69,10 +69,7 @@ export class VendorArtistService {
       : [genre, 'Live Performance'];
 
     const statusVal = raw.status ? String(raw.status).toLowerCase() : 'active';
-    const validStatuses: Artist['status'][] = ['touring', 'active', 'available', 'on-break'];
-    const status: Artist['status'] = validStatuses.includes(statusVal as Artist['status'])
-      ? (statusVal as Artist['status'])
-      : 'active';
+    const status: Artist['status'] = (statusVal === 'inactive' || statusVal === 'on-break') ? 'inactive' : 'active';
 
     const management = {
       managerName: raw.managerName || raw.management?.managerName || undefined,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export interface FunnelTier {
   id: string;
@@ -27,6 +27,17 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const [hoveredTierId, setHoveredTierId] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
@@ -54,6 +65,9 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
   const topMaxWidth = 480;
   const bottomMinWidth = 120;
 
+  const activeTier = hoveredTierId ? tiers.find((t) => t.id === hoveredTierId) : null;
+  const activeTierIndex = activeTier ? tiers.findIndex((t) => t.id === activeTier.id) : -1;
+
   return (
     <div className={`rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between ${className}`}>
       {/* Header */}
@@ -74,7 +88,91 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
       </div>
 
       {/* Funnel Layout */}
-      <div className="flex-1 flex items-center justify-center py-2">
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => {
+          setHoveredTierId(null);
+          setMousePos(null);
+        }}
+        className="relative flex-1 flex items-center justify-center py-2"
+      >
+        {/* Floating Interactive Tooltip */}
+        {activeTier && mousePos && (
+          <div
+            className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-1.5 min-w-56 transition-transform duration-75"
+            style={{
+              left: `${mousePos.x}px`,
+              top: `${mousePos.y}px`,
+              transform: `translate(${mousePos.x < 130
+                  ? '8px'
+                  : containerRef.current && mousePos.x > containerRef.current.clientWidth - 130
+                    ? 'calc(-100% - 8px)'
+                    : '-50%'
+                }, ${mousePos.y < 125 ? '15px' : 'calc(-100% - 12px)'})`
+            }}
+          >
+            {/* Tooltip Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="h-2.5 w-2.5 rounded-full shrink-0 shadow-2xs"
+                  style={{
+                    backgroundColor:
+                      activeTier.color ||
+                      defaultColors[activeTierIndex % defaultColors.length].fill
+                  }}
+                />
+                <span className="font-bold text-slate-900 truncate">
+                  {activeTier.label}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 shrink-0">
+                Stage {activeTierIndex + 1} of {tiers.length}
+              </span>
+            </div>
+
+            {/* Metrics Breakdown */}
+            <div className="space-y-1 pt-0.5 text-[11px]">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Volume Count:</span>
+                <span className="font-bold text-slate-900">
+                  {activeTier.value.toLocaleString()} {unit}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Overall Conversion:</span>
+                <span className="font-semibold text-slate-800">
+                  {((activeTier.value / totalBase) * 100).toFixed(1)}% of top
+                </span>
+              </div>
+
+              {activeTierIndex > 0 ? (
+                <>
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-1">
+                    <span className="text-slate-500">Step Conversion:</span>
+                    <span className="font-semibold text-emerald-600">
+                      {((activeTier.value / (tiers[activeTierIndex - 1].value || 1)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Drop-off:</span>
+                    <span className="font-medium text-rose-500">
+                      -{(tiers[activeTierIndex - 1].value - activeTier.value).toLocaleString()} {unit} (
+                      {(100 - (activeTier.value / (tiers[activeTierIndex - 1].value || 1)) * 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="border-t border-slate-100 pt-1 text-[10px] text-slate-400">
+                  Top-of-funnel reach baseline (100%)
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="w-full max-w-lg flex items-center gap-4">
           {/* SVG Tapered Tiers */}
           <div className="flex-1 relative">
@@ -115,8 +213,15 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
                   <g
                     key={tier.id}
                     className="cursor-pointer transition-transform duration-200"
-                    onMouseEnter={() => setHoveredTierId(tier.id)}
-                    onMouseLeave={() => setHoveredTierId(null)}
+                    onMouseEnter={(e) => {
+                      setHoveredTierId(tier.id);
+                      handleMouseMove(e);
+                    }}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={() => {
+                      setHoveredTierId(null);
+                      setMousePos(null);
+                    }}
                     style={{
                       transformOrigin: `${svgWidth / 2}px ${y + tierHeight / 2}px`,
                       transform: isHovered ? 'scale(1.02)' : 'scale(1)',
@@ -179,7 +284,16 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
               return (
                 <div
                   key={tier.id}
-                  className="flex items-center"
+                  className="flex items-center cursor-pointer"
+                  onMouseEnter={(e) => {
+                    setHoveredTierId(tier.id);
+                    handleMouseMove(e);
+                  }}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => {
+                    setHoveredTierId(null);
+                    setMousePos(null);
+                  }}
                   style={{
                     opacity: mounted ? 1 : 0,
                     transform: mounted ? 'none' : 'translateX(10px)',
@@ -187,9 +301,8 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
                   }}
                 >
                   <span
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs tracking-tight border transition-all ${
-                      tier.badgeColor || palette.badgeBg
-                    } ${isHovered ? 'scale-110 shadow-xs' : ''}`}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs tracking-tight border transition-all ${tier.badgeColor || palette.badgeBg
+                      } ${isHovered ? 'scale-110 shadow-xs' : ''}`}
                   >
                     {tier.badgeText || `${pct}%`}
                   </span>

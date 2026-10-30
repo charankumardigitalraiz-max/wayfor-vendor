@@ -21,13 +21,6 @@ export const ALL_WAYFOR_MODULES = [
     description: 'Promote arena shows, manage stadium venues, curate artist lineups & sell box office passes.'
   },
   {
-    id: 'carpooling' as VendorModule,
-    name: 'Carpooling & Rides',
-    badge: 'Carpooling & Fleet',
-    category: 'Mobility & Fleet',
-    description: 'Manage intercity carpooling, corporate commute lines, passenger bookings & fleet operations.'
-  },
-  {
     id: 'trips' as VendorModule,
     name: 'Trip Planner & Group Travel',
     badge: 'Trip Planner',
@@ -799,7 +792,8 @@ export const mockVenues: Venue[] = [
     soundSystem: 'L-Acoustics K1 Stadium Array with K1-SB subwoofers',
     type: 'Stadium',
     contactPerson: 'Bhavesh Patel (+91 98250 11920)',
-    status: 'active'
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&auto=format&fit=crop&q=80'
   },
   {
     id: 'ven-02',
@@ -810,7 +804,8 @@ export const mockVenues: Venue[] = [
     soundSystem: 'd&b audiotechnik GSL System & SL-SUB arc',
     type: 'Stadium',
     contactPerson: 'Sunil Aggarwal (+91 98110 44291)',
-    status: 'active'
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&auto=format&fit=crop&q=80'
   },
   {
     id: 'ven-03',
@@ -821,7 +816,8 @@ export const mockVenues: Venue[] = [
     soundSystem: 'Meyer Sound PANTHER Line Array & 2100-LFC',
     type: 'Open Grounds',
     contactPerson: 'Farhan Dastoor (+91 98200 88291)',
-    status: 'active'
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80'
   },
   {
     id: 'ven-04',
@@ -832,7 +828,8 @@ export const mockVenues: Venue[] = [
     soundSystem: 'JBL VTX A12 Acoustic Rig & Delay Towers',
     type: 'Stadium',
     contactPerson: 'K. S. Rao (+91 98490 22391)',
-    status: 'active'
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80'
   },
   {
     id: 'ven-05',
@@ -843,7 +840,8 @@ export const mockVenues: Venue[] = [
     soundSystem: 'Adamson E-Series Line Array',
     type: 'Club',
     contactPerson: 'Cherian George (+91 98860 39182)',
-    status: 'active'
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80'
   }
 ];
 
@@ -902,7 +900,7 @@ export const mockArtists: Artist[] = [
     country: 'United States',
     city: 'New York / Milan',
     monthlyListeners: '14.8M',
-    status: 'touring',
+    status: 'active',
     verified: true,
     totalConcerts: 34,
     upcomingConcerts: 6,
@@ -937,7 +935,7 @@ export const mockArtists: Artist[] = [
     country: 'India',
     city: 'Mumbai',
     monthlyListeners: '43.2M',
-    status: 'touring',
+    status: 'active',
     verified: true,
     totalConcerts: 52,
     upcomingConcerts: 8,
@@ -971,7 +969,7 @@ export const mockArtists: Artist[] = [
     country: 'United Kingdom',
     city: 'London',
     monthlyListeners: '86.4M',
-    status: 'touring',
+    status: 'active',
     verified: true,
     totalConcerts: 110,
     upcomingConcerts: 14,
@@ -1006,7 +1004,7 @@ export const mockArtists: Artist[] = [
     country: 'India',
     city: 'Chandigarh / Toronto',
     monthlyListeners: '24.1M',
-    status: 'touring',
+    status: 'active',
     verified: true,
     totalConcerts: 40,
     upcomingConcerts: 10,
@@ -1074,7 +1072,7 @@ export const mockArtists: Artist[] = [
     country: 'India',
     city: 'Jaipur / New Delhi',
     monthlyListeners: '4.8M',
-    status: 'available',
+    status: 'active',
     verified: true,
     totalConcerts: 28,
     upcomingConcerts: 2,

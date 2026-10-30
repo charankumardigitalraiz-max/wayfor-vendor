@@ -148,41 +148,46 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
         />
       </div>
 
-      {/* Chart Section Header with Chart Type Switcher */}
-      <div className="flex items-center justify-between pt-1">
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Concerts Analytics & Visual Intelligence
-          </h3>
-          <p className="text-[11px] text-slate-400">
-            {chartView === 'funnel-distribution'
-              ? 'Multi-stage ticketing conversion funnel & genre / city box office distribution'
-              : 'Historical box office velocity & interactive inventory fill breakdown'}
-          </p>
+      {/* Chart Section Header Card with Chart Type Switcher */}
+      <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-slate-900 truncate">
+              Concert Analytics & Performance
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5 truncate sm:whitespace-normal">
+              {chartView === 'funnel-distribution'
+                ? 'Ticket booking conversion funnel & revenue breakdown by genre and city'
+                : 'Ticket sales trends over time & arena seat capacity fill rates'}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+        <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => setChartView('funnel-distribution')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
               chartView === 'funnel-distribution'
                 ? 'bg-white text-purple-700 shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Funnel & Distribution
+            Funnel & Breakdown
           </button>
           <button
             type="button"
             onClick={() => setChartView('trend-fill')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
               chartView === 'trend-fill'
                 ? 'bg-white text-purple-700 shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Velocity & Donut
+            Sales Trends & Capacity
           </button>
         </div>
       </div>

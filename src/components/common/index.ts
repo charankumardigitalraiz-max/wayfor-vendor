@@ -6,3 +6,4 @@ export * from './Table';
 export * from './Pagination';
 export * from './Modal';
 export * from './Toast';
+export * from './CustomDatePicker';

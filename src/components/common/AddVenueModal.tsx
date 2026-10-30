@@ -249,10 +249,10 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
 
   const getInputClassName = (fieldName: string) => {
     const hasError = touched[fieldName] && errors[fieldName];
-    return `w-full h-10 rounded-md border text-xs text-slate-800 transition-all ${hasError
-      ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-100'
-      : 'border-slate-200 bg-slate-50/60 focus:bg-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100'
-      } shadow-2xs`;
+    return `w-full h-10 rounded-md border text-xs text-slate-900 transition-colors ${hasError
+      ? 'border-rose-400 bg-white focus:border-rose-600 focus:outline-none focus:ring-1 focus:ring-rose-600'
+      : 'border-slate-300 bg-white hover:border-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600'
+      }`;
   };
 
   return (
@@ -367,7 +367,7 @@ export const AddVenueModal: React.FC<AddVenueModalProps> = ({
             <select
               value={type}
               onChange={(e) => setType(e.target.value as Venue['type'])}
-              className="w-full h-10 rounded-md border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs transition-all cursor-pointer"
+              className="w-full h-10 rounded-md border border-slate-300 bg-white px-3 text-xs text-slate-900 font-medium hover:border-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors cursor-pointer"
             >
               <option value="Stadium">Stadium</option>
               <option value="Arena">Arena</option>

@@ -39,6 +39,17 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
           <span className="rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-semibold text-slate-800 shadow-xs">
             {concert.genre}
           </span>
+          <span
+            className={`rounded-full backdrop-blur-md px-2 py-0.5 text-[10px] font-bold shadow-xs border ${
+              soldPercent >= 55
+                ? 'bg-emerald-500/90 text-white border-emerald-400'
+                : soldPercent < 45
+                ? 'bg-rose-500/90 text-white border-rose-400'
+                : 'bg-amber-500/90 text-white border-amber-400'
+            }`}
+          >
+            {soldPercent >= 55 ? 'Profit' : soldPercent < 45 ? 'Loss' : 'Break-Even'}
+          </span>
         </div>
 
         <div className="absolute top-3 right-3">
@@ -120,9 +131,15 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
           })()}
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-semibold text-slate-900">
-              ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
-            </span>
+            <div className="text-xs font-semibold text-slate-900">
+              {concert.isFree || (concert.minPrice === 0 && concert.maxPrice === 0) ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Free Admission
+                </span>
+              ) : (
+                `₹${concert.minPrice.toLocaleString()} - ₹${concert.maxPrice.toLocaleString()}`
+              )}
+            </div>
 
             <div className="flex items-center gap-1.5">
               <button

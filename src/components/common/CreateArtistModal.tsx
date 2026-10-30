@@ -134,7 +134,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Martin Garrix, A.R. Rahman, Diljit Dosanjh"
-            className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs transition-all"
+            className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
           />
         </div>
 
@@ -150,7 +150,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="artist@example.com"
-              className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs transition-all"
+              className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
             />
           </div>
 
@@ -164,7 +164,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs transition-all"
+              className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
             />
           </div>
         </div>
@@ -238,7 +238,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             value={aboutUs}
             onChange={(e) => setAboutUs(e.target.value)}
             placeholder="Write a brief description about the artist, style, accomplishments, or tour details..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50/60 p-3 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs transition-all resize-y"
+            className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors resize-y"
           />
         </div>
 
