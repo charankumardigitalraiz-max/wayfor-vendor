@@ -49,6 +49,50 @@ interface ModuleGroup {
   items: ModuleSubItem[];
 }
 
+interface ModuleColorStyle {
+  activeBg: string;
+  activeText: string;
+  activeIcon: string;
+  activeSubBg: string;
+  activeBadgeBg: string;
+  activeBadgeText: string;
+}
+
+const MODULE_STYLES: Record<string, ModuleColorStyle> = {
+  concerts: {
+    activeBg: 'bg-purple-50 text-purple-700',
+    activeText: 'text-purple-700',
+    activeIcon: 'text-purple-600',
+    activeSubBg: 'bg-purple-50/90 text-purple-700',
+    activeBadgeBg: 'bg-purple-100',
+    activeBadgeText: 'text-purple-700'
+  },
+  trips: {
+    activeBg: 'bg-amber-50 text-amber-700',
+    activeText: 'text-amber-700',
+    activeIcon: 'text-amber-600',
+    activeSubBg: 'bg-amber-50/90 text-amber-700',
+    activeBadgeBg: 'bg-amber-100',
+    activeBadgeText: 'text-amber-700'
+  },
+  'stranger-meets': {
+    activeBg: 'bg-teal-50 text-teal-700',
+    activeText: 'text-teal-700',
+    activeIcon: 'text-teal-600',
+    activeSubBg: 'bg-teal-50/90 text-teal-700',
+    activeBadgeBg: 'bg-teal-100',
+    activeBadgeText: 'text-teal-700'
+  },
+  carpooling: {
+    activeBg: 'bg-indigo-50 text-indigo-700',
+    activeText: 'text-indigo-700',
+    activeIcon: 'text-indigo-600',
+    activeSubBg: 'bg-indigo-50/90 text-indigo-700',
+    activeBadgeBg: 'bg-indigo-100',
+    activeBadgeText: 'text-indigo-700'
+  }
+};
+
 export const VendorSidebar: React.FC<VendorSidebarProps> = ({
   activeTab,
   onTabChange,
@@ -118,6 +162,14 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
     onTabChange(tab);
   };
 
+  const handleParentModuleClick = (module: ModuleGroup) => {
+    if (module.items && module.items.length > 0) {
+      setExpandedModules((prev) => ({ ...prev, [module.id]: true }));
+      const defaultSub = module.items[0];
+      handleNav(defaultSub.id, defaultSub.path);
+    }
+  };
+
   // 1. Concerts Module Definition
   const concertsModule: ModuleGroup = {
     id: 'concerts',
@@ -182,7 +234,7 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
   );
 
   return (
-    <aside className="w-[252px] shrink-0 border-r border-slate-200/80 bg-white flex flex-col h-screen sticky top-0 z-20 font-sans select-none">
+    <aside className="w-64 shrink-0 border-r border-slate-200/80 bg-white flex flex-col h-screen sticky top-0 z-20 font-sans select-none">
       {/* Brand Identity Header */}
       <div className="shrink-0 px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -203,27 +255,30 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
       </div>
 
       {/* Navigation Scroll Area */}
-      <div className="flex-1 min-h-0 px-2.5 py-3 space-y-3 overflow-y-auto">
+      <div className="flex-1 min-h-0 px-3 py-3 space-y-1 overflow-y-auto">
         {/* Core Studio Dashboard */}
-        <div>
-          <button
-            type="button"
-            onClick={() => handleNav('overview', '/overview')}
-            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all text-left cursor-pointer group ${location.pathname === '/overview' || location.pathname === '/'
-                ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium'
-              }`}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Compass
-                className={`h-4 w-4 shrink-0 transition-colors ${location.pathname === '/overview' || location.pathname === '/'
-                    ? 'text-purple-600'
-                    : 'text-slate-400 group-hover:text-slate-600'
-                  }`}
-              />
-              <span className="truncate">Studio Dashboard</span>
-            </div>
-          </button>
+        <button
+          type="button"
+          onClick={() => handleNav('overview', '/overview')}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname === '/overview' || location.pathname === '/'
+              ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+            }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Compass
+              className={`h-4 w-4 shrink-0 transition-colors ${location.pathname === '/overview' || location.pathname === '/'
+                  ? 'text-purple-600'
+                  : 'text-slate-400 group-hover:text-slate-600'
+                }`}
+            />
+            <span className="truncate">Studio Dashboard</span>
+          </div>
+        </button>
+
+        {/* OPERATIONS Header */}
+        <div className="pt-4 pb-1 px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+          Operations
         </div>
 
         {/* Assigned Modules (Collapsible Sections) */}
@@ -231,54 +286,73 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
           {vendorActiveModules.map((module) => {
             const isExpanded = Boolean(expandedModules[module.id]);
             const Icon = module.icon;
+            const style = MODULE_STYLES[module.id] || MODULE_STYLES.concerts;
             const isModuleActive = module.items.some(
-              (sub) => sub.id === activeTab || location.pathname.startsWith(sub.path)
+              (sub) =>
+                sub.id === activeTab ||
+                location.pathname === sub.path ||
+                (sub.path !== '/overview' &&
+                  sub.path !== '/concerts' &&
+                  location.pathname.startsWith(sub.path))
             );
 
             return (
-              <div key={module.id} className="space-y-0.5">
+              <div key={module.id} className="space-y-1">
                 {/* Collapsible Module Header */}
                 <button
                   type="button"
-                  onClick={(e) => toggleModule(module.id, e)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all text-left group ${isModuleActive && !isExpanded
-                      ? 'bg-purple-50/70 text-purple-700'
-                      : 'text-slate-700 hover:bg-slate-100/70 hover:text-slate-900'
+                  onClick={() => handleParentModuleClick(module)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${isModuleActive && !isExpanded
+                      ? `${style.activeBg} font-semibold shadow-2xs`
+                      : isModuleActive
+                        ? 'text-slate-900 font-semibold bg-slate-50/70'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
                     }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0 pr-1">
                     <Icon
                       className={`h-4 w-4 shrink-0 transition-colors ${isModuleActive
-                          ? 'text-purple-600'
+                          ? style.activeIcon
                           : 'text-slate-400 group-hover:text-slate-600'
                         }`}
                     />
                     <span className="truncate">{module.label}</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-1">
                     {module.badge !== undefined && module.badge > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${isModuleActive
+                            ? `${style.activeBadgeBg} ${style.activeBadgeText}`
+                            : 'bg-slate-100 text-slate-600'
+                          }`}
+                      >
                         {module.badge}
                       </span>
                     )}
-                    <ChevronDown
-                      className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-slate-600' : ''
+                    <span
+                      onClick={(e) => toggleModule(module.id, e)}
+                      className={`p-0.5 rounded hover:bg-black/5 transition-colors cursor-pointer ${isModuleActive ? style.activeText : 'text-slate-400 hover:text-slate-600'
                         }`}
-                    />
+                      title={isExpanded ? 'Collapse section' : 'Expand section'}
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
+                      />
+                    </span>
                   </div>
                 </button>
 
                 {/* Sub-Items Tree */}
-                {isExpanded && (
-                  <div className="ml-3 pl-2.5 border-l border-slate-200/80 space-y-1.5 pt-1 pb-1.5">
+                {isExpanded && module.items.length > 0 && (
+                  <div className="ml-6 pl-3 border-l border-slate-200/80 my-1 space-y-0.5">
                     {module.items.map((sub) => {
-                      const SubIcon = sub.icon;
                       const isSubActive =
                         activeTab === sub.id ||
                         location.pathname === sub.path ||
-                        (sub.path !== '/concerts' &&
-                          sub.path !== '/overview' &&
+                        (sub.path !== '/overview' &&
+                          sub.path !== '/concerts' &&
                           location.pathname.startsWith(sub.path));
 
                       return (
@@ -286,25 +360,17 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                           key={sub.id}
                           type="button"
                           onClick={() => handleNav(sub.id, sub.path)}
-                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all text-left cursor-pointer group ${isSubActive
-                              ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium'
+                          className={`w-full flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-colors text-left cursor-pointer group ${isSubActive
+                              ? `${style.activeSubBg} font-semibold shadow-2xs`
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
                             }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <SubIcon
-                              className={`h-3.5 w-3.5 shrink-0 transition-colors ${isSubActive
-                                  ? 'text-purple-600'
-                                  : 'text-slate-400 group-hover:text-slate-600'
-                                }`}
-                            />
-                            <span className="truncate">{sub.label}</span>
-                          </div>
+                          <span className="truncate">{sub.label}</span>
 
                           {sub.badge !== undefined && sub.badge !== 0 && (
                             <span
-                              className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-full ${isSubActive
-                                  ? 'bg-purple-100 text-purple-700'
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ml-1.5 ${isSubActive
+                                  ? `${style.activeBadgeBg} ${style.activeBadgeText}`
                                   : 'bg-slate-100 text-slate-500'
                                 }`}
                             >
@@ -321,18 +387,18 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
           })}
         </div>
 
-        {/* Finance & Controls */}
-        <div className="pt-2 border-t border-slate-100 space-y-0.5">
-          <div className="px-2.5 pb-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Management
-          </div>
+        {/* MANAGEMENT Header */}
+        <div className="pt-5 pb-1 px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+          Management
+        </div>
 
+        <div className="space-y-1">
           <button
             type="button"
             onClick={() => handleNav('payouts', '/payouts')}
-            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all text-left cursor-pointer group ${location.pathname.startsWith('/payouts')
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname.startsWith('/payouts')
                 ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
               }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">
@@ -349,9 +415,9 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
           <button
             type="button"
             onClick={() => handleNav('settings', '/settings')}
-            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all text-left cursor-pointer group ${location.pathname.startsWith('/settings')
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname.startsWith('/settings')
                 ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
               }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">

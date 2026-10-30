@@ -321,7 +321,7 @@ export const VendorLogin: React.FC<VendorLoginProps> = ({ onLogin, onShowToast }
           </div>
 
           {/* Quick Demo Accounts Selection */}
-          {loginMode === 'otp' && otpStep === 'enter_identifier' && (
+          {/* {loginMode === 'otp' && otpStep === 'enter_identifier' && (
             <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
               <div className="flex items-center justify-between text-[11px] text-slate-500 font-normal">
                 <span className="flex items-center gap-1 text-slate-700 font-medium">
@@ -369,7 +369,7 @@ export const VendorLogin: React.FC<VendorLoginProps> = ({ onLogin, onShowToast }
                 </button>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Error Message */}
           {errorMessage && (
@@ -482,11 +482,10 @@ export const VendorLogin: React.FC<VendorLoginProps> = ({ onLogin, onShowToast }
                           value={digit}
                           onChange={(e) => handleOtpDigitChange(index, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-11 h-12 text-center text-lg font-mono font-bold rounded-lg border outline-none transition-all ${
-                            digit
+                          className={`w-11 h-12 text-center text-lg font-mono font-bold rounded-lg border outline-none transition-all ${digit
                               ? 'border-purple-600 bg-purple-50/30 text-purple-950 ring-2 ring-purple-100'
                               : 'border-slate-300 bg-white text-slate-900 focus:border-purple-600 focus:ring-2 focus:ring-purple-100'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
