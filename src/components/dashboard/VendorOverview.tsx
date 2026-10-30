@@ -122,6 +122,7 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
     return count;
   }, [hasConcerts, hasTrips, hasMeets, activeEvents.length, tripsActiveCount, meetsActiveCount]);
 
+
   const netPayoutEstimate = Math.round(totalCombinedGMV * 0.95);
 
   const formatCurrency = (amount: number) => {
@@ -202,13 +203,14 @@ export const VendorOverview: React.FC<VendorOverviewProps> = ({
           assignedModules={assignedModules}
           formatCurrency={formatCurrency}
         />
-        {/* <ModuleCapacityHealthChart
+
+        <ModuleCapacityHealthChart
           concerts={concerts}
           trips={trips}
           strangerMeets={strangerMeets}
           assignedModules={assignedModules}
           formatCurrency={formatCurrency}
-        /> */}
+        />
       </div>
 
     </div>

@@ -215,7 +215,7 @@ export const ModuleDistributionDonutChart: React.FC<ModuleDistributionDonutChart
         </div>
 
         {/* Dynamic Data Cards */}
-        <div className="flex-1 w-full space-y-2.5">
+        <div className="flex-1 min-w-0 space-y-2.5">
           {segments.map((seg) => {
             const isHovered = hoveredSegment === seg.id;
             return (

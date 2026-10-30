@@ -174,8 +174,8 @@ export const GroupedModuleBarChart: React.FC<GroupedModuleBarChartProps> = ({
   const chartHeight = 220;
   const paddingLeft = 45;
   const paddingRight = 20;
-  const paddingTop = 20;
-  const paddingBottom = 45;
+  const paddingTop = 28;
+  const paddingBottom = 25;
 
   const innerWidth = chartWidth - paddingLeft - paddingRight;
   const innerHeight = chartHeight - paddingTop - paddingBottom;
@@ -356,20 +356,36 @@ export const GroupedModuleBarChart: React.FC<GroupedModuleBarChartProps> = ({
                   className="transition-all duration-700 ease-out"
                 />
 
-                {/* Percentage Text on Top of Bar */}
-                <text
-                  x={cx}
-                  y={Math.max(by - 5, paddingTop + 10)}
-                  textAnchor="middle"
-                  fontSize="10"
-                  fill={isHovered ? '#0F172A' : item.color}
-                  fontWeight="700"
-                  fontFamily="Inter, sans-serif"
-                  className="transition-all duration-700 ease-out"
+                {/* High-Contrast Percentage Badge on Top of Bar */}
+                <g
+                  className="transition-all duration-700 ease-out pointer-events-none"
                   opacity={isMounted ? 1 : 0}
                 >
-                  {isMounted ? `${item.fillPct}%` : '0%'}
-                </text>
+                  {/* Backdrop pill preventing color merge against background or bar */}
+                  <rect
+                    x={cx - (item.fillPct === 100 ? 17 : 14)}
+                    y={by - 18}
+                    width={item.fillPct === 100 ? 34 : 28}
+                    height={14}
+                    rx="4"
+                    fill={isHovered ? '#0F172A' : '#FFFFFF'}
+                    stroke={isHovered ? '#0F172A' : '#CBD5E1'}
+                    strokeWidth="1"
+                    className="transition-colors duration-150"
+                  />
+                  <text
+                    x={cx}
+                    y={by - 8}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill={isHovered ? '#FFFFFF' : '#0F172A'}
+                    fontWeight="700"
+                    fontFamily="Inter, sans-serif"
+                    className="transition-colors duration-150"
+                  >
+                    {isMounted ? `${item.fillPct}%` : '0%'}
+                  </text>
+                </g>
 
                 {/* Hitbox */}
                 <rect
