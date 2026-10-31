@@ -48,3 +48,6 @@ export type { ConcertPerformanceBarChartProps } from './ConcertPerformanceBarCha
 
 export { ConcertTourColumnChart } from './ConcertTourColumnChart';
 export type { ConcertTourColumnChartProps } from './ConcertTourColumnChart';
+
+export { ConcertTourOrbitChart } from './ConcertTourOrbitChart';
+export type { ConcertTourOrbitChartProps } from './ConcertTourOrbitChart';

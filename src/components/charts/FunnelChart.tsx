@@ -1,12 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  BarChart2,
+  TrendingDown,
+  CheckCircle2,
+  Layers,
+  ArrowRight
+} from 'lucide-react';
 
 export interface FunnelTier {
   id: string;
   label: string;
   value: number;
   subtext?: string;
-  color?: string; // Optional custom fill
-  badgeColor?: string; // Pill color
+  color?: string;
+  badgeColor?: string;
   badgeText?: string;
 }
 
@@ -30,6 +37,11 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -39,285 +51,249 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
     });
   };
 
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 60);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Default color palette matching funnel-chart.png reference
-  const defaultColors = [
-    { fill: '#3B82F6', badgeBg: 'bg-blue-50 text-blue-700 border-blue-200' }, // Visitors (Blue)
-    { fill: '#14B8A6', badgeBg: 'bg-teal-50 text-teal-700 border-teal-200' }, // Leads (Teal)
-    { fill: '#8B5CF6', badgeBg: 'bg-purple-50 text-purple-700 border-purple-200' }, // Trials (Purple)
-    { fill: '#F97316', badgeBg: 'bg-orange-50 text-orange-700 border-orange-200' } // Customers (Orange)
+  // Modern bar theme per stage
+  const barColors = [
+    {
+      fill: '#3B82F6',
+      gradient: 'from-blue-500 to-blue-600',
+      badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
+      trackBg: 'bg-blue-50/50'
+    },
+    {
+      fill: '#06B6D4',
+      gradient: 'from-cyan-500 to-teal-500',
+      badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      trackBg: 'bg-cyan-50/50'
+    },
+    {
+      fill: '#8B5CF6',
+      gradient: 'from-purple-500 to-violet-600',
+      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
+      trackBg: 'bg-purple-50/50'
+    },
+    {
+      fill: '#10B981',
+      gradient: 'from-emerald-500 to-teal-600',
+      badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      trackBg: 'bg-emerald-50/50'
+    }
   ];
 
   const totalBase = tiers.length > 0 && tiers[0].value > 0 ? tiers[0].value : 1;
+  const finalTier = tiers.length > 0 ? tiers[tiers.length - 1] : null;
+  const overallYieldPct = finalTier ? ((finalTier.value / totalBase) * 100).toFixed(1) : '0';
 
-  // Calculate trapezoid geometry for SVG funnel
-  // SVG coordinates: 600 width x 360 height
-  const svgWidth = 520;
-  const svgHeight = 280;
-  const numTiers = tiers.length;
-  const tierHeight = (svgHeight - (numTiers - 1) * 8) / numTiers;
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(2)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(num % 1000 === 0 ? 0 : 1)}k`;
+    return num.toLocaleString();
+  };
 
-  // Funnel widths from top to bottom
-  const topMaxWidth = 480;
-  const bottomMinWidth = 120;
+  // Generate 4 clean X-axis step marks based on max value
+  const xAxisTicks = useMemo(() => {
+    return [0, totalBase * 0.25, totalBase * 0.5, totalBase * 0.75, totalBase];
+  }, [totalBase]);
 
   const activeTier = hoveredTierId ? tiers.find((t) => t.id === hoveredTierId) : null;
   const activeTierIndex = activeTier ? tiers.findIndex((t) => t.id === activeTier.id) : -1;
 
   return (
-    <div className={`rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
-        <div>
-          <h3 className="text-sm font-semibold tracking-tight text-slate-900">
-            {title}
-          </h3>
-          {subtitle && (
-            <p className="text-xs text-slate-500 mt-0.5">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-          Funnel Analysis
-        </span>
-      </div>
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => {
+        setHoveredTierId(null);
+        setMousePos(null);
+      }}
+      className={`rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between relative ${className}`}
+    >
+      {/* Floating Interactive Tooltip */}
+      {activeTier && mousePos && (
+        <div
+          className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-2 min-w-56 transition-transform duration-75"
+          style={{
+            left: `${mousePos.x}px`,
+            top: `${mousePos.y}px`,
+            transform: `translate(${
+              mousePos.x < 140
+                ? '12px'
+                : containerRef.current && mousePos.x > containerRef.current.clientWidth - 140
+                ? 'calc(-100% - 12px)'
+                : '-50%'
+            }, ${mousePos.y < 125 ? '16px' : 'calc(-100% - 14px)'})`
+          }}
+        >
+          <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor:
+                    activeTier.color ||
+                    barColors[activeTierIndex % barColors.length].fill
+                }}
+              />
+              <span className="font-bold text-slate-900 truncate">
+                {activeTier.label}
+              </span>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700">
+              Stage {activeTierIndex + 1}
+            </span>
+          </div>
 
-      {/* Funnel Layout */}
-      <div
-        ref={containerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => {
-          setHoveredTierId(null);
-          setMousePos(null);
-        }}
-        className="relative flex-1 flex items-center justify-center py-2"
-      >
-        {/* Floating Interactive Tooltip */}
-        {activeTier && mousePos && (
-          <div
-            className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-1.5 min-w-56 transition-transform duration-75"
-            style={{
-              left: `${mousePos.x}px`,
-              top: `${mousePos.y}px`,
-              transform: `translate(${mousePos.x < 130
-                  ? '8px'
-                  : containerRef.current && mousePos.x > containerRef.current.clientWidth - 130
-                    ? 'calc(-100% - 8px)'
-                    : '-50%'
-                }, ${mousePos.y < 125 ? '15px' : 'calc(-100% - 12px)'})`
-            }}
-          >
-            {/* Tooltip Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-              <div className="flex items-center gap-2 min-w-0">
-                <span
-                  className="h-2.5 w-2.5 rounded-full shrink-0 shadow-2xs"
-                  style={{
-                    backgroundColor:
-                      activeTier.color ||
-                      defaultColors[activeTierIndex % defaultColors.length].fill
-                  }}
-                />
-                <span className="font-bold text-slate-900 truncate">
-                  {activeTier.label}
-                </span>
-              </div>
-              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 shrink-0">
-                Stage {activeTierIndex + 1} of {tiers.length}
+          <div className="space-y-1.5 text-[11px]">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Volume Count:</span>
+              <span className="font-bold text-slate-900">
+                {activeTier.value.toLocaleString()} {unit}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Overall Conversion:</span>
+              <span className="font-semibold text-slate-800">
+                {((activeTier.value / totalBase) * 100).toFixed(1)}% of top
               </span>
             </div>
 
-            {/* Metrics Breakdown */}
-            <div className="space-y-1 pt-0.5 text-[11px]">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Volume Count:</span>
-                <span className="font-bold text-slate-900">
-                  {activeTier.value.toLocaleString()} {unit}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Overall Conversion:</span>
-                <span className="font-semibold text-slate-800">
-                  {((activeTier.value / totalBase) * 100).toFixed(1)}% of top
-                </span>
-              </div>
-
-              {activeTierIndex > 0 ? (
-                <>
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-1">
-                    <span className="text-slate-500">Step Conversion:</span>
-                    <span className="font-semibold text-emerald-600">
-                      {((activeTier.value / (tiers[activeTierIndex - 1].value || 1)) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>Drop-off:</span>
-                    <span className="font-medium text-rose-500">
-                      -{(tiers[activeTierIndex - 1].value - activeTier.value).toLocaleString()} {unit} (
-                      {(100 - (activeTier.value / (tiers[activeTierIndex - 1].value || 1)) * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="border-t border-slate-100 pt-1 text-[10px] text-slate-400">
-                  Top-of-funnel reach baseline (100%)
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="w-full max-w-lg flex items-center gap-4">
-          {/* SVG Tapered Tiers */}
-          <div className="flex-1 relative">
-            <svg
-              viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-              className="w-full h-auto overflow-visible select-none"
-              style={{ maxHeight: '250px' }}
-            >
-              <defs>
-                <filter id="funnelShadow" x="-5%" y="-5%" width="110%" height="120%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="3" floodOpacity="0.1" />
-                </filter>
-              </defs>
-
-              {tiers.map((tier, idx) => {
-                const palette = defaultColors[idx % defaultColors.length];
-                const fillColor = tier.color || palette.fill;
-                const isHovered = hoveredTierId === tier.id;
-
-                // Taper interpolation
-                const tTop = idx / numTiers;
-                const tBottom = (idx + 1) / numTiers;
-
-                const topW = topMaxWidth - tTop * (topMaxWidth - bottomMinWidth);
-                const botW = topMaxWidth - tBottom * (topMaxWidth - bottomMinWidth);
-
-                const y = idx * (tierHeight + 8);
-                const topX1 = (svgWidth - topW) / 2;
-                const topX2 = topX1 + topW;
-                const botX1 = (svgWidth - botW) / 2;
-                const botX2 = botX1 + botW;
-
-                const pathData = `M ${topX1} ${y} L ${topX2} ${y} L ${botX2} ${y + tierHeight} L ${botX1} ${y + tierHeight} Z`;
-
-                const pctOfTotal = ((tier.value / totalBase) * 100).toFixed(1);
-
-                return (
-                  <g
-                    key={tier.id}
-                    className="cursor-pointer transition-transform duration-200"
-                    onMouseEnter={(e) => {
-                      setHoveredTierId(tier.id);
-                      handleMouseMove(e);
-                    }}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={() => {
-                      setHoveredTierId(null);
-                      setMousePos(null);
-                    }}
-                    style={{
-                      transformOrigin: `${svgWidth / 2}px ${y + tierHeight / 2}px`,
-                      transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-                      opacity: mounted ? 1 : 0,
-                      transition: `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.1}s`
-                    }}
-                  >
-                    {/* Shadow / Tier polygon */}
-                    <path
-                      d={pathData}
-                      fill={fillColor}
-                      filter="url(#funnelShadow)"
-                      className="transition-all duration-200"
-                      opacity={isHovered ? 1 : 0.94}
-                    />
-
-                    {/* Subtle top glossy highlight */}
-                    <path
-                      d={`M ${topX1 + 2} ${y + 1} L ${topX2 - 2} ${y + 1} L ${topX2 - 4} ${y + 3} L ${topX1 + 4} ${y + 3} Z`}
-                      fill="#FFFFFF"
-                      opacity="0.25"
-                    />
-
-                    {/* Text inside tier */}
-                    <text
-                      x={svgWidth / 2}
-                      y={y + tierHeight / 2 - 8}
-                      textAnchor="middle"
-                      fill="#FFFFFF"
-                      fontSize="12"
-                      fontWeight="600"
-                      className="pointer-events-none drop-shadow-xs"
-                    >
-                      {tier.label}
-                    </text>
-                    <text
-                      x={svgWidth / 2}
-                      y={y + tierHeight / 2 + 13}
-                      textAnchor="middle"
-                      fill="#FFFFFF"
-                      fontSize="16"
-                      fontWeight="800"
-                      className="pointer-events-none tracking-tight drop-shadow-xs"
-                    >
-                      {tier.value.toLocaleString()} {unit}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-
-          {/* Right-side Conversion Badges (matching funnel-chart.png) */}
-          <div className="flex flex-col justify-between py-1 shrink-0 space-y-4">
-            {tiers.map((tier, idx) => {
-              const palette = defaultColors[idx % defaultColors.length];
-              const pct = idx === 0 ? 100 : Math.round((tier.value / totalBase) * 1000) / 10;
-              const isHovered = hoveredTierId === tier.id;
-
-              return (
-                <div
-                  key={tier.id}
-                  className="flex items-center cursor-pointer"
-                  onMouseEnter={(e) => {
-                    setHoveredTierId(tier.id);
-                    handleMouseMove(e);
-                  }}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={() => {
-                    setHoveredTierId(null);
-                    setMousePos(null);
-                  }}
-                  style={{
-                    opacity: mounted ? 1 : 0,
-                    transform: mounted ? 'none' : 'translateX(10px)',
-                    transition: `all 0.4s ease-out ${idx * 0.12}s`
-                  }}
-                >
-                  <span
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs tracking-tight border transition-all ${tier.badgeColor || palette.badgeBg
-                      } ${isHovered ? 'scale-110 shadow-xs' : ''}`}
-                  >
-                    {tier.badgeText || `${pct}%`}
+            {activeTierIndex > 0 ? (
+              <>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-1.5">
+                  <span className="text-slate-500">Step Conversion:</span>
+                  <span className="font-semibold text-emerald-600">
+                    {(
+                      (activeTier.value / (tiers[activeTierIndex - 1].value || 1)) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </span>
                 </div>
-              );
-            })}
+                <div className="flex items-center justify-between text-slate-400">
+                  <span>Stage Drop-off:</span>
+                  <span className="font-medium text-rose-500">
+                    -
+                    {(
+                      tiers[activeTierIndex - 1].value - activeTier.value
+                    ).toLocaleString()}{' '}
+                    {unit}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="border-t border-slate-100 pt-1 text-[10px] text-slate-400">
+                Top baseline conversion reach (100%)
+              </div>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+            <BarChart2 className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+              {title}
+            </h3>
+            {subtitle && (
+              <p className="text-[11px] text-slate-400">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+          {overallYieldPct}% Overall Yield
+        </span>
+      </div>
+
+      {/* Bar Graph Body */}
+      <div className="py-1 space-y-3">
+        {tiers.map((tier, idx) => {
+          const color = barColors[idx % barColors.length];
+          const pct = Math.min(100, (tier.value / totalBase) * 100);
+          const isHovered = hoveredTierId === tier.id;
+          const isAnyHovered = hoveredTierId !== null;
+
+          return (
+            <div
+              key={tier.id}
+              onMouseEnter={() => setHoveredTierId(tier.id)}
+              className={`space-y-1.5 transition-all duration-150 cursor-pointer p-1 rounded-lg ${
+                isHovered
+                  ? 'bg-slate-50/80 -translate-y-0.5'
+                  : isAnyHovered
+                  ? 'opacity-60'
+                  : ''
+              }`}
+            >
+              {/* Row Label & Values */}
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-4 h-4 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
+                  <span className="font-semibold text-slate-800 truncate">
+                    {tier.label}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="font-bold text-slate-900 text-xs">
+                    {tier.value.toLocaleString()}{' '}
+                    <span className="text-[10px] font-normal text-slate-400">
+                      {unit}
+                    </span>
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                      tier.badgeColor || color.badgeBg
+                    }`}
+                  >
+                    {tier.badgeText || `${pct.toFixed(1)}%`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Horizontal Bar Track */}
+              <div className="h-6 w-full bg-slate-100 rounded-md overflow-hidden relative border border-slate-200/60 p-0.5">
+                <div
+                  className={`h-full rounded-sm bg-gradient-to-r ${color.gradient} transition-all duration-700 ease-out flex items-center justify-end pr-2`}
+                  style={{
+                    width: mounted ? `${Math.max(4, pct)}%` : '0%'
+                  }}
+                >
+                  {pct > 18 && (
+                    <span className="text-[10px] font-bold text-white drop-shadow-xs select-none">
+                      {formatNumber(tier.value)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* X-Axis Scale Grid */}
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 select-none px-1">
+          {xAxisTicks.map((tick, i) => (
+            <span key={i}>{formatNumber(tick)}</span>
+          ))}
         </div>
       </div>
 
       {/* Footer Metrics */}
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-        <span>Overall Funnel Yield</span>
+        <div className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Stage-by-stage conversion velocity and ticket yield</span>
+        </div>
         <span className="font-semibold text-slate-800">
-          {tiers.length > 0 ? `${((tiers[tiers.length - 1].value / totalBase) * 100).toFixed(1)}% Conversion` : '0%'}
+          {overallYieldPct}% Net Admissions
         </span>
       </div>
     </div>

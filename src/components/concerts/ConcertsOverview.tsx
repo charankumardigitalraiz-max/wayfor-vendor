@@ -22,8 +22,9 @@ import { Badge } from '../common/Badge';
 import {
   ModuleTrendLineChart,
   FunnelChart,
-  ConcertTourColumnChart,
+  ConcertTourOrbitChart,
   ConcertPerformanceBarChart,
+  ConcertTourColumnChart,
   type Timeframe
 } from '../charts';
 
