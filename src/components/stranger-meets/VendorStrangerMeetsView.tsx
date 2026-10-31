@@ -251,13 +251,6 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
       {/* Header Banner */}
       <div className="rounded-lg border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          {/* <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200">
-              Stranger Meets Module
-            </span>
-            <span className="text-xs text-slate-400">• Verified Community Mixers</span>
-          </div> */}
-
           <h1 className="PageTitle">
             Stranger Meets & Community Socials
           </h1>
@@ -269,7 +262,7 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors shadow-xs cursor-pointer self-start sm:self-auto shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 shadow-xs shadow-teal-200 transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Host Community Meet</span>

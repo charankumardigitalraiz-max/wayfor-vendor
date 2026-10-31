@@ -65,7 +65,13 @@ export function AppContent() {
   const [trips, setTrips] = useState<TripPlan[]>(() => {
     try {
       const saved = localStorage.getItem('wayfor_vendor_trips');
-      return saved ? JSON.parse(saved) : mockVendorTrips;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= mockVendorTrips.length) {
+          return parsed;
+        }
+      }
+      return mockVendorTrips;
     } catch {
       return mockVendorTrips;
     }
@@ -74,7 +80,13 @@ export function AppContent() {
   const [strangerMeets, setStrangerMeets] = useState<StrangerMeet[]>(() => {
     try {
       const saved = localStorage.getItem('wayfor_vendor_meets');
-      return saved ? JSON.parse(saved) : mockVendorStrangerMeets;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= mockVendorStrangerMeets.length) {
+          return parsed;
+        }
+      }
+      return mockVendorStrangerMeets;
     } catch {
       return mockVendorStrangerMeets;
     }

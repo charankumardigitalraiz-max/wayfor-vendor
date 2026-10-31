@@ -21,9 +21,9 @@ import { MetricCard } from '../common/MetricCard';
 import { Badge } from '../common/Badge';
 import {
   ModuleTrendLineChart,
-  ModuleInventoryFillChart,
   FunnelChart,
-  ConcertGenreDistributionChart,
+  ConcertTourColumnChart,
+  ConcertPerformanceBarChart,
   type Timeframe
 } from '../charts';
 
@@ -40,7 +40,6 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
 }) => {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState<Timeframe>('30D');
-  const [chartView, setChartView] = useState<'funnel-distribution' | 'trend-fill'>('funnel-distribution');
 
   // Computed metrics
   const activeEvents = useMemo(() => concerts.filter(c => c.status === 'active'), [concerts]);
@@ -151,125 +150,65 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
         />
       </div>
 
-      {/* Chart Section Header Card with Chart Type Switcher */}
-      {/* <div className="rounded-lg border border-slate-200/90 bg-white p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-            <TrendingUp className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-slate-900 truncate">
-              Concert Analytics & Performance
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5 truncate sm:whitespace-normal">
-              {chartView === 'funnel-distribution'
-                ? 'Ticket booking conversion funnel & revenue breakdown by genre and city'
-                : 'Ticket sales trends over time & arena seat capacity fill rates'}
-            </p>
-          </div>
-        </div>
+      {/* Concert Admissions & Tour Ranking Suite (Non-Pie) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <FunnelChart
+          title="Ticket Admissions Funnel"
+          subtitle="Tour page discovery through confirmed stadium admissions"
+          unit="tickets"
+          tiers={[
+            {
+              id: 'reach',
+              label: 'Tour Page Visitors',
+              value: Math.max(12000, totalTicketsSold * 8),
+              badgeText: '100%'
+            },
+            {
+              id: 'seats',
+              label: 'Selected Arena Seats',
+              value: Math.max(4800, Math.round(totalTicketsSold * 3.4)),
+              badgeText: '42.5%'
+            },
+            {
+              id: 'checkout',
+              label: 'Added to Checkout Cart',
+              value: Math.max(1800, Math.round(totalTicketsSold * 1.4)),
+              badgeText: '17.5%'
+            },
+            {
+              id: 'confirmed',
+              label: 'Confirmed Admissions',
+              value: totalTicketsSold,
+              badgeText: `${((totalTicketsSold / Math.max(12000, totalTicketsSold * 8)) * 100).toFixed(1)}%`
+            }
+          ]}
+        />
 
-        <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs self-start sm:self-auto shrink-0">
-          <button
-            type="button"
-            onClick={() => setChartView('funnel-distribution')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'funnel-distribution'
-              ? 'bg-white text-purple-700 shadow-2xs'
-              : 'text-slate-600 hover:text-slate-900'
-              }`}
-          >
-            Funnel & Breakdown
-          </button>
-          <button
-            type="button"
-            onClick={() => setChartView('trend-fill')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'trend-fill'
-              ? 'bg-white text-purple-700 shadow-2xs'
-              : 'text-slate-600 hover:text-slate-900'
-              }`}
-          >
-            Sales Trends & Capacity
-          </button>
-        </div>
-      </div> */}
+        <ConcertTourColumnChart
+          concerts={concerts}
+          formatCurrency={formatCurrency}
+        />
+      </div>
 
-      {/* Two Specialized Charts */}
-      {chartView === 'funnel-distribution' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <FunnelChart
-            title="Ticket Admissions Funnel"
-            subtitle=""
-            unit="tickets"
-            tiers={[
-              {
-                id: 'reach',
-                label: 'Tour Page Visitors',
-                value: Math.max(12000, totalTicketsSold * 8),
-                badgeText: '100%'
-              },
-              {
-                id: 'seats',
-                label: 'Selected Arena Seats',
-                value: Math.max(4800, Math.round(totalTicketsSold * 3.4)),
-                badgeText: '42.5%'
-              },
-              {
-                id: 'checkout',
-                label: 'Added to Checkout Cart',
-                value: Math.max(1800, Math.round(totalTicketsSold * 1.4)),
-                badgeText: '17.5%'
-              },
-              {
-                id: 'confirmed',
-                label: 'Confirmed Admissions',
-                value: totalTicketsSold,
-                badgeText: `${((totalTicketsSold / Math.max(12000, totalTicketsSold * 8)) * 100).toFixed(1)}%`
-              }
-            ]}
-          />
+      {/* Sales Velocity & Performance Suite (Non-Pie) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ModuleTrendLineChart
+          title="Box Office Sales Velocity"
+          accentColor="purple"
+          totalAmount={totalGMV}
+          totalVolume={totalTicketsSold}
+          unit="tickets"
+          timeframe={timeframe}
+          onTimeframeChange={setTimeframe}
+          formatCurrency={formatCurrency}
+          subtext={concerts.map(c => c.artist || c.title).slice(0, 3).join(' • ')}
+        />
 
-          <ConcertGenreDistributionChart
-            concerts={concerts}
-            formatCurrency={formatCurrency}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ModuleTrendLineChart
-            title="Box Office Sales Velocity"
-            accentColor="purple"
-            totalAmount={totalGMV}
-            totalVolume={totalTicketsSold}
-            unit="tickets"
-            timeframe={timeframe}
-            onTimeframeChange={setTimeframe}
-            formatCurrency={formatCurrency}
-            subtext={concerts.map(c => c.artist || c.title).slice(0, 3).join(' • ')}
-          />
-
-          <ModuleInventoryFillChart
-            title="Arena Capacity & Ticket Fill"
-            accentColor="purple"
-            items={concerts.map(c => {
-              const cap = c.totalCapacity || 1;
-              const sold = c.ticketsSold || 0;
-              const avgPrice = (c.minPrice + c.maxPrice) / 2;
-              return {
-                id: c.id,
-                title: c.title,
-                subtitle: `${c.artist} • ${c.venueName || c.city}`,
-                filled: sold,
-                capacity: cap,
-                fillPct: Math.min(100, Math.round((sold / cap) * 100)),
-                revenue: sold * avgPrice,
-                unit: 'tickets',
-                tag: c.genre
-              };
-            })}
-            formatCurrency={formatCurrency}
-          />
-        </div>
-      )}
+        <ConcertPerformanceBarChart
+          concerts={concerts}
+          formatCurrency={formatCurrency}
+        />
+      </div>
 
       {/* Priority Concert Tours & Quick Operations */}
       {/* <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">

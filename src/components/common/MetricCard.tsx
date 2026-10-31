@@ -52,36 +52,38 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const styles = getAccentStyles();
 
   return (
-    <div className="rounded-lg border border-slate-200/90 bg-white p-5 shadow-2xs hover:border-slate-300 transition-colors">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          {label}
-        </span>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${styles.iconBg}`}>
-          <Icon className="h-4 w-4" />
+    <div className="rounded-lg border border-slate-200/90 bg-white p-4.5 sm:p-5 shadow-2xs hover:border-slate-300/90 hover:shadow-xs transition-all flex flex-col justify-between">
+      <div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[12.5px] font-medium text-slate-600 leading-tight">
+            {label}
+          </span>
+          <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${styles.iconBg} shrink-0`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
+
+        <div className="mt-2.5 flex items-baseline justify-between gap-2 flex-wrap">
+          <span className="text-2xl sm:text-[26px] font-semibold tracking-[-0.03em] text-slate-900 leading-none">
+            {value}
+          </span>
+
+          {change && (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${isPositive
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-rose-50 text-rose-700'
+                }`}
+            >
+              {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              <span>{change}</span>
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="mt-3 flex items-baseline justify-between gap-2">
-        <span className="text-2xl font-semibold tracking-tight text-slate-900">
-          {value}
-        </span>
-
-        {change && (
-          <span
-            className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${isPositive
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-rose-50 text-rose-700'
-              }`}
-          >
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            <span>{change}</span>
-          </span>
-        )}
-      </div>
-
       {subtext && (
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-2 text-[11.5px] text-slate-500 leading-normal">
           {subtext}
         </p>
       )}

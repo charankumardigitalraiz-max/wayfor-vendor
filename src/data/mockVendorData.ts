@@ -1231,6 +1231,72 @@ export const mockVendorTrips: TripPlan[] = [
         highlights: ['Heritage haveli stay', 'Rajasthani cuisine banquet']
       }
     ]
+  },
+  {
+    id: 'v-trip-104',
+    title: 'Western Ghats Monsoon Ridge & Waterfall Trek',
+    creatorName: 'Zenith Touring & Expeditions',
+    creatorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    creatorBio: 'High ridge monsoon trail expedition exploring lush mist valleys and scenic carpooling routes.',
+    origin: 'Pune (Viman Nagar)',
+    destination: 'Mahabaleshwar & Arthur Seat Ridge',
+    startDate: '2026-11-28',
+    endDate: '2026-12-01',
+    totalDays: 4,
+    estimatedBudget: 6800,
+    currency: 'INR',
+    category: 'Nature & Trek',
+    maxTravelers: 14,
+    coverImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
+    joinedTravelers: [
+      { id: 'usr-401', name: 'Tanmay Kulkarni', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80', joinedAt: 'Trail Host', seatsBooked: 1 },
+      { id: 'usr-402', name: 'Simran Walia', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80', joinedAt: '3 days ago', seatsBooked: 2 },
+      { id: 'usr-403', name: 'Gaurav Patil', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80', joinedAt: '2 days ago', seatsBooked: 1 },
+      { id: 'usr-404', name: 'Nisha Deshmukh', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', joinedAt: 'Yesterday', seatsBooked: 1 }
+    ],
+    waypoints: ['Pune Hub', 'Wai Heritage Ghat', 'Lingmala Falls', 'Arthur Seat Viewpoint', 'Tapola Lake Base'],
+    status: 'active',
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Pune to Mahabaleshwar Valley Ascent',
+        destination: 'Mahabaleshwar',
+        description: 'Morning gathering and scenic ascent through Wai ghats.',
+        highlights: ['Ghat valley drive', 'Waterfall viewpoints', 'Campfire intro']
+      }
+    ]
+  },
+  {
+    id: 'v-trip-105',
+    title: 'Rann of Kutch Full Moon & Folk Music Safari',
+    creatorName: 'Zenith Live Touring',
+    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    creatorBio: 'White desert stargazing caravan featuring Kutchi musicians under the full moon.',
+    origin: 'Ahmedabad (SG Highway)',
+    destination: 'Dhordo & White Rann of Kutch',
+    startDate: '2026-12-15',
+    endDate: '2026-12-19',
+    totalDays: 5,
+    estimatedBudget: 11500,
+    currency: 'INR',
+    category: 'Weekend Escape',
+    maxTravelers: 16,
+    coverImage: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&auto=format&fit=crop&q=80',
+    joinedTravelers: [
+      { id: 'usr-501', name: 'Aditya Dave', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80', joinedAt: 'Expedition Lead', seatsBooked: 1 },
+      { id: 'usr-502', name: 'Meera Rao', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80', joinedAt: '4 days ago', seatsBooked: 1 }
+    ],
+    waypoints: ['Ahmedabad SG Highway', 'Bhuj Heritage Fort', 'Kalo Dungar Peak', 'Dhordo Tent City', 'White Desert'],
+    status: 'active',
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Ahmedabad to Bhuj Cultural Convoy',
+        destination: 'Bhuj',
+        description: 'Express highway convoy through salt marshes to historic Bhuj.',
+        highlights: ['Convoy radio check', 'Aina Mahal visit', 'Desert dusk arrival']
+      }
+    ]
   }
 ];
 

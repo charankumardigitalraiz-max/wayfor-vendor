@@ -236,12 +236,6 @@ export const VendorTripsView: React.FC<VendorTripsViewProps> = ({
       {/* Header Banner */}
       <div className="rounded-lg border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          {/* <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200">
-              Trip Planner Module
-            </span>
-            <span className="text-xs text-slate-400">• Vendor Curated Tours</span>
-          </div> */}
           <h1 className="PageTitle">
             Group Expeditions & Travel Companion Tours
           </h1>

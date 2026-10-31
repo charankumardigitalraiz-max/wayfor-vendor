@@ -320,8 +320,8 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
           </div>
         </div>
 
-        {/* Legend / Ranked Rows */}
-        <div className="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+        {/* Visual Graphic Share Bars (Zero text clutter, rich hover detail) */}
+        <div className="flex-1 w-full space-y-2.5 max-h-56 overflow-y-auto pr-1">
           {segments.map((seg) => {
             const isHovered = hoveredId === seg.id;
             return (
@@ -336,33 +336,42 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
                   setHoveredId(null);
                   setMousePos(null);
                 }}
-                className={`rounded-lg border px-3 py-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${isHovered
-                  ? 'border-purple-300 bg-purple-50/60 shadow-2xs'
-                  : 'border-slate-100 bg-slate-50/60 hover:bg-white'
-                  }`}
+                className={`group rounded-lg p-2 transition-all cursor-pointer border ${
+                  isHovered
+                    ? 'border-purple-300 bg-purple-50/50 shadow-2xs'
+                    : 'border-slate-100/80 bg-white hover:border-slate-200'
+                }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span
-                    className="h-3 w-3 rounded-full shrink-0 shadow-2xs"
-                    style={{ backgroundColor: seg.color }}
-                  />
-                  <div className="truncate">
-                    <h5 className="text-xs font-semibold text-slate-900 truncate">
+                <div className="flex items-center justify-between text-xs mb-1.5 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: seg.color }}
+                    />
+                    <span className="font-semibold text-slate-800 truncate text-[11.5px] group-hover:text-slate-900">
                       {seg.label}
-                    </h5>
-                    <p className="text-[10px] text-slate-500 font-medium truncate">
-                      {seg.count} {seg.count === 1 ? 'event' : 'events'} • {seg.volume.toLocaleString()} tickets
-                    </p>
+                    </span>
                   </div>
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.2 rounded shrink-0"
+                    style={{
+                      backgroundColor: `${seg.color}18`,
+                      color: seg.color
+                    }}
+                  >
+                    {seg.percentage}%
+                  </span>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <span className="text-xs font-bold text-slate-900 block">
-                    {metricMode === 'revenue' ? formatCurrency(seg.revenue) : `${seg.volume.toLocaleString()} tix`}
-                  </span>
-                  <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">
-                    {seg.percentage}% share
-                  </span>
+                {/* Graphical Animated Share Bar */}
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(seg.percentage, 3)}%`,
+                      backgroundColor: seg.color
+                    }}
+                  />
                 </div>
               </div>
             );

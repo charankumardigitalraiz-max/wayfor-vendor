@@ -338,19 +338,19 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Top Header Navigation matching Redesign */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="space-y-4 font-sans">
+      {/* Top Header Navigation Card */}
+      <div className="bg-white border border-[#e8ebf0] rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 shadow-xs flex items-center justify-between gap-3 flex-wrap">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 py-1 text-[13px] font-medium text-slate-500 hover:text-purple-700 transition-colors cursor-pointer group"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200/80 bg-white hover:bg-purple-50/70 hover:border-purple-200 text-slate-700 hover:text-purple-700 text-xs font-semibold transition-all cursor-pointer shadow-2xs group"
         >
-          <ArrowLeft className="h-4 w-4 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition-transform" />
+          <ArrowLeft className="h-3.5 w-3.5 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition-transform" />
           <span>Back</span>
         </button>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="relative">
             <select
               value={concert.status}
@@ -389,8 +389,8 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
         </div>
       </div>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)] gap-6 bg-white border border-[#e8ebf0] rounded-[16px] p-5 shadow-[0_8px_28px_rgba(34,42,58,0.05)]">
-        {/* Column 1: Gallery */}
+      <section className="grid grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[410px_minmax(0,1fr)] gap-6 bg-white border border-[#e8ebf0] rounded-[16px] p-5 shadow-[0_8px_28px_rgba(34,42,58,0.05)]">
+        {/* Column 1: Gallery (Enlarged) */}
         <div className="flex flex-col gap-2.5 min-w-0">
           {/* Main Poster */}
           <div
@@ -399,7 +399,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
               setSelectedImageIdx(idx >= 0 ? idx : 0);
               setIsLightboxOpen(true);
             }}
-            className="relative aspect-[16/11] rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 cursor-pointer group w-full"
+            className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 cursor-pointer group w-full"
             title="Click to view full photo"
           >
             <AppImage
@@ -450,7 +450,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                       setActivePreviewImage(img);
                       setSelectedImageIdx(idx);
                     }}
-                    className={`relative w-[52px] h-[38px] rounded-lg overflow-hidden border transition-all cursor-pointer shrink-0 ${isActive
+                    className={`relative w-[56px] h-[40px] rounded-lg overflow-hidden border transition-all cursor-pointer shrink-0 ${isActive
                       ? 'border-2 border-purple-600 ring-2 ring-purple-100'
                       : 'border-slate-200 hover:border-slate-300 opacity-60 hover:opacity-100'
                       }`}
@@ -469,8 +469,8 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
         </div>
 
         {/* Column 2: Event Details */}
-        <div className="min-w-0 flex flex-col justify-start py-0.5 space-y-3 sm:space-y-3.5">
-          {/* Top: Status Badges, Headline, Lineup */}
+        <div className="min-w-0 flex flex-col justify-start py-0.5 space-y-3">
+          {/* Top: Status Badges, Headline */}
           <div>
             <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
               <div className="flex items-center gap-2 flex-wrap">
@@ -503,93 +503,93 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <h1 className="text-xl sm:text-2xl lg:text-[25px] font-semibold tracking-[-0.03em] text-[#172033] leading-snug">
               {concert.title}
             </h1>
-
-            {/* Clean Inline Lineup */}
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-2 text-[#667085] text-[13px]">
-              <span className="inline-flex items-center gap-1">
-                {categoryConfig.performerLabel.split('/')[0].trim()}: <strong className="text-purple-700 font-semibold">{concert.artist}</strong>
-              </span>
-              {concert.supportingActs && concert.supportingActs.length > 0 && (
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-[#c4c9d1] shrink-0" />
-                  <span>
-                    {categoryConfig.lineupLabel.split('&')[0].trim()}: <span className="text-[#344054] font-medium">{concert.supportingActs.join(', ')}</span>
-                  </span>
-                </span>
-              )}
-              {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).length > 0 && (
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-[#c4c9d1] shrink-0" />
-                  <span className="text-slate-500 font-normal">
-                    {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).join(', ')}
-                  </span>
-                </span>
-              )}
-            </div>
           </div>
 
-          {/* 4 Cards Grid Layout (2 cards per row on desktop, covering space without empty gaps or truncation) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            {/* Card 1: Schedule & Doors */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <div className="w-8 h-8 rounded-lg bg-[#FAF5FF] text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
-                <Calendar className="h-4 w-4" />
+          {/* Details Grid matching concert-hero-concept.html */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-7 gap-y-3 mt-2 pt-2">
+            {/* Fact 1: Headliner / Performer */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#FAF5FF] text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
+                <Music className="h-3.5 w-3.5" />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Event Date & Showtime</span>
-                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
-                  {formatUtcDate(concert.date)}
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">
+                  {categoryConfig.performerLabel.split('/')[0].trim()}
                 </span>
-                <span className="block text-purple-700 text-[11px] font-medium mt-0.5">
-                  Doors {concert.doorsOpen} • Starts {concert.showTime || '20:00'}
-                </span>
-              </div>
-            </div>
-
-            {/* Card 2: Venue & Location */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <div className="w-8 h-8 rounded-lg bg-[#effaf6] text-[#16866b] flex items-center justify-center shrink-0 mt-0.5">
-                <MapPin className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Venue & Staging</span>
-                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
-                  {concert.venueName}, {concert.city}
-                </span>
-                {/* <span className="block text-slate-500 text-[11px] font-normal mt-0.5">
-                  {concert.soundSystem ? `Acoustics: ${concert.soundSystem}` : `${concert.city}, India`}
-                </span> */}
-              </div>
-            </div>
-
-            {/* Card 3: Ticket Pricing */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <div className="w-8 h-8 rounded-lg bg-[#fff8e8] text-[#b46a00] flex items-center justify-center shrink-0 mt-0.5">
-                <Ticket className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Ticket Pricing & Categories</span>
-                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
-                  ₹{concert.minPrice.toLocaleString()} – ₹{concert.maxPrice.toLocaleString()}
-                </span>
-                <span className="block text-amber-700 text-[11px] font-medium mt-0.5">
-                  Avg ₹{Math.round(avgPrice).toLocaleString()} / pass • {concert.ticketTiers.length} Active Tiers
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  {concert.artist}
+                  {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).length > 0 && (
+                    <span className="text-[#64748b] text-xs font-normal"> · {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).join(', ')}</span>
+                  )}
                 </span>
               </div>
             </div>
 
-            {/* Card 4: Capacity & Allocation */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <div className="w-8 h-8 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 mt-0.5">
-                <Users className="h-4 w-4" />
+            {/* Fact 2: Supporting Lineup */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 mt-0.5">
+                <Users className="h-3.5 w-3.5" />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Total Capacity & Sales</span>
-                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
-                  {concert.totalCapacity.toLocaleString()} Total Passes
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">
+                  {categoryConfig.lineupLabel.split('&')[0].trim()}
                 </span>
-                <span className="block text-blue-700 text-[11px] font-medium mt-0.5">
-                  {concert.ticketsSold.toLocaleString()} sold ({soldPct}% allocated)
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  {concert.supportingActs && concert.supportingActs.length > 0
+                    ? concert.supportingActs.join(', ')
+                    : 'Exclusive Solo Performance'}
+                </span>
+              </div>
+            </div>
+
+            {/* Fact 3: Event date · Doors */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#FAF5FF] text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
+                <Calendar className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">Event date · Doors</span>
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  {formatUtcDate(concert.date)} · {concert.doorsOpen}
+                </span>
+              </div>
+            </div>
+
+            {/* Fact 4: Venue · City */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#effaf6] text-[#16866b] flex items-center justify-center shrink-0 mt-0.5">
+                <MapPin className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">Venue · City</span>
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  {concert.venueName} · {concert.city}
+                </span>
+              </div>
+            </div>
+
+            {/* Fact 5: Price range · Average */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#fff8e8] text-[#b46a00] flex items-center justify-center shrink-0 mt-0.5">
+                <Ticket className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">Price range · Average</span>
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  ₹{concert.minPrice.toLocaleString()} – ₹{concert.maxPrice.toLocaleString()} · Avg ₹{Math.round(avgPrice).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Fact 6: Total capacity · Tiers */}
+            <div className="flex items-start gap-2.5 py-3 border-b border-[#f0f1f4]">
+              <div className="w-7 h-7 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 mt-0.5">
+                <Users className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[#64748b] text-[12px] font-medium mb-1 leading-none">Total capacity · Tiers</span>
+                <span className="block text-[#1e293b] text-[13.5px] font-medium leading-snug">
+                  {concert.totalCapacity.toLocaleString()} passes · {concert.ticketTiers.length} categories
                 </span>
               </div>
             </div>
@@ -699,18 +699,18 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Category Classification</span>
+                  <span className="text-xs text-slate-600 font-medium">Category Classification</span>
                   <span className="font-semibold text-slate-800 text-right">{categoryConfig.name}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.performerLabel}</span>
+                  <span className="text-xs text-slate-600 font-medium">{categoryConfig.performerLabel}</span>
                   <span className="font-semibold text-purple-700 text-right">{concert.artist}</span>
                 </div>
 
                 {concert.supportingActs && concert.supportingActs.length > 0 && (
                   <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                    <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.lineupLabel}</span>
+                    <span className="text-xs text-slate-600 font-medium">{categoryConfig.lineupLabel}</span>
                     <span className="font-medium text-slate-700 text-right truncate max-w-[220px]" title={concert.supportingActs.join(', ')}>
                       {concert.supportingActs.join(', ')}
                     </span>
@@ -719,7 +719,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
                 {concert.tourName && (
                   <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                    <span className="text-[11px] text-slate-500 font-medium">Tour / Production Run</span>
+                    <span className="text-xs text-slate-600 font-medium">Tour / Production Run</span>
                     <span className="font-medium text-slate-800 text-right truncate max-w-[220px]" title={concert.tourName}>
                       {concert.tourName}
                     </span>
@@ -727,7 +727,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
                 )}
 
                 <div className="flex items-center justify-between gap-3 pt-1">
-                  <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.genreLabel}</span>
+                  <span className="text-xs text-slate-600 font-medium">{categoryConfig.genreLabel}</span>
                   <div className="flex flex-wrap gap-1 justify-end">
                     {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).map((g, i) => (
                       <span key={i} className="inline-block px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 text-[10px] font-semibold border border-purple-200/60">
@@ -753,28 +753,28 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Event Date</span>
+                  <span className="text-xs text-slate-600 font-medium">Event Date</span>
                   <span className="font-semibold text-slate-800 text-right">{formatUtcDate(concert.date)}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Doors / Gate Entry</span>
+                  <span className="text-xs text-slate-600 font-medium">Doors / Gate Entry</span>
                   <span className="font-semibold text-slate-800 text-right">{concert.doorsOpen}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Main Showtime</span>
+                  <span className="text-xs text-slate-600 font-medium">Main Showtime</span>
                   <span className="font-bold text-purple-700 text-right">{concert.showTime || '20:00'}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Performance Duration</span>
+                  <span className="text-xs text-slate-600 font-medium">Performance Duration</span>
                   <span className="font-medium text-slate-800 text-right">{concert.durationHours || categoryConfig.defaultDuration}</span>
                 </div>
 
                 {concert.languages && concert.languages.length > 0 && (
                   <div className="flex items-center justify-between gap-3 pt-1">
-                    <span className="text-[11px] text-slate-500 font-medium">Languages / Medium</span>
+                    <span className="text-xs text-slate-600 font-medium">Languages / Medium</span>
                     <span className="font-medium text-slate-700 text-right truncate max-w-[220px]" title={concert.languages.join(', ')}>
                       {concert.languages.join(', ')}
                     </span>
@@ -797,19 +797,19 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Venue Name</span>
+                  <span className="text-xs text-slate-600 font-medium">Venue Name</span>
                   <span className="font-semibold text-slate-800 text-right">{concert.venueName}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Total Arena Capacity</span>
+                  <span className="text-xs text-slate-600 font-medium">Total Arena Capacity</span>
                   <span className="font-semibold text-slate-800 text-right">{concert.totalCapacity.toLocaleString()} seats</span>
                 </div>
 
                 {concert.soundSystem && (
                   <div className="py-1 border-b border-slate-50">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-[11px] text-slate-500 font-medium shrink-0">Sound Rig & Line Array</span>
+                      <span className="text-xs text-slate-600 font-medium shrink-0">Sound Rig & Line Array</span>
                       <span className="font-medium text-slate-800 text-right text-xs truncate max-w-[240px]" title={concert.soundSystem}>
                         {concert.soundSystem}
                       </span>
@@ -819,7 +819,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
                 <div className="py-1">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] text-slate-500 font-medium shrink-0">Venue Location</span>
+                    <span className="text-xs text-slate-600 font-medium shrink-0">Venue Location</span>
                     <span className="font-medium text-slate-700 text-right text-xs truncate max-w-[240px]" title={concert.venueAddress || `${concert.venueName}, ${concert.city}`}>
                       {concert.venueAddress || `${concert.venueName}, ${concert.city}`}
                     </span>
@@ -842,19 +842,19 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Age Restriction</span>
+                  <span className="text-xs text-slate-600 font-medium">Age Restriction</span>
                   <span className="font-semibold text-slate-800 text-right">{concert.ageRestriction || categoryConfig.defaultAge}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Promoter / Organizer</span>
+                  <span className="text-xs text-slate-600 font-medium">Promoter / Organizer</span>
                   <span className="font-medium text-slate-800 text-right truncate max-w-[220px]" title={concert.organizer}>
                     {concert.organizer}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
-                  <span className="text-[11px] text-slate-500 font-medium">Admission Mode</span>
+                  <span className="text-xs text-slate-600 font-medium">Admission Mode</span>
                   <span className="font-medium text-slate-800 text-right">
                     {concert.isFree ? 'Free Community Entry' : 'Paid Tiered Box Office'}
                   </span>
@@ -862,7 +862,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
                 {concert.videoUrl && (
                   <div className="flex items-center justify-between gap-3 pt-1">
-                    <span className="text-[11px] text-slate-500 font-medium">Promo Media</span>
+                    <span className="text-xs text-slate-600 font-medium">Promo Media</span>
                     <a
                       href={concert.videoUrl}
                       target="_blank"

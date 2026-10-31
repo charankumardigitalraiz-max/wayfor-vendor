@@ -124,9 +124,8 @@ export const StrangerMeetCard: React.FC<StrangerMeetCardProps> = ({
 
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <span className="text-[11px] text-slate-400">Pass: </span>
             <span className="text-xs font-semibold text-teal-700">
-              {meet.pricePerPerson ? `₹${meet.pricePerPerson}` : 'Free'}
+              {meet.pricePerPerson ? `₹${meet.pricePerPerson}` : 'Free RSVP'}
             </span>
           </div>
 

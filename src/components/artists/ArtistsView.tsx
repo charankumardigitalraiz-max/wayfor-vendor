@@ -308,7 +308,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           {artist.management?.email ? (
             <a
               href={`mailto:${artist.management.email}`}
-              className="text-purple-600 hover:underline"
+              className="text-slate-700 hover:text-purple-700 hover:underline transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               {artist.management.email}
@@ -327,7 +327,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           {artist.management?.phone ? (
             <a
               href={`tel:${artist.management.phone}`}
-              className="hover:text-purple-600"
+              className="text-slate-700 hover:text-purple-700 hover:underline transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               {artist.management.phone}

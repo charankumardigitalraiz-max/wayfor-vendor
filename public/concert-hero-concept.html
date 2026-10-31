@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concert Hero Concept</title>
+<style>
+:root{--font-sans:'Inter',sans-serif;--primary:#9333EA;--primary-dark:#7E22CE;--soft:#FAF5FF;--border:#E9D5FF;--ink:#202938;--muted:#687386;--line:#e7eaf0}
+*{box-sizing:border-box}body{margin:0;background:#f7f8fb;color:var(--ink);font-family:var(--font-sans);font-size:14px}.canvas{min-height:100vh;padding:28px;display:block}.topbar{width:min(1120px,100%);margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}.back{border:0;background:transparent;color:#667085;padding:8px 0;font-size:13px;font-weight:500}.back:hover{color:var(--primary-dark)}.top-actions{display:flex;align-items:center;gap:9px}.status-wrap{position:relative}.status{appearance:none;border:1px solid var(--border);background:var(--soft);color:var(--primary-dark);border-radius:8px;height:38px;padding:0 31px 0 13px;font-size:12px;font-weight:500}.status-wrap:after{content:"⌄";position:absolute;right:11px;top:8px;color:var(--primary);pointer-events:none;font-size:16px}.hero{width:min(1120px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 42px rgba(25,31,45,.07);padding:18px;display:grid;grid-template-columns:440px minmax(0,1fr);gap:30px}.visual{min-width:0}.poster{position:relative;aspect-ratio:1.12;border-radius:14px;overflow:hidden;background:#e9ebf0}.poster img{width:100%;height:100%;display:block;object-fit:cover}.poster:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,13,25,.04) 45%,rgba(9,13,25,.78) 100%)}.poster-top{position:absolute;z-index:1;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center}.poster-chip{padding:6px 9px;border-radius:7px;background:rgba(17,24,39,.72);backdrop-filter:blur(9px);color:#fff;font-size:11px;font-weight:500}.poster-bottom{position:absolute;z-index:1;bottom:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:end;color:#fff}.poster-bottom strong{font-size:12px;font-weight:500}.poster-bottom span{font-size:11px;color:rgba(255,255,255,.84)}.thumb-row{display:flex;gap:7px;margin-top:10px}.thumb{width:52px;height:38px;border:1px solid #dfe3ea;border-radius:6px;overflow:hidden;background:#eef0f4;padding:0;opacity:.55}.thumb.active{border:2px solid var(--primary);opacity:1}.thumb img{width:100%;height:100%;object-fit:cover}.copy{display:flex;flex-direction:column;justify-content:center;padding:10px 22px 10px 0}.eyebrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:19px}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:500}.pill.live{background:#ecfdf5;color:#11785e;border:1px solid #bcebd9}.pill.tier{background:#f5f6f8;color:#667085;border:1px solid #e2e6ec}.pill.video{background:#fff1f3;color:#bd4058;border:1px solid #ffd0d8}.copy h1{max-width:650px;margin:0;font-size:clamp(28px,3.8vw,43px);line-height:1.08;letter-spacing:-.045em;font-weight:600;color:#182334}.lineup{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:15px;color:var(--muted);font-size:14px;line-height:1.5}.lineup strong{color:var(--primary-dark);font-weight:500}.dot{width:4px;height:4px;background:#c5cad3;border-radius:50%}.facts{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;margin-top:30px;padding-top:21px;border-top:1px solid var(--line)}.fact{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid #f0f1f4}.fact-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--soft);color:var(--primary);font-size:14px;flex-shrink:0}.fact-label{display:block;color:#778294;font-size:11px;font-weight:400;margin-bottom:3px}.fact-value{display:block;color:#263143;font-size:13px;font-weight:500;line-height:1.35}.actions{display:flex;align-items:center;gap:10px;margin-top:24px}.btn{height:38px;padding:0 15px;border:1px solid #dfe3ea;border-radius:8px;background:#fff;color:#596579;font-size:12px;font-weight:500}.btn:hover{border-color:var(--border);color:var(--primary-dark);background:var(--soft)}.btn.primary{border-color:var(--primary);background:var(--primary);color:#fff}.btn.primary:hover{border-color:var(--primary-dark);background:var(--primary-dark)}.note{margin-left:auto;color:#8993a2;font-size:11px}@media(max-width:850px){.topbar{align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}}@media(max-width:850px){.hero{grid-template-columns:1fr;gap:22px}.visual{max-width:620px}.copy{padding:0 8px 10px}.copy h1{font-size:34px}.note{display:none}}@media(max-width:520px){.canvas{padding:14px}.hero{padding:12px;border-radius:14px}.facts{grid-template-columns:1fr;gap:0}.copy h1{font-size:29px}.actions{flex-wrap:wrap}.btn{flex:1}.thumb{width:48px}}
+</style>
+</head>
+<body>
+<main class="canvas">
+<header class="topbar"><button class="back" type="button">← Back</button><div class="top-actions"><div class="status-wrap"><select class="status"><option>Active Live</option><option>Upcoming</option><option>Completed</option><option>Cancelled</option><option>Draft</option></select></div><button class="btn" type="button">✎ Edit Event</button><button class="btn primary" type="button">▣ Book a Ticket</button></div></header>
+<section class="hero" aria-label="Concert hero section">
+  <div class="visual">
+    <div class="poster">
+      <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop&q=85" alt="Neon Odyssey: World Electronic Symphony 2026">
+      <div class="poster-bottom"><span class="poster-chip">16+ (Valid ID Required)</span><span class="poster-chip">▧ 5 Photos</span></div>
+    </div>
+    <div class="thumb-row"><button class="thumb active"><img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80" alt="Photo 1"></button><button class="thumb"><img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&q=80" alt="Photo 2"></button><button class="thumb"><img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?w=500&q=80" alt="Photo 3"></button><button class="thumb"><img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&q=80" alt="Photo 4"></button><button class="thumb"><img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80" alt="Photo 5"></button></div>
+  </div>
+  <div class="copy">
+    <div class="eyebrow"><span class="pill live">Active Live</span><span class="pill tier">3 Active Tiers</span><span class="pill video">Promo Video</span></div>
+    <h1>Neon Odyssey: World Electronic Symphony 2026</h1>
+    <div class="lineup"><span>Headliner: <strong>Martin Garrix</strong></span><span class="dot"></span><span>Featuring: <strong>Kevin de Vries, Argy, Massano</strong></span></div>
+    <div class="facts">
+      <div class="fact"><span class="fact-icon">▣</span><div><span class="fact-label">Event date · Doors</span><span class="fact-value">20 Dec 2026 · 17:00</span></div></div>
+      <div class="fact"><span class="fact-icon">⌖</span><div><span class="fact-label">Venue · City</span><span class="fact-value">Genesys Global Arena · Mumbai</span></div></div>
+      <div class="fact"><span class="fact-icon">₹</span><div><span class="fact-label">Price range · Average</span><span class="fact-value">₹1,999 – ₹12,999 · Avg ₹7,499</span></div></div>
+    </div>
+    
+  </div>
+</section>
+</main>
+<script>document.querySelectorAll('.thumb').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('active'));t.classList.add('active')}));</script>
+</body>
+</html>

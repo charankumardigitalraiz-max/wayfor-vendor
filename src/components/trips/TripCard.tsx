@@ -71,8 +71,8 @@ export const TripCard: React.FC<TripCardProps> = ({
             </span>
           ))}
           {trip.waypoints.length > 3 && (
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] text-slate-400">
-              +{trip.waypoints.length - 3} more
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 font-medium">
+              +{trip.waypoints.length - 3}
             </span>
           )}
         </div>
@@ -81,21 +81,21 @@ export const TripCard: React.FC<TripCardProps> = ({
       {/* Footer Details */}
       <div className="mt-4 border-t border-slate-100 pt-3">
         <div className="flex items-center justify-between text-xs text-slate-500 mb-2.5">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 font-medium text-slate-700">
             <Calendar className="h-3 w-3 text-slate-400" />
-            {trip.totalDays} Days ({trip.startDate.slice(5)})
+            {trip.totalDays} Days
           </span>
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3 text-slate-400" />
-            {trip.joinedTravelers.length} / {trip.maxTravelers} buddies
+            {trip.joinedTravelers.length} / {trip.maxTravelers} slots
           </span>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[11px] text-slate-400">Package Budget: </span>
-            <span className="text-xs font-semibold text-amber-600">
+            <span className="text-xs font-semibold text-amber-700">
               ₹{trip.estimatedBudget.toLocaleString('en-IN')}
+              <span className="text-[11px] font-normal text-slate-400 ml-1">/ person</span>
             </span>
           </div>
           <div className="flex items-center gap-1">

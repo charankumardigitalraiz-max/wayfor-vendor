@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { BarChart3, TrendingUp } from 'lucide-react';
 
 export interface HorizontalBarItem {
   id: string;
@@ -22,142 +23,213 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   title,
   subtitle,
   items,
-  axisLabel = 'Count',
+  axisLabel = 'Confirmed Travelers',
   formatValue = (v) => v.toLocaleString(),
   className = ''
 }) => {
   const [mounted, setMounted] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-  const maxValue = Math.max(...items.map((i) => i.value), 10);
-  // Round max value up to clean step
-  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
-  const roundedMax = Math.ceil(maxValue / magnitude) * magnitude || 100;
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
 
-  // 5 axis steps
+  // Sort items descending by value
+  const sortedItems = [...items].sort((a, b) => b.value - a.value);
+
+  const realMax = Math.max(...sortedItems.map((i) => i.value), 1);
+  // Choose a clean rounded maximum based on realMax so bars look well-proportioned
+  const scaleMax = realMax <= 4 ? realMax + 1 : Math.ceil(realMax * 1.2);
+
+  // 5 evenly spaced axis steps
   const axisSteps = [
     0,
-    Math.round(roundedMax * 0.25),
-    Math.round(roundedMax * 0.5),
-    Math.round(roundedMax * 0.75),
-    roundedMax
+    Math.round(scaleMax * 0.25),
+    Math.round(scaleMax * 0.5),
+    Math.round(scaleMax * 0.75),
+    scaleMax
   ];
 
-  // Default gradient progression matching horizontal-bar-chart.png (from bright vibrant blue to lavender)
-  const defaultColors = [
-    '#3B82F6', // Top (Blue)
-    '#60A5FA',
-    '#6366F1',
-    '#818CF8',
-    '#A78BFA',
-    '#C084FC',
-    '#DDD6FE'
+  // Curated modern expedition amber/sunset gradient palette
+  const defaultPalette = [
+    '#D97706', // Amber 600
+    '#F59E0B', // Amber 500
+    '#EA580C', // Orange 600
+    '#0D9488', // Teal 600
+    '#8B5CF6'  // Purple 600
   ];
+
+  const activeItem = hoveredId ? sortedItems.find((i) => i.id === hoveredId) : null;
+  const activeIndex = activeItem ? sortedItems.findIndex((i) => i.id === activeItem.id) : -1;
 
   return (
-    <div className={`rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between ${className}`}>
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => {
+        setHoveredId(null);
+        setMousePos(null);
+      }}
+      className={`rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between relative ${className}`}
+    >
+      {/* Floating Interactive Tooltip */}
+      {activeItem && mousePos && (
+        <div
+          className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-1.5 min-w-56 transition-transform duration-75"
+          style={{
+            left: `${mousePos.x}px`,
+            top: `${mousePos.y}px`,
+            transform: `translate(${
+              mousePos.x < 130
+                ? '8px'
+                : containerRef.current && mousePos.x > containerRef.current.clientWidth - 130
+                ? 'calc(-100% - 8px)'
+                : '-50%'
+            }, ${mousePos.y < 125 ? '15px' : 'calc(-100% - 12px)'})`
+          }}
+        >
+          <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className="h-2.5 w-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: activeItem.color || defaultPalette[activeIndex % defaultPalette.length] }}
+              />
+              <span className="font-bold text-slate-900 truncate">
+                {activeItem.label}
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
+              Rank #{activeIndex + 1}
+            </span>
+          </div>
+
+          <div className="space-y-1 pt-0.5 text-[11px]">
+            {activeItem.subtext && (
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Route / Waypoint:</span>
+                <span className="font-semibold text-slate-800 truncate max-w-36 text-right">
+                  {activeItem.subtext}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Confirmed Booking:</span>
+              <span className="font-bold text-slate-900">
+                {formatValue(activeItem.value)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-100 pt-1 text-slate-400">
+              <span>Relative Share:</span>
+              <span className="font-medium text-amber-700">
+                {Math.round((activeItem.value / scaleMax) * 100)}% of peak
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
-        <div>
-          <h3 className="text-sm font-semibold tracking-tight text-slate-900">
-            {title}
-          </h3>
-          {subtitle && (
-            <p className="text-xs text-slate-500 mt-0.5">
-              {subtitle}
-            </p>
-          )}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-6 w-6 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+            <BarChart3 className="h-3.5 w-3.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+              {title}
+            </h3>
+          </div>
         </div>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          Ranked Comparison
-        </span>
       </div>
 
-      {/* Chart Canvas */}
-      <div className="flex-1 flex flex-col justify-center py-2 relative">
-        {/* Background Vertical Dashed Guide Lines */}
-        <div className="absolute inset-y-6 left-36 right-16 pointer-events-none flex justify-between z-0">
-          {axisSteps.map((step, idx) => (
+      {/* Main Bar Canvas */}
+      <div className="flex-1 flex flex-col justify-center py-2 space-y-3.5">
+        {sortedItems.map((item, idx) => {
+          const barPct = Math.min(100, Math.max(4, (item.value / scaleMax) * 100));
+          const barColor = item.color || defaultPalette[idx % defaultPalette.length];
+          const isHovered = hoveredId === item.id;
+
+          return (
             <div
-              key={idx}
-              className="h-full border-r border-dashed border-slate-200/70"
-            />
-          ))}
-        </div>
-
-        {/* Horizontal Bars */}
-        <div className="space-y-3 relative z-10">
-          {items.map((item, idx) => {
-            const barPct = Math.min(100, Math.max(3, (item.value / roundedMax) * 100));
-            const barColor = item.color || defaultColors[idx % defaultColors.length];
-            const isHovered = hoveredId === item.id;
-
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 group cursor-pointer"
-                onMouseEnter={() => setHoveredId(item.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                {/* Left Category Label */}
-                <div className="w-32 shrink-0 text-right pr-2">
+              key={item.id}
+              className={`group rounded-lg p-2 transition-all cursor-pointer border ${
+                isHovered
+                  ? 'border-amber-300 bg-amber-50/50 shadow-2xs'
+                  : 'border-slate-100/80 bg-white hover:border-slate-200'
+              }`}
+              onMouseEnter={() => setHoveredId(item.id)}
+              onMouseLeave={() => setHoveredId(null)}
+            >
+              {/* Row Header: Title and Numerical Value only */}
+              <div className="flex items-center justify-between text-xs mb-1.5 gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span
-                    className={`text-xs font-semibold block truncate transition-colors ${
-                      isHovered ? 'text-blue-700 font-bold' : 'text-slate-700'
-                    }`}
-                    title={item.label}
-                  >
+                    className="h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: barColor }}
+                  />
+                  <span className="font-semibold text-slate-900 truncate text-[11.5px] group-hover:text-amber-900">
                     {item.label}
                   </span>
-                  {item.subtext && (
-                    <span className="text-[10px] text-slate-400 block truncate">
-                      {item.subtext}
-                    </span>
-                  )}
                 </div>
 
-                {/* Bar Container */}
-                <div className="flex-1 flex items-center gap-3">
-                  <div className="flex-1 h-7 rounded-r-lg bg-slate-50 overflow-hidden relative">
-                    <div
-                      className="h-full rounded-r-lg transition-all duration-700 ease-out flex items-center justify-end pr-2"
-                      style={{
-                        width: mounted ? `${barPct}%` : '0%',
-                        backgroundColor: barColor,
-                        filter: isHovered ? 'brightness(1.08)' : 'none'
-                      }}
-                    />
-                  </div>
-
-                  {/* Value on the right */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   <span
-                    className={`text-xs font-bold shrink-0 min-w-[50px] transition-colors ${
-                      isHovered ? 'text-blue-700 scale-105' : 'text-slate-800'
-                    }`}
+                    className="text-[10px] font-bold px-1.5 py-0.2 rounded"
+                    style={{
+                      backgroundColor: `${barColor}18`,
+                      color: barColor
+                    }}
                   >
-                    {formatValue(item.value)}
+                    {item.value}
                   </span>
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Bottom Numeric Axis (matching horizontal-bar-chart.png) */}
-        <div className="ml-36 mr-16 pt-3 mt-2 border-t border-slate-200 flex justify-between text-[10px] font-semibold text-slate-400">
-          {axisSteps.map((step, idx) => (
-            <span key={idx} className="-translate-x-1/2">
-              {formatValue(step)}
-            </span>
-          ))}
-        </div>
-        <div className="text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-1">
-          {axisLabel}
+              {/* Perfectly Aligned Progress Bar Track */}
+              <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden relative">
+                <div
+                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  style={{
+                    width: mounted ? `${barPct}%` : '0%',
+                    backgroundColor: barColor,
+                    filter: isHovered ? 'brightness(1.08)' : 'none'
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {sortedItems.length === 0 && (
+          <div className="py-8 text-center text-xs text-slate-400">
+            No active expeditions available for ranking.
+          </div>
+        )}
+
+        {/* Bottom Mathematical Axis Guide matching the 100% width of the bars */}
+        <div className="pt-2 border-t border-slate-100">
+          <div className="flex justify-between text-[10px] font-semibold text-slate-400 px-1">
+            {axisSteps.map((step, idx) => (
+              <span key={idx}>
+                {step}
+              </span>
+            ))}
+          </div>
+          <div className="text-center text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-1">
+            {axisLabel}
+          </div>
         </div>
       </div>
     </div>

@@ -39,3 +39,12 @@ export type { BubbleItem } from './BubbleChart';
 
 export { ConcertGenreDistributionChart } from './ConcertGenreDistributionChart';
 export type { ConcertGenreDistributionChartProps } from './ConcertGenreDistributionChart';
+
+export { StrangerMeetDistributionChart } from './StrangerMeetDistributionChart';
+export type { StrangerMeetDistributionChartProps } from './StrangerMeetDistributionChart';
+
+export { ConcertPerformanceBarChart } from './ConcertPerformanceBarChart';
+export type { ConcertPerformanceBarChartProps } from './ConcertPerformanceBarChart';
+
+export { ConcertTourColumnChart } from './ConcertTourColumnChart';
+export type { ConcertTourColumnChartProps } from './ConcertTourColumnChart';

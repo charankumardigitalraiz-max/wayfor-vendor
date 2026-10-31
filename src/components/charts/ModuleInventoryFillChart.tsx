@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { PieChart as PieIcon } from 'lucide-react';
 
 export type AccentColor = 'purple' | 'amber' | 'teal' | 'indigo';
@@ -115,6 +115,18 @@ export const ModuleInventoryFillChart: React.FC<ModuleInventoryFillChartProps> =
     ].join(' ');
   };
 
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
+
   const activeItem = hoveredId ? slices.find(s => s.id === hoveredId) : null;
 
   return (
@@ -144,8 +156,77 @@ export const ModuleInventoryFillChart: React.FC<ModuleInventoryFillChartProps> =
         </div>
       </div>
 
-      {/* Donut Chart with Side Legend */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 py-1">
+      {/* Donut Chart with Visual Capacity Bars */}
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => {
+          setHoveredId(null);
+          setMousePos(null);
+        }}
+        className="relative flex flex-col sm:flex-row items-center gap-6 py-1 flex-1"
+      >
+        {/* Floating Interactive Tooltip */}
+        {activeItem && mousePos && (
+          <div
+            className="absolute z-30 pointer-events-none rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-3 shadow-xl text-xs space-y-1.5 min-w-56 transition-transform duration-75"
+            style={{
+              left: `${mousePos.x}px`,
+              top: `${mousePos.y}px`,
+              transform: `translate(${mousePos.x < 130
+                  ? '8px'
+                  : containerRef.current && mousePos.x > containerRef.current.clientWidth - 130
+                    ? 'calc(-100% - 8px)'
+                    : '-50%'
+                }, ${mousePos.y < 125 ? '15px' : 'calc(-100% - 12px)'})`
+            }}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: activeItem.color }}
+                />
+                <span className="font-bold text-slate-900 truncate">
+                  {activeItem.title}
+                </span>
+              </div>
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                style={{
+                  backgroundColor: `${activeItem.color}18`,
+                  color: activeItem.color
+                }}
+              >
+                {activeItem.fillPct}% fill
+              </span>
+            </div>
+
+            <div className="space-y-1 pt-0.5 text-[11px]">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Location / Venue:</span>
+                <span className="font-semibold text-slate-800 truncate max-w-36 text-right">
+                  {activeItem.subtitle}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Occupancy:</span>
+                <span className="font-bold text-slate-900">
+                  {activeItem.filled} / {activeItem.capacity} {activeItem.unit}
+                </span>
+              </div>
+              {activeItem.revenue > 0 && (
+                <div className="flex items-center justify-between border-t border-slate-100 pt-1">
+                  <span className="text-slate-500">Gross Volume:</span>
+                  <span className="font-bold text-slate-900">
+                    {formatCurrency(activeItem.revenue)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* SVG Animated Donut Ring */}
         <div className="relative shrink-0 w-44 h-44 sm:w-48 sm:h-48">
           <svg
@@ -169,8 +250,19 @@ export const ModuleInventoryFillChart: React.FC<ModuleInventoryFillChartProps> =
                   fill={slice.color}
                   opacity={isHovered ? 1 : 0.9}
                   className="cursor-pointer transition-all duration-300"
-                  onMouseEnter={() => setHoveredId(slice.id)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  style={{
+                    filter: isHovered ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.18))' : 'none',
+                    opacity: hoveredId && !isHovered ? 0.5 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    setHoveredId(slice.id);
+                    handleMouseMove(e);
+                  }}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => {
+                    setHoveredId(null);
+                    setMousePos(null);
+                  }}
                 />
               );
             })}
@@ -190,41 +282,57 @@ export const ModuleInventoryFillChart: React.FC<ModuleInventoryFillChartProps> =
           </div>
         </div>
 
-        {/* Legend Breakdown */}
-        <div className="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+        {/* Visual Graphic Capacity Bars (No heavy text clutter, rich hover detail) */}
+        <div className="flex-1 w-full space-y-2.5 max-h-56 overflow-y-auto pr-1">
           {slices.map((slice) => {
             const isHovered = hoveredId === slice.id;
             return (
               <div
                 key={slice.id}
-                onMouseEnter={() => setHoveredId(slice.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={`rounded-md p-1.5 transition-all cursor-pointer flex items-center justify-between text-xs ${
-                  isHovered ? 'bg-slate-100 shadow-2xs' : 'hover:bg-slate-50'
-                }`}
+                onMouseEnter={(e) => {
+                  setHoveredId(slice.id);
+                  handleMouseMove(e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={() => {
+                  setHoveredId(null);
+                  setMousePos(null);
+                }}
+                className={`group rounded-lg p-2 transition-all cursor-pointer border ${isHovered
+                    ? 'border-slate-300 bg-slate-50 shadow-2xs'
+                    : 'border-slate-100/80 bg-white hover:border-slate-200'
+                  }`}
               >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: slice.color }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900 truncate text-[11px]">
+                <div className="flex items-center justify-between text-xs mb-1.5 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: slice.color }}
+                    />
+                    <span className="font-semibold text-slate-800 truncate text-[11.5px] group-hover:text-slate-900">
                       {slice.title}
-                    </p>
-                    <p className="text-[10px] text-slate-500 truncate">
-                      {slice.subtitle}
-                    </p>
+                    </span>
                   </div>
-                </div>
-
-                <div className="text-right shrink-0 pl-2">
-                  <span className="font-bold text-slate-900 text-[11px] block">
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.2 rounded shrink-0"
+                    style={{
+                      backgroundColor: `${slice.color}15`,
+                      color: slice.color
+                    }}
+                  >
                     {slice.fillPct}%
                   </span>
-                  <span className="text-[9px] text-slate-400">
-                    {slice.filled.toLocaleString()} {slice.unit}
-                  </span>
+                </div>
+
+                {/* Graphical Animated Progress Bar */}
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.max(slice.fillPct, 3)}%`,
+                      backgroundColor: slice.color
+                    }}
+                  />
                 </div>
               </div>
             );
