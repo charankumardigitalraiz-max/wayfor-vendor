@@ -117,16 +117,19 @@ export const StrangerMeetsOverview: React.FC<StrangerMeetsOverviewProps> = ({
       <div className="rounded-lg border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-teal-100 text-teal-800 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-md bg-teal-100 text-teal-800 flex items-center justify-center">
               <Sparkles className="h-4 w-4" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-              Stranger Meets Overview
-            </h1>
+            <div>
+              <h1 className="PageTitle">
+                Stranger Meets Overview
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                Monitor real-world social mixers, coffee connect events, attendee rosters, and community engagement.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Monitor real-world social mixers, coffee connect events, attendee rosters, and community engagement.
-          </p>
+
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
@@ -204,22 +207,20 @@ export const StrangerMeetsOverview: React.FC<StrangerMeetsOverviewProps> = ({
           <button
             type="button"
             onClick={() => setChartView('heatmap-bubble')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-              chartView === 'heatmap-bubble'
-                ? 'bg-white text-teal-800 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'heatmap-bubble'
+              ? 'bg-white text-teal-800 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Heatmap & Bubbles
           </button>
           <button
             type="button"
             onClick={() => setChartView('trend-fill')}
-            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-              chartView === 'trend-fill'
-                ? 'bg-white text-teal-800 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'trend-fill'
+              ? 'bg-white text-teal-800 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Velocity & Donut
           </button>

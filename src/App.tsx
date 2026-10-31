@@ -177,6 +177,15 @@ export function AppContent() {
     showToast(`Tour stop "${created.title}" published to live network!`);
   };
 
+  const handleUpdateConcert = async (
+    id: string,
+    updates: Partial<ConcertEvent>
+  ) => {
+    const updated = await vendorConcertService.updateConcert(id, updates);
+    setConcerts((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    showToast(`Concert "${updated.title}" updated successfully!`);
+  };
+
   const handleStatusChange = async (id: string, status: ConcertEvent['status']) => {
     await vendorConcertService.updateStatus(id, status);
     setConcerts((prev) =>
@@ -240,6 +249,39 @@ export function AppContent() {
     if (updated) {
       setAttendees(vendorConcertService.getAttendees());
     }
+  };
+
+  // Add Ticket Booking Handler
+  const handleAddBooking = (newBooking: AttendeeBooking) => {
+    const currentAttendees = vendorConcertService.getAttendees();
+    const updatedAttendees = [newBooking, ...currentAttendees];
+    vendorConcertService.saveAttendees(updatedAttendees);
+    setAttendees(updatedAttendees);
+
+    // Update concert ticket tiers & ticketsSold
+    setConcerts((prev) => {
+      const updatedConcerts = prev.map((c) => {
+        if (c.id === newBooking.concertId) {
+          const updatedTiers = c.ticketTiers.map((t) => {
+            if (t.name.toLowerCase() === newBooking.ticketTier.toLowerCase()) {
+              return {
+                ...t,
+                available: Math.max(0, t.available - newBooking.seatsCount)
+              };
+            }
+            return t;
+          });
+          return {
+            ...c,
+            ticketsSold: c.ticketsSold + newBooking.seatsCount,
+            ticketTiers: updatedTiers
+          };
+        }
+        return c;
+      });
+      vendorConcertService.saveConcerts(updatedConcerts);
+      return updatedConcerts;
+    });
   };
 
   // Venue Handler
@@ -424,6 +466,25 @@ export function AppContent() {
               element={<Navigate to="/concerts/create" replace />}
             />
             <Route
+              path="/concerts/:concertId/edit"
+              element={
+                isAuthorized('concerts') ? (
+                  <CreateConcertScreen
+                    onAddConcert={handleCreateConcert}
+                    onUpdateConcert={handleUpdateConcert}
+                    concerts={concerts}
+                    venues={venues}
+                    onAddVenue={handleAddVenue}
+                    artists={artists}
+                    onAddArtist={handleCreateArtist}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Concerts & Events" />
+                )
+              }
+            />
+            <Route
               path="/concerts/:concertId"
               element={
                 isAuthorized('concerts') ? (
@@ -434,6 +495,7 @@ export function AppContent() {
                     onDeleteConcert={handleDeleteConcert}
                     onToggleCheckIn={handleToggleCheckIn}
                     onShowToast={showToast}
+                    onAddBooking={handleAddBooking}
                   />
                 ) : (
                   <UnauthorizedNotice moduleName="Concerts & Events" />

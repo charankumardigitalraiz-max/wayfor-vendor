@@ -153,11 +153,11 @@ export const ConcertGenreDistributionChart: React.FC<ConcertGenreDistributionCha
               <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                 {dimension === 'genre' ? 'Genre Box Office Distribution' : 'Tour Cities Admissions Share'}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              {/* <p className="text-xs text-slate-500 mt-0.5">
                 {dimension === 'genre'
                   ? 'Revenue & ticket admissions split across music genres'
                   : 'Geographic demand & attendance density by host city'}
-              </p>
+              </p> */}
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -15,15 +15,29 @@ import {
   Share2,
   Trash2,
   Edit3,
-  Sliders,
   DollarSign,
-  Scan,
+  UserCheck,
   ShieldCheck,
   Building,
   ChevronDown,
+  ChevronUp,
   Search,
   Sparkles,
-  Crown
+  Crown,
+  Plus,
+  Image as ImageIcon,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Radio,
+  Smile,
+  Theater,
+  Wand2,
+  Play,
+  Volume2,
+  Layers,
+  Globe
 } from 'lucide-react';
 import type { ConcertEvent, AttendeeBooking } from '../../types';
 import { Badge } from '../common/Badge';
@@ -31,8 +45,42 @@ import { MetricCard } from '../common/MetricCard';
 import { Table, type Column } from '../common/Table';
 import { Pagination } from '../common/Pagination';
 import { AppImage } from '../common/AppImage';
+import { BookTicketModal } from './BookTicketModal';
 import { formatUtcDate, formatUtcTime } from '../../utils/dateUtils';
 import { vendorConcertService } from '../../services/vendorConcertService';
+import { EVENT_CATEGORIES, type EventCategoryType } from './CreateConcertScreen';
+
+const getEventCategoryConfig = (concert: ConcertEvent) => {
+  if (concert.eventCategory && concert.eventCategory in EVENT_CATEGORIES) {
+    return EVENT_CATEGORIES[concert.eventCategory as EventCategoryType];
+  }
+  const lowerGenre = (concert.genre || '').toLowerCase();
+  const lowerTitle = (concert.title || '').toLowerCase();
+  if (lowerGenre.includes('comedy') || lowerGenre.includes('stand-up') || lowerTitle.includes('comedy')) {
+    return EVENT_CATEGORIES.comedy;
+  }
+  if (
+    lowerGenre.includes('edm') ||
+    lowerGenre.includes('techno') ||
+    lowerGenre.includes('house') ||
+    lowerGenre.includes('dj') ||
+    lowerTitle.includes('dj') ||
+    lowerTitle.includes('afterlife') ||
+    lowerTitle.includes('electronic')
+  ) {
+    return EVENT_CATEGORIES['dj-electronic'];
+  }
+  if (lowerGenre.includes('theatre') || lowerGenre.includes('drama') || lowerGenre.includes('play')) {
+    return EVENT_CATEGORIES.theatre;
+  }
+  if (lowerGenre.includes('dance') || lowerGenre.includes('choreography')) {
+    return EVENT_CATEGORIES.dance;
+  }
+  if (lowerGenre.includes('magic') || lowerGenre.includes('illusion') || lowerGenre.includes('mentalism')) {
+    return EVENT_CATEGORIES['magic-variety'];
+  }
+  return EVENT_CATEGORIES.music;
+};
 
 interface VendorConcertDetailProps {
   concerts: ConcertEvent[];
@@ -41,6 +89,7 @@ interface VendorConcertDetailProps {
   onDeleteConcert: (id: string) => void;
   onToggleCheckIn: (bookingId: string) => void;
   onShowToast: (msg: string) => void;
+  onAddBooking?: (booking: AttendeeBooking) => void;
 }
 
 export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
@@ -49,19 +98,82 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
   onStatusChange,
   onDeleteConcert,
   onToggleCheckIn,
-  onShowToast
+  onShowToast,
+  onAddBooking
 }) => {
   const { concertId } = useParams<{ concertId: string }>();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'tiers' | 'attendees' | 'production'>('tiers');
   const [attendeeSearch, setAttendeeSearch] = useState('');
   const [attendeeFilter, setAttendeeFilter] = useState<'all' | 'checkedIn' | 'pending'>('all');
 
   const [attendeePage, setAttendeePage] = useState(1);
   const [attendeePageSize, setAttendeePageSize] = useState(5);
 
+  // Booking Modal State
+  const [isBookTicketOpen, setIsBookTicketOpen] = useState(false);
+  const [isSpecsExpanded, setIsSpecsExpanded] = useState(true);
+
   const concert = concerts.find(c => c.id === concertId) || concerts[0];
+
+  const categoryConfig = useMemo(() => {
+    return concert ? getEventCategoryConfig(concert) : EVENT_CATEGORIES.music;
+  }, [concert]);
+
+  // Gallery and Lightbox State
+  const [selectedImageIdx, setSelectedImageIdx] = useState<number>(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [activePreviewImage, setActivePreviewImage] = useState<string | null>(null);
+  const thumbsRef = useRef<HTMLDivElement>(null);
+
+  const handleScrollThumbs = (direction: 'up' | 'down') => {
+    if (thumbsRef.current) {
+      const scrollAmount = direction === 'up' ? -108 : 108;
+      thumbsRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  // Fallback demo gallery photos if stored concert doesn't have gallery defined yet
+  const galleryImages = useMemo(() => {
+    if (concert?.gallery && concert.gallery.length > 0) {
+      return concert.gallery;
+    }
+    return [
+      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=900&auto=format&fit=crop&q=80'
+    ];
+  }, [concert?.gallery]);
+
+  const allImages = useMemo(() => {
+    if (!concert) return [];
+    const list = [concert.image, ...galleryImages];
+    return Array.from(new Set(list.filter(Boolean)));
+  }, [concert?.image, galleryImages]);
+
+  const currentDisplayImage = activePreviewImage || concert?.image || '';
+
+  // Reset active preview when concert changes
+  useEffect(() => {
+    setActivePreviewImage(null);
+  }, [concert?.id]);
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsLightboxOpen(false);
+      } else if (e.key === 'ArrowLeft') {
+        setSelectedImageIdx((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+      } else if (e.key === 'ArrowRight') {
+        setSelectedImageIdx((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, allImages.length]);
 
   if (!concert) {
     return (
@@ -110,7 +222,6 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
   const totalTierSold = totalTierQuota - totalTierAvailable;
   const totalTierRevenue = concert.ticketTiers.reduce((acc, t) => acc + (t.total - t.available) * t.price, 0);
   const totalTierSoldPct = totalTierQuota > 0 ? Math.round((totalTierSold / totalTierQuota) * 100) : 0;
-  const tabIndex = activeTab === 'tiers' ? 0 : activeTab === 'attendees' ? 1 : 2;
 
   const attendeeColumns: Column<AttendeeBooking>[] = [
     {
@@ -160,45 +271,32 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
     },
     {
       key: 'checkedIn',
-      header: 'Gate & Status',
-      width: 'min-w-[190px]',
-      render: (item) => {
-        const isVip = item.ticketTier.toLowerCase().includes('vip');
-        const gate = item.gateNumber || (isVip ? 'Gate 1 (VIP Fastrack)' : 'Gate 2 (General West)');
-
-        return (
-          <div className="space-y-1.5 min-w-[170px]">
-            <div>
-              {item.checkedIn ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                  Admitted
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
-                  <Clock className="h-3.5 w-3.5 text-amber-600" />
-                  Pending Entry
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-mono text-[10px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 whitespace-nowrap">
-                {gate}
-              </span>
-            </div>
-          </div>
-        );
-      }
+      header: 'Attendance Status',
+      render: (item) => (
+        <div>
+          {item.checkedIn ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              Admitted
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap">
+              <Clock className="h-3.5 w-3.5 text-amber-600" />
+              Pending Check-In
+            </span>
+          )}
+        </div>
+      )
     },
     {
       key: 'checkInDate',
-      header: 'Check-In Date & Time',
+      header: 'Check-In Timestamp',
       render: (item) => {
         if (!item.checkedIn || !item.checkedInAt) {
           return (
             <div className="flex items-center gap-1.5 text-slate-400 text-xs font-normal">
               <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
-              <span className="italic">Not scanned yet</span>
+              <span className="italic">Not checked in</span>
             </div>
           );
         }
@@ -212,9 +310,6 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             <div className="flex items-center gap-1 text-[11px] text-slate-500 font-normal pl-5">
               <Clock className="h-3 w-3 text-slate-400 shrink-0" />
               <span>{formatUtcTime(item.checkedInAt)}</span>
-              {item.gateStaff && (
-                <span className="text-slate-400 text-[10px]">({item.gateStaff})</span>
-              )}
             </div>
           </div>
         );
@@ -222,21 +317,21 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
     },
     {
       key: 'action',
-      header: 'Manual Override',
+      header: 'Action',
       align: 'right',
       render: (item) => (
         <button
           type="button"
           onClick={() => {
             onToggleCheckIn(item.id);
-            onShowToast(item.checkedIn ? `Entry reverted for ${item.customerName}` : `Admitted ${item.customerName}!`);
+            onShowToast(item.checkedIn ? `Check-in reverted for ${item.customerName}` : `Checked in ${item.customerName}!`);
           }}
           className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${item.checkedIn
             ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
             : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
             }`}
         >
-          {item.checkedIn ? 'Revert Entry' : 'Manual Check-in'}
+          {item.checkedIn ? 'Revert Check-in' : 'Mark Checked-in'}
         </button>
       )
     }
@@ -244,499 +339,809 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Top Breadcrumb Navigation Card */}
-      <div className="rounded-lg border border-slate-200/90 bg-white px-4 py-2 sm:px-5 sm:py-3.5 shadow-2xs flex items-center justify-between gap-3">
+      {/* Top Header Navigation matching Redesign */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 hover:text-purple-700 hover:bg-purple-50 border border-slate-200/80 hover:border-purple-200 transition-all cursor-pointer shadow-2xs group"
+          className="inline-flex items-center gap-1.5 py-1 text-[13px] font-medium text-slate-500 hover:text-purple-700 transition-colors cursor-pointer group"
         >
-          <ArrowLeft className="h-3.5 w-3.5 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition-all" />
+          <ArrowLeft className="h-4 w-4 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition-transform" />
           <span>Back</span>
         </button>
 
         <div className="flex items-center gap-2.5">
           <div className="relative">
-            <div
-              className={`absolute left-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full pointer-events-none ${concert.status === 'active'
-                ? 'bg-emerald-500 animate-pulse'
-                : concert.status === 'upcoming'
-                  ? 'bg-blue-500'
-                  : 'bg-purple-500'
-                }`}
-            />
             <select
               value={concert.status}
               onChange={(e) => onStatusChange(concert.id, e.target.value as ConcertEvent['status'])}
-              className="appearance-none w-full h-9 rounded-md border border-slate-200 bg-white pl-7.5 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs"
+              className="appearance-none h-9 rounded-lg border border-purple-200 bg-[#FAF5FF] pl-3.5 pr-8 text-xs font-semibold text-purple-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs hover:bg-purple-100/60 transition-colors"
             >
-              <option value="active">Active Live</option>
+              <option value="active">● Active Live</option>
               <option value="upcoming">Upcoming</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
               <option value="draft">Draft</option>
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-purple-600 pointer-events-none" />
           </div>
 
-          {/* <button
+          <button
             type="button"
-            onClick={() => navigate('/gate-scanner')}
-            className="flex items-center gap-1.5 h-9 px-3.5 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer shrink-0"
+            onClick={() => navigate(`/concerts/${concert.id}/edit`)}
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#dfe3ea] bg-white hover:bg-[#FAF5FF] hover:border-purple-200 hover:text-purple-700 text-xs font-semibold text-[#475467] transition-all cursor-pointer shadow-2xs shrink-0"
+            title="Edit Concert Details"
           >
-            <Scan className="h-3.5 w-3.5" />
-            <span>Launch Gate Scanner</span>
-          </button> */}
+            <Edit3 className="h-3.5 w-3.5 text-slate-500" />
+            <span>Edit Event</span>
+          </button>
+
+          {totalTierAvailable > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsBookTicketOpen(true)}
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-purple-600 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs shadow-purple-200 transition-all cursor-pointer shrink-0"
+            >
+              <Ticket className="h-3.5 w-3.5" />
+              <span>Book a Ticket</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Main Concert Hero Card: Balanced 3-Column Studio Layout */}
-      <div className="rounded-lg border border-slate-200/90 bg-white p-5 lg:p-6 shadow-2xs">
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Column 1: Left Poster Artwork Frame */}
-          <div className="relative w-full sm:w-60 lg:w-64 aspect-[4/3] shrink-0 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100 group">
+      <section className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)] gap-6 bg-white border border-[#e8ebf0] rounded-[16px] p-5 shadow-[0_8px_28px_rgba(34,42,58,0.05)]">
+        {/* Column 1: Gallery */}
+        <div className="flex flex-col gap-2.5 min-w-0">
+          {/* Main Poster */}
+          <div
+            onClick={() => {
+              const idx = allImages.indexOf(currentDisplayImage);
+              setSelectedImageIdx(idx >= 0 ? idx : 0);
+              setIsLightboxOpen(true);
+            }}
+            className="relative aspect-[16/11] rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 cursor-pointer group w-full"
+            title="Click to view full photo"
+          >
             <AppImage
-              src={concert.image}
+              src={currentDisplayImage}
               alt={concert.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
 
-            <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5">
-              <span className="rounded-md bg-white/95 backdrop-blur-md px-2 py-0.5 text-[11px] font-semibold text-slate-900 shadow-xs">
-                {concert.genre}
-              </span>
-              {concert.ageRestriction && (
-                <span className="rounded-md bg-slate-900/80 backdrop-blur-md px-2 py-0.5 text-[10px] font-medium text-white shadow-xs">
+            {/* Top Floating Chips */}
+            <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+              {concert.ageRestriction ? (
+                <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md text-[10px] font-medium text-slate-700 border border-slate-200/60 shadow-xs">
                   {concert.ageRestriction}
+                </span>
+              ) : <div />}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-md text-slate-700 p-1 rounded-md text-xs shadow-xs border border-slate-200/60">
+                <Maximize2 className="h-3 w-3" />
+              </div>
+            </div>
+
+            {/* Bottom Caption */}
+            <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] pointer-events-none">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-md text-[10px] font-medium text-purple-200 border border-purple-500/20">
+                <categoryConfig.icon className="h-3 w-3 text-purple-400" />
+                <span>{categoryConfig.shortName}</span>
+              </span>
+
+              {allImages.length > 1 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-md text-[10px] font-medium text-white/90 border border-white/10">
+                  <ImageIcon className="h-3 w-3" />
+                  <span>{allImages.length} Photos</span>
                 </span>
               )}
             </div>
           </div>
 
-          {/* Column 2: Center Details & Event Metadata */}
-          <div className="flex-1 min-w-0 space-y-5 w-full">
-            {/* Badges Row */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Badge status={concert.status} />
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-xs font-semibold text-purple-700">
-                <Music className="h-3 w-3 text-purple-600" />
-                {concert.genre} Tour
-              </span>
-              <span className="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                {concert.ticketTiers.length} Active Tiers
-              </span>
+          {/* Horizontal Gallery Thumbnails */}
+          {allImages.length > 1 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden">
+              {allImages.map((img, idx) => {
+                const isActive = currentDisplayImage === img;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActivePreviewImage(img);
+                      setSelectedImageIdx(idx);
+                    }}
+                    className={`relative w-[52px] h-[38px] rounded-lg overflow-hidden border transition-all cursor-pointer shrink-0 ${isActive
+                      ? 'border-2 border-purple-600 ring-2 ring-purple-100'
+                      : 'border-slate-200 hover:border-slate-300 opacity-60 hover:opacity-100'
+                      }`}
+                    title={`View photo ${idx + 1}`}
+                  >
+                    <AppImage
+                      src={img}
+                      alt={`Photo ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                );
+              })}
             </div>
+          )}
+        </div>
 
-            {/* Concert Title & Lineup */}
-            <div className="space-y-3">
-              <h1 className="text-2xl sm:text-2xl font-semibold tracking-tight text-slate-900 leading-snug">
-                {concert.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-0.5 text-[12px] font-semibold">
-                <span className="text-slate-600">
-                  Headliner: <span className="font-semibold text-purple-700 text-[13px]">{concert.artist}</span>
+        {/* Column 2: Event Details */}
+        <div className="min-w-0 flex flex-col justify-start py-0.5 space-y-3 sm:space-y-3.5">
+          {/* Top: Status Badges, Headline, Lineup */}
+          <div>
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge status={concert.status} />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 border border-purple-200/80 px-2.5 py-0.5 text-[11px] font-medium text-purple-700">
+                  <categoryConfig.icon className="h-3 w-3" />
+                  <span>{categoryConfig.name}</span>
                 </span>
-                {concert.supportingActs && concert.supportingActs.length > 0 && (
-                  <span className="text-slate-500 flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
-                    <span>
-                      Featuring: <span className="text-slate-800 font-medium">{concert.supportingActs.join(', ')}</span>
-                    </span>
+                {concert.tourName && (
+                  <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200/70 px-2.5 py-0.5 text-[11px] font-medium text-slate-600" title={concert.tourName}>
+                    {concert.tourName}
                   </span>
                 )}
               </div>
+
+              {concert.videoUrl && (
+                <a
+                  href={concert.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/80 text-[11px] font-medium transition-colors"
+                >
+                  <Play className="h-3 w-3 fill-rose-700" />
+                  <span>Promo Video</span>
+                </a>
+              )}
             </div>
 
-            {/* Event Highlights Strip */}
-            <div className="flex flex-wrap items-center gap-3.5 pt-2  text-xs">
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-700">
-                <Calendar className="h-4 w-4 text-purple-600 shrink-0" />
-                <span className="font-semibold text-slate-900">{formatUtcDate(concert.date)}</span>
-                <span className="text-slate-400 font-normal">· Gate {concert.doorsOpen}</span>
-              </div>
+            {/* Clean Title */}
+            <h1 className="text-xl sm:text-2xl lg:text-[25px] font-semibold tracking-[-0.03em] text-[#172033] leading-snug">
+              {concert.title}
+            </h1>
 
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-700">
-                <MapPin className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span className="font-semibold text-slate-900">{concert.venueName}</span>
-                <span className="text-slate-400 font-normal">({concert.city})</span>
-              </div>
-
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-700">
-                <Ticket className="h-4 w-4 text-amber-600 shrink-0" />
-                <span className="font-semibold text-slate-900">
-                  ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
+            {/* Clean Inline Lineup */}
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-2 text-[#667085] text-[13px]">
+              <span className="inline-flex items-center gap-1">
+                {categoryConfig.performerLabel.split('/')[0].trim()}: <strong className="text-purple-700 font-semibold">{concert.artist}</strong>
+              </span>
+              {concert.supportingActs && concert.supportingActs.length > 0 && (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-[#c4c9d1] shrink-0" />
+                  <span>
+                    {categoryConfig.lineupLabel.split('&')[0].trim()}: <span className="text-[#344054] font-medium">{concert.supportingActs.join(', ')}</span>
+                  </span>
                 </span>
-                <span className="text-slate-400 font-normal">· Avg ₹{Math.round(avgPrice).toLocaleString()}</span>
-              </div>
+              )}
+              {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).length > 0 && (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-[#c4c9d1] shrink-0" />
+                  <span className="text-slate-500 font-normal">
+                    {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).join(', ')}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
 
+          {/* 4 Cards Grid Layout (2 cards per row on desktop, covering space without empty gaps or truncation) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {/* Card 1: Schedule & Doors */}
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
+              <div className="w-8 h-8 rounded-lg bg-[#FAF5FF] text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
+                <Calendar className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Event Date & Showtime</span>
+                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
+                  {formatUtcDate(concert.date)}
+                </span>
+                <span className="block text-purple-700 text-[11px] font-medium mt-0.5">
+                  Doors {concert.doorsOpen} • Starts {concert.showTime || '20:00'}
+                </span>
+              </div>
+            </div>
 
+            {/* Card 2: Venue & Location */}
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
+              <div className="w-8 h-8 rounded-lg bg-[#effaf6] text-[#16866b] flex items-center justify-center shrink-0 mt-0.5">
+                <MapPin className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Venue & Staging</span>
+                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
+                  {concert.venueName}, {concert.city}
+                </span>
+                {/* <span className="block text-slate-500 text-[11px] font-normal mt-0.5">
+                  {concert.soundSystem ? `Acoustics: ${concert.soundSystem}` : `${concert.city}, India`}
+                </span> */}
+              </div>
+            </div>
+
+            {/* Card 3: Ticket Pricing */}
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
+              <div className="w-8 h-8 rounded-lg bg-[#fff8e8] text-[#b46a00] flex items-center justify-center shrink-0 mt-0.5">
+                <Ticket className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Ticket Pricing & Categories</span>
+                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
+                  ₹{concert.minPrice.toLocaleString()} – ₹{concert.maxPrice.toLocaleString()}
+                </span>
+                <span className="block text-amber-700 text-[11px] font-medium mt-0.5">
+                  Avg ₹{Math.round(avgPrice).toLocaleString()} / pass • {concert.ticketTiers.length} Active Tiers
+                </span>
+              </div>
+            </div>
+
+            {/* Card 4: Capacity & Allocation */}
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
+              <div className="w-8 h-8 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center shrink-0 mt-0.5">
+                <Users className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[#697586] text-[11px] font-medium mb-0.5">Total Capacity & Sales</span>
+                <span className="block text-[#1f2937] text-[13px] font-semibold leading-snug">
+                  {concert.totalCapacity.toLocaleString()} Total Passes
+                </span>
+                <span className="block text-blue-700 text-[11px] font-medium mt-0.5">
+                  {concert.ticketsSold.toLocaleString()} sold ({soldPct}% allocated)
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      {/* 4 Metric Cards reflecting Event Details from Concert Creation */}
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="Capacity Allocation"
-          value={`${soldPct}%`}
+          label="Event Classification"
+          value={categoryConfig.shortName}
           isPositive={true}
-          // change={`${concert.ticketsSold.toLocaleString()} sold`}
-          // subtext={`Out of ${concert.totalCapacity.toLocaleString()} arena capacity`}
-          icon={Ticket}
+          change={concert.genre || categoryConfig.defaultGenre}
+          subtext={concert.genres && concert.genres.length > 1 ? concert.genres.join(' • ') : categoryConfig.tagline}
+          icon={categoryConfig.icon as any}
           accentColor="purple"
         />
 
         <MetricCard
-          label="Est. Gross Box Office"
-          value={`₹${(grossEst / 10000000).toFixed(2)} Cr`}
+          label="Showtime & Duration"
+          value={concert.showTime ? `${concert.showTime} Show` : 'Evening Event'}
           isPositive={true}
-          // change="₹ avg yield"
-          // subtext={`From ${concert.ticketTiers.length} tiered categories`}
+          change={concert.durationHours || categoryConfig.defaultDuration}
+          subtext={`Doors entry at ${concert.doorsOpen}`}
+          icon={Clock}
+          accentColor="indigo"
+        />
+
+        <MetricCard
+          label="Venue & Audio Array"
+          value={`${concert.totalCapacity.toLocaleString()} Capacity`}
+          isPositive={true}
+          change={concert.soundSystem ? concert.soundSystem.split(' ')[0] + ' ' + (concert.soundSystem.split(' ')[1] || 'Rig') : 'Arena Staging'}
+          subtext={concert.venueName}
+          icon={Building}
+          accentColor="amber"
+        />
+
+        <MetricCard
+          label="Est. Gross Box Office"
+          value={concert.isFree ? 'Free Admission' : `₹${(grossEst / 10000000).toFixed(2)} Cr`}
+          isPositive={true}
+          change={concert.isFree ? 'Open Entry' : `${soldPct}% Sold`}
+          subtext={concert.isFree ? 'Community Pass' : `${concert.ticketTiers.length} Tiered Categories`}
           icon={TrendingUp}
           accentColor="emerald"
         />
+      </div> */}
 
-        <MetricCard
-          label="Live Gate Admitted"
-          value={`${checkedInCount} Scanned`}
-          isPositive={true}
-          // change="Gate Entry"
-          // subtext={`${eventAttendees.length - checkedInCount} pending admission`}
-          icon={Scan}
-          accentColor="cyan"
-        />
-
-        <MetricCard
-          label="Remaining Passes"
-          value={(concert.totalCapacity - concert.ticketsSold).toLocaleString()}
-          isPositive={concert.totalCapacity > concert.ticketsSold}
-          // change="Inventory"
-          // subtext={`Across ${concert.ticketTiers.length} tiered categories`}
-          icon={Users}
-          accentColor="amber"
-        />
-      </div>
-
-      {/* Unified Event Operations Workspace Card */}
-      <div className="rounded-lg border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
-        {/* Workspace Tab Header */}
-        <div className="border-b border-slate-200/80 bg-white px-4 py-3 sm:px-5 flex items-center justify-between gap-4 flex-wrap">
-          {/* Segmented Pill Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200/70">
-            <button
-              type="button"
-              onClick={() => setActiveTab('tiers')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'tiers'
-                ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
-                }`}
-            >
-              <Ticket className="h-3.5 w-3.5" />
-              <span>Ticket Tiers & Inventory</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold transition-colors ${activeTab === 'tiers' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
-                }`}>
-                {concert.ticketTiers.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('attendees')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'attendees'
-                ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
-                }`}
-            >
-              <Users className="h-3.5 w-3.5" />
-              <span>Attendee Manifest</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold transition-colors ${activeTab === 'attendees' ? 'bg-purple-100 text-purple-800' : 'bg-slate-200/80 text-slate-600'
-                }`}>
-                {eventAttendees.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('production')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${activeTab === 'production'
-                ? 'bg-white text-purple-700 shadow-2xs border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border border-transparent'
-                }`}
-            >
-              <Sliders className="h-3.5 w-3.5" />
-              <span>Stage & Production Logistics</span>
-            </button>
+      {/* Event Production Specifications & Setup Details */}
+      <div className="rounded-xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden transition-all">
+        {/* Header with Title and Toggle */}
+        <div className="p-3.5 sm:px-5 sm:py-3.5 border-b border-slate-100 bg-white flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+              <Sparkles className="h-3.5 w-3.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs sm:text-[13px] font-semibold text-slate-900">Event Production Specifications & Schedule</h3>
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                  {categoryConfig.name}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">Live staging parameters, technical sound rig, and production schedule</p>
+            </div>
           </div>
 
-          {/* <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>Real-time Gate & Box Office Sync</span>
-          </div> */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/concerts/${concert.id}/edit`)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/70 transition-colors cursor-pointer"
+            >
+              <Edit3 className="h-3 w-3" />
+              <span>Edit Specs</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSpecsExpanded(!isSpecsExpanded)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+              title={isSpecsExpanded ? 'Collapse specifications' : 'Expand specifications'}
+              aria-label="Toggle event specifications"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isSpecsExpanded ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
         </div>
 
-        {/* Sliding Tab Panes Container */}
-        <div className="overflow-hidden w-full relative">
-          <div
-            className="flex w-full items-start transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${tabIndex * 100}%)` }}
-          >
-            {/* Tab 1: Ticket Tiers */}
-            <div className="w-full shrink-0 min-w-full">
-              {/* Header Toolbar */}
-              <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                    <Ticket className="h-4 w-4 text-purple-600" />
-                    Ticket Tiers & Quota Allocations
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Official box office passes broken down by seating class, quota velocity, and stage visibility.
-                  </p>
+        {/* Proper 4-Cards Grid (2 cards per row on desktop) */}
+        {isSpecsExpanded && (
+          <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/40">
+            {/* Card 1: Creative & Performer Lineup */}
+            <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
+              <div className="flex items-center gap-3 pb-2.5 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+                  <categoryConfig.icon className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200 shadow-2xs">
-                    {concert.ticketTiers.length} Active Tiers
-                  </span> */}
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 shadow-2xs">
-                    ₹{totalTierRevenue.toLocaleString()} Gross Inflow
+                <div className="min-w-0">
+                  <h4 className="text-[13px] font-semibold text-slate-900 leading-tight">Creative & Performer Lineup</h4>
+                  {/* <p className="text-[11px] text-slate-400 mt-0.5">Classification, headliner, and production style</p> */}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Category Classification</span>
+                  <span className="font-semibold text-slate-800 text-right">{categoryConfig.name}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.performerLabel}</span>
+                  <span className="font-semibold text-purple-700 text-right">{concert.artist}</span>
+                </div>
+
+                {concert.supportingActs && concert.supportingActs.length > 0 && (
+                  <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                    <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.lineupLabel}</span>
+                    <span className="font-medium text-slate-700 text-right truncate max-w-[220px]" title={concert.supportingActs.join(', ')}>
+                      {concert.supportingActs.join(', ')}
+                    </span>
+                  </div>
+                )}
+
+                {concert.tourName && (
+                  <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                    <span className="text-[11px] text-slate-500 font-medium">Tour / Production Run</span>
+                    <span className="font-medium text-slate-800 text-right truncate max-w-[220px]" title={concert.tourName}>
+                      {concert.tourName}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <span className="text-[11px] text-slate-500 font-medium">{categoryConfig.genreLabel}</span>
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {(concert.genres && concert.genres.length > 0 ? concert.genres : [concert.genre || categoryConfig.defaultGenre]).map((g, i) => (
+                      <span key={i} className="inline-block px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 text-[10px] font-semibold border border-purple-200/60">
+                        {g}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Show Schedule & Performance Timings */}
+            <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
+              <div className="flex items-center gap-3 pb-2.5 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Clock className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-[13px] font-semibold text-slate-900 leading-tight">Show Schedule & Timings</h4>
+                  {/* <p className="text-[11px] text-slate-400 mt-0.5">Event date, gate entry, and main stage timings</p> */}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Event Date</span>
+                  <span className="font-semibold text-slate-800 text-right">{formatUtcDate(concert.date)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Doors / Gate Entry</span>
+                  <span className="font-semibold text-slate-800 text-right">{concert.doorsOpen}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Main Showtime</span>
+                  <span className="font-bold text-purple-700 text-right">{concert.showTime || '20:00'}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Performance Duration</span>
+                  <span className="font-medium text-slate-800 text-right">{concert.durationHours || categoryConfig.defaultDuration}</span>
+                </div>
+
+                {concert.languages && concert.languages.length > 0 && (
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <span className="text-[11px] text-slate-500 font-medium">Languages / Medium</span>
+                    <span className="font-medium text-slate-700 text-right truncate max-w-[220px]" title={concert.languages.join(', ')}>
+                      {concert.languages.join(', ')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: Venue & Technical Infrastructure */}
+            <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
+              <div className="flex items-center gap-3 pb-2.5 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Volume2 className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-[13px] font-semibold text-slate-900 leading-tight">Venue & Technical Staging</h4>
+                  {/* <p className="text-[11px] text-slate-400 mt-0.5">Arena capacity, audio line array, and address</p> */}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Venue Name</span>
+                  <span className="font-semibold text-slate-800 text-right">{concert.venueName}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Total Arena Capacity</span>
+                  <span className="font-semibold text-slate-800 text-right">{concert.totalCapacity.toLocaleString()} seats</span>
+                </div>
+
+                {concert.soundSystem && (
+                  <div className="py-1 border-b border-slate-50">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[11px] text-slate-500 font-medium shrink-0">Sound Rig & Line Array</span>
+                      <span className="font-medium text-slate-800 text-right text-xs truncate max-w-[240px]" title={concert.soundSystem}>
+                        {concert.soundSystem}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="py-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] text-slate-500 font-medium shrink-0">Venue Location</span>
+                    <span className="font-medium text-slate-700 text-right text-xs truncate max-w-[240px]" title={concert.venueAddress || `${concert.venueName}, ${concert.city}`}>
+                      {concert.venueAddress || `${concert.venueName}, ${concert.city}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Policies, Media & Guidelines */}
+            <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow space-y-3">
+              <div className="flex items-center gap-3 pb-2.5 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-[13px] font-semibold text-slate-900 leading-tight">Policies, Entity & Media</h4>
+                  {/* <p className="text-[11px] text-slate-400 mt-0.5">Age policy, promoter management, and admission</p> */}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Age Restriction</span>
+                  <span className="font-semibold text-slate-800 text-right">{concert.ageRestriction || categoryConfig.defaultAge}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Promoter / Organizer</span>
+                  <span className="font-medium text-slate-800 text-right truncate max-w-[220px]" title={concert.organizer}>
+                    {concert.organizer}
                   </span>
                 </div>
-              </div>
 
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      <th className="py-3.5 px-5">Tier Category</th>
-                      <th className="py-3.5 px-4">Price / Pass</th>
-                      <th className="py-3.5 px-4 min-w-[180px]">Quota & Sales</th>
-                      <th className="py-3.5 px-4">Status</th>
-                      <th className="py-3.5 px-5 text-right">Gross Inflow</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
-                    {concert.ticketTiers.map((tier, idx) => {
-                      const tierSold = tier.total - tier.available;
-                      const tierPercent = Math.round((tierSold / (tier.total || 1)) * 100);
-                      const tierRevenue = tierSold * tier.price;
-                      const isSoldOut = tier.available === 0;
-                      const isSellingFast = tierPercent >= 80 && !isSoldOut;
-
-                      const lowerName = tier.name.toLowerCase();
-                      const tierBadgeStyle = lowerName.includes('vvip')
-                        ? 'bg-amber-100 text-amber-800 border-amber-200'
-                        : lowerName.includes('vip')
-                          ? 'bg-purple-100 text-purple-800 border-purple-200'
-                          : lowerName.includes('standing') || lowerName.includes('floor') || lowerName.includes('mosh')
-                            ? 'bg-blue-100 text-blue-800 border-blue-200'
-                            : 'bg-emerald-100 text-emerald-800 border-emerald-200';
-
-                      return (
-                        <tr
-                          key={idx}
-                          className="hover:bg-purple-50/30 transition-colors"
-                        >
-                          <td className="py-3.5 px-5">
-                            <div className="flex items-center gap-3">
-                              <div className={`h-8 w-8 rounded-lg border flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs ${tierBadgeStyle}`}>
-                                {tier.name.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="font-semibold text-slate-900">{tier.name}</div>
-                                <div className="text-[11px] text-slate-500">
-                                  <span className="font-medium text-slate-700">{tier.available.toLocaleString()}</span> available of {tier.total.toLocaleString()}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
-                            ₹{tier.price.toLocaleString()}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center justify-between text-[11px] mb-1">
-                              <span className="font-medium text-slate-700">{tierSold.toLocaleString()} sold</span>
-                              <span className="font-semibold text-purple-700">{tierPercent}%</span>
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${isSoldOut
-                                  ? 'bg-rose-500'
-                                  : isSellingFast
-                                    ? 'bg-amber-500'
-                                    : 'bg-purple-600'
-                                  }`}
-                                style={{ width: `${tierPercent}%` }}
-                              />
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            {isSoldOut ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
-                                Sold Out
-                              </span>
-                            ) : isSellingFast ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
-                                Selling Fast
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-                                Available
-                              </span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-5 text-right text-[13px] font-bold text-purple-700 whitespace-nowrap">
-                            ₹{tierRevenue.toLocaleString()}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  <tfoot className="border-t-2 border-slate-200 bg-slate-50/75 text-xs font-semibold text-slate-800">
-                    <tr>
-                      <td className="py-3.5 px-5">
-                        <div className="font-semibold text-slate-900">Total Portfolio Allocation</div>
-                        <div className="text-[11px] text-slate-500 font-normal">
-                          {totalTierAvailable.toLocaleString()} remaining across {concert.ticketTiers.length} categories
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
-                        Avg ₹{Math.round(totalTierQuota > 0 ? (concert.ticketTiers.reduce((acc, t) => acc + t.price * t.total, 0) / totalTierQuota) : 0).toLocaleString()}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center justify-between text-[11px] mb-1">
-                          <span className="font-semibold text-slate-800">{totalTierSold.toLocaleString()} total sold</span>
-                          <span className="font-semibold text-purple-700">{totalTierSoldPct}%</span>
-                        </div>
-                        <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-purple-600 transition-all duration-500"
-                            style={{ width: `${totalTierSoldPct}%` }}
-                          />
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100/80 text-purple-800 border border-purple-200/80 shadow-2xs">
-                          {concert.ticketTiers.length} Active Categories
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-5 text-right font-extrabold text-sm text-purple-800 whitespace-nowrap">
-                        ₹{totalTierRevenue.toLocaleString()}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            {/* Tab 2: Attendee Manifest */}
-            <div className="w-full shrink-0 min-w-full">
-              {/* Search & Filter Toolbar */}
-              <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={attendeeSearch}
-                    onChange={(e) => {
-                      setAttendeeSearch(e.target.value);
-                      setAttendeePage(1);
-                    }}
-                    placeholder="Search attendee name, ticket code (TKT-9821)..."
-                    className="w-full rounded-md border border-slate-200 bg-slate-50/70 pl-9 pr-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all shadow-2xs"
-                  />
+                <div className="flex items-center justify-between gap-3 py-1 border-b border-slate-50">
+                  <span className="text-[11px] text-slate-500 font-medium">Admission Mode</span>
+                  <span className="font-medium text-slate-800 text-right">
+                    {concert.isFree ? 'Free Community Entry' : 'Paid Tiered Box Office'}
+                  </span>
                 </div>
 
-                <div className="relative">
-                  <select
-                    value={attendeeFilter}
-                    onChange={(e) => {
-                      setAttendeeFilter(e.target.value as 'all' | 'checkedIn' | 'pending');
-                      setAttendeePage(1);
-                    }}
-                    className="appearance-none rounded-md border border-slate-200 bg-white px-3 py-2 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-purple-500 cursor-pointer shadow-2xs transition-all hover:border-slate-300"
-                  >
-                    <option value="all">All Attendees</option>
-                    <option value="checkedIn">Admitted</option>
-                    <option value="pending">Pending Entry</option>
-                  </select>
-                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <Table
-                columns={attendeeColumns}
-                data={paginatedAttendees}
-                keyExtractor={(a) => a.id}
-                showPagination={false}
-                containerClassName="border-0 rounded-none shadow-none bg-transparent"
-                emptyMessage="No attendees found matching filter."
-                footer={
-                  filteredAttendees.length > 0 ? (
-                    <Pagination
-                      variant="attached"
-                      currentPage={safeAttendeePage}
-                      totalItems={filteredAttendees.length}
-                      pageSize={attendeePageSize}
-                      onPageChange={setAttendeePage}
-                      onPageSizeChange={setAttendeePageSize}
-                      pageSizeOptions={[5, 10, 15, 20]}
-                      itemName="attendees"
-                    />
-                  ) : null
-                }
-              />
-            </div>
-
-            {/* Tab 3: Stage & Production */}
-            <div className="w-full shrink-0 min-w-full p-4 sm:p-5 lg:p-6 space-y-4">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Stadium Acoustics & Technical Rider Specifications
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Production guidelines, sound system calibration, and security arrangements.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                  <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-2">
-                    <Music className="h-4 w-4 text-purple-600" />
-                    <span>Audio System Rider</span>
-                  </h4>
-                  <p className="text-xs text-slate-700 font-semibold">
-                    {concert.soundSystem || 'L-Acoustics K1 Stadium Array + KS28 Sub Arc'}
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    FOH console calibrated to 102dB Leq with digital delay towers mapped across all stadium tiers.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2">
-                  <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    <span>Security & Gate Personnel</span>
-                  </h4>
-                  <p className="text-xs text-slate-700 font-semibold">
-                    {concert.productionChecklist?.securityGuardsCount || 150} Certified Bouncers & Stewards
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    DFMD metal detectors stationed at Gates 1 through 6 with dedicated women security lanes.
-                  </p>
-                </div>
+                {concert.videoUrl && (
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <span className="text-[11px] text-slate-500 font-medium">Promo Media</span>
+                    <a
+                      href={concert.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200/70 transition-colors"
+                    >
+                      <Play className="h-3 w-3 fill-purple-700" />
+                      <span>Watch Promo Video</span>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Ticket Tiers & Allocations Card */}
+      <div className="rounded-lg border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
+        {/* Header Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              <Ticket className="h-4 w-4 text-purple-600" />
+              <span>Ticket Tiers & Quota Allocations</span>
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {totalTierAvailable > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsBookTicketOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer"
+              >
+                <Plus className="h-3 w-3 stroke-[2.5]" />
+                <span>Book Ticket</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/75 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3.5 px-5">Tier Category</th>
+                <th className="py-3.5 px-4">Price / Pass</th>
+                <th className="py-3.5 px-4 min-w-[180px]">Quota & Sales</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-5 text-right">Gross Inflow</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
+              {concert.ticketTiers.map((tier, idx) => {
+                const tierSold = tier.total - tier.available;
+                const tierPercent = Math.round((tierSold / (tier.total || 1)) * 100);
+                const tierRevenue = tierSold * tier.price;
+                const isSoldOut = tier.available === 0;
+                const isSellingFast = tierPercent >= 80 && !isSoldOut;
+
+                const lowerName = tier.name.toLowerCase();
+                const tierBadgeStyle = lowerName.includes('vvip')
+                  ? 'bg-amber-100 text-amber-800 border-amber-200'
+                  : lowerName.includes('vip')
+                    ? 'bg-purple-100 text-purple-800 border-purple-200'
+                    : lowerName.includes('standing') || lowerName.includes('floor') || lowerName.includes('mosh')
+                      ? 'bg-blue-100 text-blue-800 border-blue-200'
+                      : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+
+                return (
+                  <tr
+                    key={idx}
+                    className="hover:bg-purple-50/30 transition-colors"
+                  >
+                    <td className="py-3.5 px-5">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-8 w-8 rounded-lg border flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs ${tierBadgeStyle}`}>
+                          {tier.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-900">{tier.name}</div>
+                          <div className="text-[11px] text-slate-500">
+                            <span className="font-medium text-slate-700">{tier.available.toLocaleString()}</span> available of {tier.total.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                      ₹{tier.price.toLocaleString()}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="font-medium text-slate-700">{tierSold.toLocaleString()} sold</span>
+                        <span className="font-semibold text-purple-700">{tierPercent}%</span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${isSoldOut
+                            ? 'bg-rose-500'
+                            : isSellingFast
+                              ? 'bg-amber-500'
+                              : 'bg-purple-600'
+                            }`}
+                          style={{ width: `${tierPercent}%` }}
+                        />
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {isSoldOut ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                          Sold Out
+                        </span>
+                      ) : isSellingFast ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+                          Selling Fast
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                          Available
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-5 text-right text-[13px] font-bold text-purple-700 whitespace-nowrap">
+                      ₹{tierRevenue.toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot className="border-t-2 border-slate-200 bg-slate-50/75 text-xs font-semibold text-slate-800">
+              <tr>
+                <td className="py-3.5 px-5">
+                  <div className="font-semibold text-slate-900">Total Portfolio Allocation</div>
+                  <div className="text-[11px] text-slate-500 font-normal">
+                    {totalTierAvailable.toLocaleString()} remaining across {concert.ticketTiers.length} categories
+                  </div>
+                </td>
+                <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                  Avg ₹{Math.round(totalTierQuota > 0 ? (concert.ticketTiers.reduce((acc, t) => acc + t.price * t.total, 0) / totalTierQuota) : 0).toLocaleString()}
+                </td>
+                <td className="py-3.5 px-4">
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="font-semibold text-slate-800">{totalTierSold.toLocaleString()} total sold</span>
+                    <span className="font-semibold text-purple-700">{totalTierSoldPct}%</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-purple-600 transition-all duration-500"
+                      style={{ width: `${totalTierSoldPct}%` }}
+                    />
+                  </div>
+                </td>
+                <td className="py-3.5 px-4 whitespace-nowrap">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100/80 text-purple-800 border border-purple-200/80 shadow-2xs">
+                    {concert.ticketTiers.length} Active Categories
+                  </span>
+                </td>
+                <td className="py-3.5 px-5 text-right font-extrabold text-sm text-purple-800 whitespace-nowrap">
+                  ₹{totalTierRevenue.toLocaleString()}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
-    </div >
+
+      {/* Book Concert Ticket Modal */}
+      <BookTicketModal
+        isOpen={isBookTicketOpen}
+        onClose={() => setIsBookTicketOpen(false)}
+        concert={concert}
+        onAddBooking={onAddBooking}
+        onShowToast={onShowToast}
+      />
+
+      {/* Photo Lightbox Modal */}
+      {
+        isLightboxOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            {/* Top Bar */}
+            <div
+              className="flex items-center justify-between text-white max-w-6xl w-full mx-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-white/10 text-white/90">
+                  {selectedImageIdx + 1} / {allImages.length}
+                </span>
+                <span className="text-xs text-white/70 font-medium truncate max-w-xs sm:max-w-md">
+                  {concert.title}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Center Image with Prev / Next */}
+            <div
+              className="relative flex items-center justify-center flex-1 max-w-6xl w-full mx-auto my-3 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {allImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedImageIdx((prev) => (prev > 0 ? prev - 1 : allImages.length - 1))
+                  }
+                  className="absolute left-2 sm:left-4 z-10 p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur-sm transition-all cursor-pointer shadow-lg hover:scale-105"
+                  title="Previous photo"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+              )}
+
+              <div className="relative max-h-[72vh] max-w-full rounded-xl overflow-hidden shadow-2xl border border-white/10">
+                <AppImage
+                  src={allImages[selectedImageIdx]}
+                  alt={`${concert.title} photo ${selectedImageIdx + 1}`}
+                  className="max-h-[72vh] max-w-full object-contain"
+                />
+              </div>
+
+              {allImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedImageIdx((prev) => (prev < allImages.length - 1 ? prev + 1 : 0))
+                  }
+                  className="absolute right-2 sm:right-4 z-10 p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur-sm transition-all cursor-pointer shadow-lg hover:scale-105"
+                  title="Next photo"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Bottom Thumbnails Strip */}
+            <div
+              className="flex items-center justify-center gap-2 overflow-x-auto max-w-3xl w-full mx-auto pb-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {allImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImageIdx(idx)}
+                  className={`relative h-12 w-16 sm:h-14 sm:w-20 rounded-md overflow-hidden border shrink-0 transition-all cursor-pointer ${selectedImageIdx === idx
+                    ? 'border-purple-500 ring-2 ring-purple-500/50 scale-105'
+                    : 'border-white/20 opacity-50 hover:opacity-100 hover:border-white/50'
+                    }`}
+                  title={`Jump to photo ${idx + 1}`}
+                >
+                  <AppImage
+                    src={img}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
   );
 };

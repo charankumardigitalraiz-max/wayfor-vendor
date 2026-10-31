@@ -26,7 +26,7 @@ class VendorConcertService {
     }
   }
 
-  private saveConcerts(concerts: ConcertEvent[]) {
+  saveConcerts(concerts: ConcertEvent[]) {
     localStorage.setItem(CONCERTS_STORAGE_KEY, JSON.stringify(concerts));
   }
 

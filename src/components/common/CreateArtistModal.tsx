@@ -1,7 +1,26 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, User, Mail, Phone, FileText } from 'lucide-react';
+import { Upload, X, User, Mail, Phone, FileText, Sparkles } from 'lucide-react';
 import { Modal } from './Modal';
 import type { Artist } from '../../types';
+
+export const ARTIST_CATEGORIES = [
+  'Singing / Vocalist',
+  'Standup Comedy',
+  'Comedy & Improv',
+  'DJ & Electronic',
+  'Live Band / Rock',
+  'Bollywood & Playback',
+  'Pop Music',
+  'Hip-Hop & Rap',
+  'Classical & Instrumental',
+  'Folk & Fusion',
+  'Dance & Performance',
+  'Theatre & Drama',
+  'Magic & Illusion',
+  'EDM',
+  'Indie / Acoustic',
+  'Other'
+];
 
 interface CreateArtistModalProps {
   isOpen: boolean;
@@ -19,14 +38,14 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
   onAddArtist,
   onShowToast
 }) => {
-  // Required field
+  // Required fields
   const [name, setName] = useState('');
+  const [category, setCategory] = useState<string>('Singing / Vocalist');
 
-  // Optional fields: email, phone, avatarFile, aboutus (textarea), genre
+  // Optional fields: email, phone, avatarFile, aboutus (textarea)
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [aboutUs, setAboutUs] = useState('');
-  const [genre, setGenre] = useState('EDM');
   const [avatar, setAvatar] = useState<string>('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -67,8 +86,8 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
     const newArtistData: Omit<Artist, 'id'> & { aboutus?: string } = {
       name: trimmedName,
       stageName: trimmedName,
-      genre: genre || 'General Music',
-      subGenres: [genre || 'General Music', 'Live Performance'],
+      genre: category || 'Singing / Vocalist',
+      subGenres: [category || 'Singing / Vocalist', 'Live Performance'],
       bio: aboutUs.trim() || `${trimmedName} is an artist and performer.`,
       aboutus: aboutUs.trim() || `${trimmedName} is an artist and performer.`,
       avatar: finalAvatar,
@@ -94,10 +113,10 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
 
       // Reset fields
       setName('');
+      setCategory('Singing / Vocalist');
       setEmail('');
       setPhone('');
       setAboutUs('');
-      setGenre('EDM');
       setAvatar('');
       setAvatarPreview('');
       setAvatarFile(null);
@@ -118,24 +137,44 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Create Artist"
-      subtitle="Add artist profile with contact information, photo, and bio"
+      subtitle="Add artist profile with category, contact details, photo, and bio"
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        {/* Name (Required) */}
-        <div className="space-y-1.5">
-          <label className="font-semibold text-slate-700 flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-purple-600" />
-            <span>Artist Name *</span>
-          </label>
-          <input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Martin Garrix, A.R. Rahman, Diljit Dosanjh"
-            className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
-          />
+        {/* Name & Category */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-slate-700 flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-purple-600" />
+              <span>Artist Name *</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Zakir Khan, Arijit Singh, Diljit Dosanjh"
+              className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-semibold text-slate-700 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-purple-600" />
+              <span>Category *</span>
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors cursor-pointer"
+            >
+              {ARTIST_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Email (Optional) & Phone (Optional) */}
@@ -168,6 +207,24 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
             />
           </div>
         </div>
+
+
+        {/* About Us / Bio (Textarea) */}
+        <div className="space-y-1.5">
+          <label className="font-semibold text-slate-700 flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-purple-600" />
+            <span>About Us / Bio <span className="text-slate-400 font-normal">(Optional)</span></span>
+          </label>
+          <textarea
+            rows={4}
+            value={aboutUs}
+            onChange={(e) => setAboutUs(e.target.value)}
+            placeholder="Write a brief description about the artist, style, accomplishments, or tour details..."
+            className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors resize-y"
+          />
+        </div>
+
+
 
         {/* Image Upload (Optional) */}
         <div className="space-y-1.5">
@@ -227,20 +284,7 @@ export const CreateArtistModal: React.FC<CreateArtistModalProps> = ({
           )}
         </div>
 
-        {/* About Us / Bio (Textarea) */}
-        <div className="space-y-1.5">
-          <label className="font-semibold text-slate-700 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-purple-600" />
-            <span>About Us / Bio <span className="text-slate-400 font-normal">(Optional)</span></span>
-          </label>
-          <textarea
-            rows={4}
-            value={aboutUs}
-            onChange={(e) => setAboutUs(e.target.value)}
-            placeholder="Write a brief description about the artist, style, accomplishments, or tour details..."
-            className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors resize-y"
-          />
-        </div>
+
 
         {/* Footer Actions */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">

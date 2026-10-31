@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
@@ -30,7 +30,8 @@ import {
   Smile,
   Wand2,
   Theater,
-  Radio
+  Radio,
+  RefreshCw
 } from 'lucide-react';
 import type { ConcertEvent, TicketTier, Venue, Artist } from '../../types';
 import { mockVenues, mockArtists } from '../../data/mockVendorData';
@@ -39,12 +40,14 @@ import { CreateArtistModal } from '../common/CreateArtistModal';
 import { CustomDatePicker } from '../common/CustomDatePicker';
 
 interface CreateConcertScreenProps {
-  onAddConcert: (concert: Omit<ConcertEvent, 'id' | 'ticketsSold' | 'connectedRidesCount'>) => void;
+  onAddConcert: (concert: Omit<ConcertEvent, 'id' | 'ticketsSold' | 'connectedRidesCount'>) => void | Promise<void>;
+  onUpdateConcert?: (id: string, updates: Partial<ConcertEvent>) => void | Promise<void>;
+  concerts?: ConcertEvent[];
   venues?: Venue[];
   onAddVenue?: (venue: Venue) => void;
   artists?: Artist[];
   onAddArtist?: (artist: Omit<Artist, 'id'>) => void;
-  onShowToast?: (message: string) => void;
+  onShowToast?: (message: string, type?: 'info' | 'success' | 'error') => void;
 }
 
 export type EventCategoryType =
@@ -329,7 +332,7 @@ export const EVENT_CATEGORIES: Record<EventCategoryType, EventCategoryConfig> = 
     icon: Wand2,
     titleLabel: 'Illusion / Variety Show Title',
     titlePlaceholder: 'e.g. Beyond Reality: The Mentalist World Tour 2026',
-    performerLabel: 'Lead Illusionist / Mentalist / Performer',
+    performerLabel: 'Performers',
     performerPlaceholder: 'e.g. Karan Singh Magic, Suhani Shah, PC Sorcar...',
     lineupLabel: 'Guest Performers & Stage Assistants',
     lineupPlaceholder: 'e.g. Special Guest Acrobat, Mentalist Assistant',
@@ -412,6 +415,8 @@ const SAMPLE_GALLERY_PRESETS = [
 
 export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
   onAddConcert,
+  onUpdateConcert,
+  concerts,
   venues,
   onAddVenue,
   artists,
@@ -419,12 +424,23 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
   onShowToast
 }) => {
   const navigate = useNavigate();
+  const { concertId } = useParams<{ concertId: string }>();
+
+  const existingConcert = useMemo(() => {
+    if (!concertId || !concerts) return undefined;
+    return concerts.find((c) => c.id === concertId);
+  }, [concertId, concerts]);
+
+  const isEditMode = Boolean(existingConcert);
 
   // Venues State & Global Add Modal
   const [venueList, setVenueList] = useState<Venue[]>(() => {
     return (venues && venues.length > 0) ? venues : mockVenues;
   });
   const [isAddVenueOpen, setIsAddVenueOpen] = useState(false);
+  const [isVenueDropdownOpen, setIsVenueDropdownOpen] = useState(false);
+  const [venueSearch, setVenueSearch] = useState('');
+  const venueDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (venues && venues.length > 0) {
@@ -472,6 +488,45 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const genreDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Pre-fill state when editing an existing concert
+  useEffect(() => {
+    if (existingConcert) {
+      setTitle(existingConcert.title || '');
+      setArtist(existingConcert.artist || '');
+      setSupportingActs(existingConcert.supportingActs?.join(', ') || '');
+      setTourName(existingConcert.tourName || '');
+      if (existingConcert.eventCategory && existingConcert.eventCategory in EVENT_CATEGORIES) {
+        setSelectedCategory(existingConcert.eventCategory as EventCategoryType);
+      }
+      if (existingConcert.genres && existingConcert.genres.length > 0) {
+        setSelectedGenres(existingConcert.genres);
+      } else if (existingConcert.genre) {
+        setSelectedGenres([existingConcert.genre]);
+      }
+      setIsFreeEvent(Boolean(existingConcert.isFree));
+      setDate(existingConcert.date || '2026-12-20');
+      setDoorsOpen(existingConcert.doorsOpen || '17:00');
+      setShowTime(existingConcert.showTime || '19:30');
+      setDurationHours(existingConcert.durationHours || '3.5 Hours');
+      if (existingConcert.languages && existingConcert.languages.length > 0) {
+        setSelectedLanguages(existingConcert.languages);
+      }
+      setAgeRestriction(existingConcert.ageRestriction || '16+ (Valid ID Required)');
+      setSelectedVenue(existingConcert.venueName || existingConcert.venue || mockVenues[0].name);
+      setVenueAddress(existingConcert.venueAddress || '');
+      setCity(existingConcert.city || '');
+      setCountry(existingConcert.country || 'India');
+      setTotalCapacity(existingConcert.totalCapacity || mockVenues[0].capacity);
+      setSoundSystem(existingConcert.soundSystem || mockVenues[0].soundSystem);
+      setImageUrl(existingConcert.image || '');
+      setGalleryImages(existingConcert.gallery || []);
+      setVideoUrl(existingConcert.videoUrl || '');
+      if (existingConcert.ticketTiers && existingConcert.ticketTiers.length > 0) {
+        setTiers(existingConcert.ticketTiers);
+      }
+    }
+  }, [existingConcert]);
+
   const handleCategoryChange = (catId: EventCategoryType) => {
     setSelectedCategory(catId);
     const cfg = EVENT_CATEGORIES[catId];
@@ -479,9 +534,9 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
     setSelectedGenres([cfg.defaultGenre]);
     setAgeRestriction(cfg.defaultAge);
     setDurationHours(cfg.defaultDuration);
-    if (cfg.presetPosters && cfg.presetPosters.length > 0) {
-      setImageUrl(cfg.presetPosters[0].url);
-    }
+    // if (cfg.presetPosters && cfg.presetPosters.length > 0) {
+    //   setImageUrl();
+    // }
   };
 
   const handleFreeToggle = (free: boolean) => {
@@ -551,6 +606,10 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
       }
       if (artistDropdownRef.current && !artistDropdownRef.current.contains(event.target as Node)) {
         setIsArtistDropdownOpen(false);
+      }
+      if (venueDropdownRef.current && !venueDropdownRef.current.contains(event.target as Node)) {
+        setIsVenueDropdownOpen(false);
+        setVenueSearch('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -632,6 +691,12 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
   const filteredGenres = availableGenres.filter(g =>
     g.toLowerCase().includes(genreSearch.toLowerCase().trim())
   );
+
+  const filteredVenues = venueList.filter(v => {
+    const q = venueSearch.toLowerCase().trim();
+    if (!q) return true;
+    return v.name.toLowerCase().includes(q) || v.city.toLowerCase().includes(q);
+  });
 
   // Schedule, Duration & Languages
   const [date, setDate] = useState('2026-12-20');
@@ -840,6 +905,44 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
       return;
     }
 
+    if (isEditMode && existingConcert && onUpdateConcert) {
+      onUpdateConcert(existingConcert.id, {
+        title,
+        artist,
+        supportingActs: supportingActs ? supportingActs.split(',').map(s => s.trim()).filter(Boolean) : [],
+        tourName: tourName || `${title} Live`,
+        genre: (selectedGenres[0] as ConcertEvent['genre']) || currentCategoryConfig.defaultGenre,
+        genres: selectedGenres,
+        eventCategory: selectedCategory,
+        venue: selectedVenue,
+        venueName: selectedVenue,
+        venueAddress,
+        city,
+        country,
+        date,
+        doorsOpen,
+        showTime,
+        durationHours,
+        languages: selectedLanguages,
+        totalCapacity: Number(totalCapacity),
+        minPrice: isFreeEvent ? 0 : minPrice,
+        maxPrice: isFreeEvent ? 0 : maxPrice,
+        isFree: isFreeEvent,
+        currency: 'INR',
+        image: imageUrl,
+        gallery: galleryImages,
+        videoUrl: videoUrl.trim(),
+        status,
+        organizer: existingConcert.organizer || 'Zenith Live Touring & Entertainment',
+        soundSystem,
+        ageRestriction,
+        ticketTiers: tiers
+      });
+
+      navigate(`/concerts/${existingConcert.id}`);
+      return;
+    }
+
     onAddConcert({
       title,
       artist,
@@ -882,7 +985,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/concerts')}
+            onClick={() => isEditMode && existingConcert ? navigate(`/concerts/${existingConcert.id}`) : navigate('/concerts')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 hover:text-purple-700 hover:bg-purple-50 border border-slate-200/80 transition-all cursor-pointer group"
           >
             <ArrowLeft className="h-3.5 w-3.5 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition-all" />
@@ -892,10 +995,12 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
           <div>
             <h1 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-purple-600" />
-              Publish New Concert Tour Stop
+              {isEditMode ? `Edit Concert: ${existingConcert?.title}` : 'Publish New Concert Tour Stop'}
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Configure event details, ticket tier quotas, schedule duration, languages, and arena logistics.
+              {isEditMode
+                ? 'Update tour stop schedule, ticket tier quotas, pricing, and arena specifications.'
+                : 'Configure event details, ticket tier quotas, schedule duration, languages, and arena logistics.'}
             </p>
           </div>
         </div>
@@ -914,7 +1019,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
             className="flex items-center gap-2 px-5 py-2 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer"
           >
             <Check className="h-4 w-4" />
-            <span>Publish Live Event</span>
+            <span>{isEditMode ? 'Save Changes' : 'Publish Live Event'}</span>
           </button>
         </div>
       </div>
@@ -922,15 +1027,14 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
       {/* Full-Width Form Layout - Single Unified Card Container */}
       <form onSubmit={(e) => handleSubmit(e, 'active')}>
         <div className="rounded-xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-8">
-          {/* Section 1: Tour & Performance Fundamentals */}
+          {/* Section 01: Event basics */}
           <div className="space-y-5">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  {React.createElement(currentCategoryConfig.icon, { className: 'h-4 w-4 text-purple-600' })}
-                  Tour & Performance Fundamentals
-                </h3>
+            <div className="section-top">
+              <div className="section-label">
+                <span className="section-no">01</span>
+                <h2>Event basics</h2>
               </div>
+              <span className="section-note">Required details first</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -1011,7 +1115,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                                   </div>
                                   <div className="min-w-0">
                                     <div className="text-xs font-semibold leading-tight truncate">{cat.name}</div>
-                                    <div className="text-[10px] text-slate-400 leading-tight truncate mt-0.5">{cat.tagline}</div>
+                                    {/* <div className="text-[10px] text-slate-400 leading-tight truncate mt-0.5">{cat.tagline}</div> */}
                                   </div>
                                 </div>
                                 {isSelected && <Check className="h-4 w-4 text-purple-600 shrink-0 ml-2" />}
@@ -1373,52 +1477,137 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Event Schedule, Venue & Timing */}
+          {/* Section 02: When & where */}
           <div className="border-t border-slate-100 pt-8 space-y-5">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-purple-600" />
-                  Schedule, Timing & Venue Location
-                </h3>
+            <div className="section-top">
+              <div className="section-label">
+                <span className="section-no">02</span>
+                <h2>When & where</h2>
               </div>
+              <span className="section-note">Schedule and venue</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-12 gap-[25px]">
               {/* Host Arena Dropdown */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                    <Building className="h-3.5 w-3.5 text-purple-600" />
-                    <span>Select Host Arena / Venue <span className="text-rose-500">*</span></span>
-                  </label>
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4 relative" ref={venueDropdownRef}>
+                <label className="block text-xs font-semibold text-slate-600">
+                  Select Host Arena / Venue <span className="req">*</span>
+                </label>
+
+                <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setIsAddVenueOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+                    onClick={() => setIsVenueDropdownOpen(!isVenueDropdownOpen)}
+                    className="w-full min-h-[44px] rounded-[7px] border border-[#d9ddd7] bg-white px-3.5 py-2.5 text-[13px] text-slate-900 font-medium flex items-center justify-between cursor-pointer hover:border-[#b8beb7] focus:border-purple-600 focus:ring-3 focus:ring-purple-600/12 focus:outline-none transition-all"
                   >
-                    <Plus className="h-3 w-3 stroke-[2.5]" />
-                    <span>Add Partner Arena</span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Building className="h-4 w-4 text-purple-600 shrink-0" />
+                      <span className="font-semibold text-slate-700 truncate">
+                        {selectedVenue ? `${selectedVenue} — ${city}` : 'Select host arena / venue...'}
+                      </span>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-slate-400 shrink-0 transition-transform duration-200 ${isVenueDropdownOpen ? 'rotate-180 text-purple-600' : ''}`} />
                   </button>
+
+                  {/* Dropdown Menu Popup */}
+                  {isVenueDropdownOpen && (
+                    <div className="absolute z-30 mt-1.5 w-full left-0 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                      {/* Search Bar inside dropdown */}
+                      <div className="p-2 border-b border-slate-100 bg-slate-50/80">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <input
+                            type="text"
+                            value={venueSearch}
+                            onChange={(e) => setVenueSearch(e.target.value)}
+                            placeholder="Type to filter arenas by name or city..."
+                            className="w-full pl-8 pr-3 py-1.5 rounded-md border border-slate-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Venue List */}
+                      <div className="max-h-56 overflow-y-auto divide-y divide-slate-100 p-1">
+                        {filteredVenues.length === 0 ? (
+                          <div className="p-3 text-center space-y-2">
+                            <p className="text-xs text-slate-500">
+                              No arenas found matching "{venueSearch}"
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsVenueDropdownOpen(false);
+                                setIsAddVenueOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              <span>Add "{venueSearch || 'New Arena'}"</span>
+                            </button>
+                          </div>
+                        ) : (
+                          filteredVenues.map((v) => {
+                            const isSelected = selectedVenue === v.name;
+                            return (
+                              <button
+                                key={v.id}
+                                type="button"
+                                onClick={() => {
+                                  handleVenueChange(v.name);
+                                  setIsVenueDropdownOpen(false);
+                                  setVenueSearch('');
+                                }}
+                                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-colors cursor-pointer ${isSelected
+                                  ? 'bg-purple-50/90 text-purple-900 font-semibold'
+                                  : 'hover:bg-slate-50 text-slate-800'
+                                  }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border ${isSelected ? 'bg-purple-600 text-white border-purple-600' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                    <Building className="h-4 w-4" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="text-xs font-semibold leading-tight truncate">{v.name}</div>
+                                    <div className="text-[10px] text-slate-500 leading-tight truncate mt-0.5">
+                                      {v.city} {v.capacity ? `• ${Number(v.capacity).toLocaleString()} seats` : ''}
+                                    </div>
+                                  </div>
+                                </div>
+                                {isSelected && <Check className="h-4 w-4 text-purple-600 shrink-0 ml-2" />}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {/* Dropdown Footer: Add Partner Arena button moved here */}
+                      <div className="p-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {filteredVenues.length} partner arenas in roster
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsVenueDropdownOpen(false);
+                            setIsAddVenueOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
+                        >
+                          <Plus className="h-3 w-3 stroke-[2.5]" />
+                          <span>Add Partner Arena</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <select
-                  value={selectedVenue}
-                  onChange={(e) => handleVenueChange(e.target.value)}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 font-medium focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors cursor-pointer hover:border-slate-400"
-                >
-                  {venueList.map((v) => (
-                    <option key={v.id} value={v.name}>
-                      {v.name} — {v.city}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Event Date */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-purple-600" />
-                  <span>Event Date <span className="text-rose-500">*</span></span>
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4">
+                <label className="block text-xs font-semibold text-slate-600">
+                  Event Date <span className="req">*</span>
                 </label>
                 <CustomDatePicker
                   value={date}
@@ -1429,10 +1618,9 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
               </div>
 
               {/* Showtime / Event Time */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-purple-600" />
-                  <span>Showtime / Event Time <span className="text-rose-500">*</span></span>
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4">
+                <label className="block text-xs font-semibold text-slate-600">
+                  Showtime / Event Time <span className="req">*</span>
                 </label>
                 <input
                   type="time"
@@ -1442,31 +1630,30 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                     setShowTime(e.target.value);
                     setDoorsOpen(e.target.value);
                   }}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors"
+                  className="concert-field-input"
                 />
               </div>
 
               {/* Total Hours of Show (Duration) */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Hourglass className="h-3.5 w-3.5 text-purple-600" />
-                  Total Hours of Show
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4">
+                <label className="block text-xs font-semibold text-slate-600">
+                  Total Hours of Show <span className="optional">Optional</span>
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   value={durationHours}
                   onChange={(e) => setDurationHours(e.target.value)}
                   placeholder="e.g. 3.5 Hours, 4 Hours"
-                  className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors"
+                  className="concert-field-input"
                 />
               </div>
 
               {/* Languages (Multiple Selection Dropdown with Search) */}
-              <div className="space-y-2 relative" ref={languageDropdownRef}>
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4 relative" ref={languageDropdownRef}>
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <label className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                     <Globe className="h-3.5 w-3.5 text-blue-600" />
-                    Performance & Event Languages
+                    <span>Performance & Event Languages</span>
                   </label>
                   <span className="text-[11px] text-slate-500 font-medium">
                     {selectedLanguages.length} selected
@@ -1625,8 +1812,8 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
               </div>
 
               {/* Age Restriction Dropdown */}
-              <div className="space-y-2 relative" ref={ageDropdownRef}>
-                <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
+              <div className="flex flex-col gap-2 col-span-12 sm:col-span-6 lg:col-span-4 relative" ref={ageDropdownRef}>
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
                     <span>Age Restriction & Entry Policy</span>
@@ -1723,17 +1910,16 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
               </div>
             </div>
 
-            {/* Section 3: Ticket Tiers & Allocation Strategy */}
+            {/* Section 03: Ticket categories */}
             <div className="border-t border-slate-100 pt-8 space-y-4">
-              <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                    <Ticket className="h-4 w-4 text-purple-600" />
-                    Ticket Categories & Allocation
-                  </h3>
+              <div className="section-top flex-col sm:flex-row sm:items-baseline gap-3">
+                <div className="section-label">
+                  <span className="section-no">03</span>
+                  <h2>Ticket categories</h2>
                 </div>
 
                 <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+                  {/* <span className="section-note hidden sm:inline">Pricing and allocation</span> */}
                   {/* Mixed Tier Indicator Badge */}
                   {/* {!isFreeEvent && tiers.some(t => Number(t.price || 0) === 0) && tiers.some(t => Number(t.price || 0) > 0) && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/80">
@@ -1876,7 +2062,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                           value={tier.name}
                           onChange={(e) => handleTierChange(idx, 'name', e.target.value)}
                           placeholder="e.g. VIP Front Pit"
-                          className="w-full h-8 rounded-md border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
+                          className="w-full min-h-[38px] rounded-[7px] border border-[#d9ddd7] bg-white px-3 text-[13px] font-semibold text-slate-700 placeholder:text-[#aeb3ad] focus:outline-none focus:border-purple-600 focus:ring-3 focus:ring-purple-600/12 transition-all"
                         />
                       </div>
 
@@ -1897,7 +2083,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                                   handleTierChange(idx, 'price', idx === 0 ? 1999 : idx === 1 ? 4999 : 2999);
                                 }
                               }}
-                              className={`h-8 rounded-md border border-emerald-300 bg-emerald-50/80 px-2 flex items-center justify-between transition-colors ${!isFreeEvent ? 'cursor-pointer hover:bg-emerald-100/70 group/free' : 'select-none'
+                              className={`min-h-[38px] rounded-[7px] border border-emerald-300 bg-emerald-50/80 px-2.5 flex items-center justify-between transition-colors ${!isFreeEvent ? 'cursor-pointer hover:bg-emerald-100/70 group/free' : 'select-none'
                                 }`}
                               title={!isFreeEvent ? 'Click to set a ticket price' : 'Free event tier'}
                             >
@@ -1925,7 +2111,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                                 value={tier.price}
                                 onChange={(e) => handleTierChange(idx, 'price', Number(e.target.value))}
                                 placeholder="0"
-                                className="w-full h-8 rounded-md border border-slate-300 bg-white pl-6 pr-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
+                                className="w-full min-h-[38px] rounded-[7px] border border-[#d9ddd7] bg-white pl-6 pr-2 text-[13px] font-bold text-slate-700 focus:outline-none focus:border-purple-600 focus:ring-3 focus:ring-purple-600/12 transition-all"
                               />
                             </div>
                           )}
@@ -1933,7 +2119,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
 
                         {/* Quota */}
                         <div>
-                          <div className="flex items-center justify-between h-6 mb-1">
+                          <div className="flex items-center justify-between h-5 mb-1">
                             <label className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider block">
                               Seats Quota
                             </label>
@@ -1951,7 +2137,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                               handleTierChange(idx, 'available', val);
                             }}
                             placeholder="Passes"
-                            className="w-full h-8 rounded-md border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
+                            className="w-full min-h-[38px] rounded-[7px] border border-[#d9ddd7] bg-white px-2.5 text-[13px] font-semibold text-slate-700 focus:outline-none focus:border-purple-600 focus:ring-3 focus:ring-purple-600/12 transition-all"
                           />
                         </div>
                       </div>
@@ -1977,119 +2163,132 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
 
 
 
-            {/* Section 4: Media, Visual Artwork & Promo Video */}
-            <div className="border-t border-slate-100 pt-5 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <Upload className="h-4 w-4 text-purple-600" />
-                  Media, Visual Artwork & Promo Video
-                </h3>
-                <span className="text-[10px] text-slate-400">16:9 Banner • YouTube Video • Photo Highlights</span>
+            {/* Section 04: Media */}
+            <div className="border-t border-slate-100 pt-7 space-y-5">
+              <div className="section-top">
+                <div className="section-label">
+                  <span className="section-no">04</span>
+                  <h2>Media</h2>
+                </div>
+                <span className="section-note">Optional except poster</span>
               </div>
 
-              {/* 2-Column Balanced Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-                {/* Column 1 (Left): Cover Poster & YouTube Promo Video stacked */}
-                <div className="space-y-3">
-                  {/* 1. Event Banner */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                        <span>Cover Poster <span className="text-rose-500">*</span></span>
-                      </label>
-                      <span className="text-[10px] text-slate-400">16:9 • JPG, PNG, WEBP</span>
-                    </div>
+              <div className="grid grid-cols-12 gap-5">
+                {/* Field 1: Cover poster (wide / 8 cols) */}
+                <div className="col-span-12 lg:col-span-8 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Cover poster <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      16:9 · JPG, PNG or WEBP · 1600 × 900 recommended
+                    </span>
+                  </div>
 
-                    <div className="flex items-center gap-2">
-                      {imageUrl && (
-                        <img
-                          src={imageUrl}
-                          alt="Banner Preview"
-                          className="h-8 w-14 object-cover rounded border border-slate-200 shrink-0"
-                        />
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        id="concert-artwork-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="block w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border-0 file:text-[11px] file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-slate-300 rounded-md bg-white cursor-pointer focus:outline-none focus:border-purple-600"
+                  <input
+                    ref={fileInputRef}
+                    id="concert-artwork-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+
+                  {imageUrl ? (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-900 group min-h-[140px] max-h-[175px] flex items-center justify-center">
+                      <img
+                        src={imageUrl}
+                        alt="Cover poster preview"
+                        className="w-full h-full object-cover max-h-[175px]"
                       />
-                      {imageUrl && (
+                      <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-2xs">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3.5 py-1.5 rounded-lg bg-white/95 hover:bg-white text-xs font-semibold text-purple-700 shadow-sm flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          <span>Change image</span>
+                        </button>
                         <button
                           type="button"
                           onClick={handleRemoveImage}
-                          className="shrink-0 p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 rounded-md transition-colors cursor-pointer"
-                          title="Remove poster"
+                          className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-xs font-semibold text-white shadow-sm flex items-center gap-1.5 cursor-pointer transition-colors"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
+                          <span>Remove</span>
                         </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-
-                  {/* 2. Official YouTube Video */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                        <Video className="h-3.5 w-3.5 text-rose-500" />
-                        <span>YouTube Promo Video</span>
-                      </label>
-                      {getYouTubeVideoId(videoUrl) ? (
-                        <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Linked
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">Optional</span>
-                      )}
-                    </div>
-
-                    <div className="relative">
-                      <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                      <input
-                        type="url"
-                        value={videoUrl}
-                        onChange={(e) => setVideoUrl(e.target.value)}
-                        placeholder="Paste YouTube link (https://www.youtube.com/...)"
-                        className="w-full h-8 pl-9 pr-7 rounded-md border border-slate-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors"
-                      />
-                      {videoUrl && (
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border border-dashed border-purple-200 hover:border-purple-400 rounded-xl bg-purple-50/20 hover:bg-purple-50/50 min-h-[140px] flex items-center justify-center text-center p-5 cursor-pointer transition-colors"
+                    >
+                      <div className="space-y-1">
+                        <strong className="text-xs font-semibold text-slate-800 block">
+                          Upload your cover poster
+                        </strong>
+                        <p className="text-[11px] text-slate-500">
+                          Use a clear image that represents the event.
+                        </p>
                         <button
                           type="button"
-                          onClick={() => setVideoUrl('')}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
-                          title="Clear link"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                          className="mt-2.5 px-3.5 py-1.5 rounded-lg border border-purple-200 bg-white text-xs font-semibold text-purple-700 hover:bg-purple-50 hover:border-purple-300 transition-colors shadow-2xs inline-block cursor-pointer"
                         >
-                          <X className="h-3.5 w-3.5" />
+                          Choose image
                         </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                {/* Column 2 (Right): Photo Gallery Highlights */}
-                <div className="space-y-2 lg:pl-1">
+                {/* Field 2: YouTube promo video (4 cols) */}
+                <div className="col-span-12 lg:col-span-4 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                        <ImageIcon className="h-3.5 w-3.5 text-purple-600" />
-                        <span>Photo Gallery Highlights</span>
-                      </label>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        ({galleryImages.length} {galleryImages.length === 1 ? 'photo' : 'photos'})
-                      </span>
-                    </div>
+                    <label className="text-xs font-semibold text-slate-700">
+                      YouTube promo video
+                    </label>
+                    <span className="text-[11px] text-slate-400">Optional</span>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => galleryInputRef.current?.click()}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md border border-purple-200/80 cursor-pointer transition-colors"
-                    >
-                      <Plus className="h-3 w-3 stroke-[2.5]" />
-                      <span>Upload Photos</span>
-                    </button>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/..."
+                      className="w-full h-11 px-3.5 rounded-lg border border-slate-300 bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors"
+                    />
+                    {videoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setVideoUrl('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-1"
+                        title="Clear link"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    A short trailer can help attendees decide faster.
+                  </p>
+                </div>
+
+                {/* Field 3: Photo gallery highlights (full / 12 cols) */}
+                <div className="col-span-12 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Photo gallery highlights
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      Optional · up to 8 images
+                    </span>
                   </div>
 
                   {/* Hidden multi-file input */}
@@ -2102,51 +2301,39 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                     className="hidden"
                   />
 
-                  {/* Thumbnails Grid or Empty Dropzone */}
-                  {galleryImages.length > 0 ? (
-                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-md border border-slate-200 bg-slate-50/50 min-h-[76px]">
-                      {galleryImages.map((img, idx) => (
-                        <div
-                          key={idx}
-                          className="relative h-14 w-14 rounded-md overflow-hidden border border-slate-200 bg-slate-100 group shrink-0"
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                    {galleryImages.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 bg-slate-100 group"
+                      >
+                        <img
+                          src={img}
+                          alt={`Photo ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(idx)}
+                          className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                          title="Remove photo"
                         >
-                          <img
-                            src={img}
-                            alt={`Photo ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveGalleryImage(idx)}
-                            className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
-                            title="Remove photo"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
 
-                      {/* Quick Add photo tile */}
+                    {galleryImages.length < 8 && (
                       <button
                         type="button"
                         onClick={() => galleryInputRef.current?.click()}
-                        className="h-14 w-14 rounded-md border-2 border-dashed border-slate-200 hover:border-purple-400 bg-white hover:bg-purple-50/60 flex flex-col items-center justify-center text-slate-400 hover:text-purple-600 transition-colors cursor-pointer shrink-0"
-                        title="Add more photos"
+                        className="aspect-[4/3] rounded-lg border border-dashed border-purple-200 hover:border-purple-400 bg-purple-50/20 hover:bg-purple-50/60 text-purple-700 font-semibold text-xs flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         <Plus className="h-4 w-4 stroke-[2.5]" />
-                        <span className="text-[9px] font-semibold mt-0.5">Add</span>
+                        <span>Add photos</span>
                       </button>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => galleryInputRef.current?.click()}
-                      className="h-[76px] rounded-md border border-dashed border-slate-200 hover:border-purple-300 bg-slate-50/50 hover:bg-purple-50/30 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-purple-600 cursor-pointer transition-all"
-                    >
-                      <ImageIcon className="h-5 w-5 opacity-60" />
-                      <span className="text-xs font-medium">Click to upload concert photos</span>
-                      <span className="text-[10px] text-slate-400">JPG, PNG, WEBP (multiple photos allowed)</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2177,7 +2364,7 @@ export const CreateConcertScreen: React.FC<CreateConcertScreenProps> = ({
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer"
                 >
                   <Check className="h-4 w-4" />
-                  <span>Publish Tour Stop Live</span>
+                  <span>{isEditMode ? 'Save Changes' : 'Publish Tour Stop Live'}</span>
                 </button>
               </div>
             </div>

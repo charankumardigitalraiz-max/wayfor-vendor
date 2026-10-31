@@ -168,9 +168,9 @@ export const ModuleDistributionDonutChart: React.FC<ModuleDistributionDonutChart
               <h4 className="text-sm font-semibold tracking-tight text-slate-900">
                 Cross-Vertical Revenue Contribution
               </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
+              {/* <p className="text-xs text-slate-500 mt-0.5">
                 Calculated proportional gross revenue volume from your active listings.
-              </p>
+              </p> */}
             </div>
           </div>
 

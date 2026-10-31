@@ -419,9 +419,9 @@ export const MultiModuleTrendChart: React.FC<MultiModuleTrendChartProps> = ({
               {headlineStat.value}
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5 truncate max-w-xl">
+          {/* <p className="text-xs text-slate-500 mt-0.5 truncate max-w-xl">
             {headlineStat.subtext}
-          </p>
+          </p> */}
         </div>
 
         {/* Right Action Switchers */}

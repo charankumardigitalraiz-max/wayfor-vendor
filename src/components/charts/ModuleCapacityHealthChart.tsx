@@ -227,9 +227,9 @@ export const ModuleCapacityHealthChart: React.FC<ModuleCapacityHealthChartProps>
             <h4 className="text-sm font-semibold tracking-tight text-slate-900">
               Cross-Vertical Capacity & Booking Health
             </h4>
-            <p className="text-xs text-slate-500 mt-0.5">
+            {/* <p className="text-xs text-slate-500 mt-0.5">
               Realized booking and capacity utilization calculated from active listings.
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

@@ -81,16 +81,19 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
       <div className="rounded-lg border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center">
               <Music className="h-4 w-4" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-              Concerts Overview
-            </h1>
+            <div>
+              <h1 className="PageTitle">
+                Concerts Overview
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                Real-time ticketing velocity, arena occupancy, and gate access metrics across active tour stops.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Real-time ticketing velocity, arena occupancy, and gate access metrics across active tour stops.
-          </p>
+
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
@@ -149,7 +152,7 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
       </div>
 
       {/* Chart Section Header Card with Chart Type Switcher */}
-      <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* <div className="rounded-lg border border-slate-200/90 bg-white p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-10 w-10 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
             <TrendingUp className="h-5 w-5" />
@@ -170,34 +173,32 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
           <button
             type="button"
             onClick={() => setChartView('funnel-distribution')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
-              chartView === 'funnel-distribution'
-                ? 'bg-white text-purple-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'funnel-distribution'
+              ? 'bg-white text-purple-700 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Funnel & Breakdown
           </button>
           <button
             type="button"
             onClick={() => setChartView('trend-fill')}
-            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
-              chartView === 'trend-fill'
-                ? 'bg-white text-purple-700 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${chartView === 'trend-fill'
+              ? 'bg-white text-purple-700 shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Sales Trends & Capacity
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Two Specialized Charts */}
       {chartView === 'funnel-distribution' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <FunnelChart
             title="Ticket Admissions Funnel"
-            subtitle="Drop-off analysis from initial tour reach to confirmed admissions"
+            subtitle=""
             unit="tickets"
             tiers={[
               {

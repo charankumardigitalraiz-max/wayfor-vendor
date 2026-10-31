@@ -192,14 +192,25 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
             <span>Host Mixer</span>
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={onOpenCreateConcert}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer shrink-0"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>New Concert</span>
-          </button>
+          <>
+            {/* <button
+              type="button"
+              onClick={onOpenCreateConcert}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Book a Ticket</span>
+            </button> */}
+
+            <button
+              type="button"
+              onClick={onOpenCreateConcert}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-sm shadow-purple-200 transition-all cursor-pointer shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New Concert</span>
+            </button>
+          </>
         )}
 
         {/* Notifications */}
@@ -402,6 +413,6 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
           )}
         </div>
       </div>
-    </header>
+    </header >
   );
 };

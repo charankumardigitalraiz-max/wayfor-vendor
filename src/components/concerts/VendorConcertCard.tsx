@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   MapPin,
   Ticket,
   Eye,
+  Edit3,
   Sliders,
   DollarSign
 } from 'lucide-react';
@@ -22,6 +24,7 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
   concert,
   onSelect
 }) => {
+  const navigate = useNavigate();
   const soldPercent = Math.round((concert.ticketsSold / concert.totalCapacity) * 100);
 
   return (
@@ -36,20 +39,19 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          <span className="rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-semibold text-slate-800 shadow-xs">
+          {/* <span className="rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-semibold text-slate-800 shadow-xs">
             {concert.genre}
-          </span>
-          <span
-            className={`rounded-full backdrop-blur-md px-2 py-0.5 text-[10px] font-bold shadow-xs border ${
-              soldPercent >= 55
-                ? 'bg-emerald-500/90 text-white border-emerald-400'
-                : soldPercent < 45
+          </span> */}
+          {/* <span
+            className={`rounded-full backdrop-blur-md px-2 py-0.5 text-[10px] font-bold shadow-xs border ${soldPercent >= 55
+              ? 'bg-emerald-500/90 text-white border-emerald-400'
+              : soldPercent < 45
                 ? 'bg-rose-500/90 text-white border-rose-400'
                 : 'bg-amber-500/90 text-white border-amber-400'
-            }`}
+              }`}
           >
             {soldPercent >= 55 ? 'Profit' : soldPercent < 45 ? 'Loss' : 'Break-Even'}
-          </span>
+          </span> */}
         </div>
 
         <div className="absolute top-3 right-3">
@@ -142,6 +144,17 @@ export const VendorConcertCard: React.FC<VendorConcertCardProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/concerts/${concert.id}/edit`);
+                }}
+                className="p-1.5 rounded-md bg-slate-50 text-slate-600 hover:bg-purple-50 hover:text-purple-700 border border-slate-200/80 hover:border-purple-200 transition-all cursor-pointer shadow-2xs"
+                title="Edit Concert"
+              >
+                <Edit3 className="h-3.5 w-3.5" />
+              </button>
               <button
                 type="button"
                 onClick={() => onSelect(concert)}

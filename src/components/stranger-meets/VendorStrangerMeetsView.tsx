@@ -249,15 +249,16 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-lg border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200">
               Stranger Meets Module
             </span>
             <span className="text-xs text-slate-400">• Verified Community Mixers</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
+          </div> */}
+
+          <h1 className="PageTitle">
             Stranger Meets & Community Socials
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -313,22 +314,20 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
           <button
             type="button"
             onClick={() => setCurrentSubTab('all-meets')}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              currentSubTab === 'all-meets'
-                ? 'border-teal-600 text-teal-700'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${currentSubTab === 'all-meets'
+              ? 'border-teal-600 text-teal-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
           >
             Community Mixers ({meets.length})
           </button>
           <button
             type="button"
             onClick={() => setCurrentSubTab('buddies')}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              currentSubTab === 'buddies'
-                ? 'border-teal-600 text-teal-700'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${currentSubTab === 'buddies'
+              ? 'border-teal-600 text-teal-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
           >
             Attendees & Buddies Roster ({allBuddies.length})
           </button>
@@ -339,9 +338,8 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-md text-xs cursor-pointer ${
-                viewMode === 'grid' ? 'bg-white text-teal-700 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
-              }`}
+              className={`p-1.5 rounded-md text-xs cursor-pointer ${viewMode === 'grid' ? 'bg-white text-teal-700 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
+                }`}
               title="Grid Cards"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
@@ -349,9 +347,8 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md text-xs cursor-pointer ${
-                viewMode === 'table' ? 'bg-white text-teal-700 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
-              }`}
+              className={`p-1.5 rounded-md text-xs cursor-pointer ${viewMode === 'table' ? 'bg-white text-teal-700 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'
+                }`}
               title="Table View"
             >
               <TableIcon className="h-3.5 w-3.5" />
@@ -380,11 +377,10 @@ export const VendorStrangerMeetsView: React.FC<VendorStrangerMeetsViewProps> = (
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0 ${
-                  selectedCategory === cat
-                    ? 'bg-teal-600 text-white shadow-xs'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0 ${selectedCategory === cat
+                  ? 'bg-teal-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
               >
                 {cat}
               </button>

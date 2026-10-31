@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Music,
   Plus,
@@ -18,7 +19,8 @@ import {
   X,
   ArrowUpDown,
   Filter,
-  CheckCircle2
+  CheckCircle2,
+  Edit3
 } from 'lucide-react';
 import type { ConcertEvent } from '../../types';
 import { VendorConcertCard } from './VendorConcertCard';
@@ -48,6 +50,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
   onStatusChange,
   onDeleteConcert
 }) => {
+  const navigate = useNavigate();
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string>('All');
@@ -167,48 +170,83 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
   const columns: Column<ConcertEvent>[] = [
     {
       key: 'title',
-      header: 'Concert & Artist',
+      header: 'Concert',
       render: (concert) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-[180px]">
           <AppImage
             src={concert.image}
             alt={concert.title}
             className="h-10 w-10 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
           />
-          <div className="min-w-0">
-            <span className="font-semibold text-slate-900 block truncate">
-              {concert.title}
-            </span>
-            <span className="text-[11px] text-slate-500 font-normal">
-              {concert.artist} • <span className="text-purple-600 font-semibold">{concert.genre}</span>
-            </span>
-          </div>
+          <span className="font-semibold text-slate-900 truncate">
+            {concert.title}
+          </span>
         </div>
       )
     },
     {
-      key: 'venue',
-      header: 'Venue & City',
+      key: 'artist',
+      header: 'Artist',
       render: (concert) => (
-        <div>
-          <span className="font-semibold text-slate-800 block truncate">
-            {concert.venueName}
-          </span>
-          <span className="text-[11px] text-slate-500 font-normal">
-            {concert.city}, {concert.country}
-          </span>
-        </div>
+        <span className="font-medium text-slate-800 whitespace-nowrap">
+          {concert.artist}
+        </span>
+      )
+    },
+    // {
+    //   key: 'genre',
+    //   header: 'Genre',
+    //   render: (concert) => (
+    //     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/80 whitespace-nowrap">
+    //       {concert.genre}
+    //     </span>
+    //   )
+    // },
+    {
+      key: 'venue',
+      header: 'Venue',
+      render: (concert) => (
+        <span className="font-semibold text-slate-800 block truncate max-w-[160px]">
+          {concert.venueName}
+        </span>
+      )
+    },
+    {
+      key: 'city',
+      header: 'City',
+      render: (concert) => (
+        <span className="text-slate-600 whitespace-nowrap">
+          {concert.city}, {concert.country}
+        </span>
       )
     },
     {
       key: 'date',
       header: 'Event Date & Time',
-      width: 'min-w-[135px]',
+      width: 'min-w-[140px]',
       render: (concert) => (
-        <div className="text-xs min-w-[115px] whitespace-nowrap">
+        <div className="whitespace-nowrap">
           <span className="font-medium text-slate-800 block">{formatUtcDate(concert.date)}</span>
-          <span className="text-[11px] text-slate-400">Entry: {concert.doorsOpen}</span>
+          <span className="text-[11px] text-slate-500">Entry: {concert.doorsOpen}</span>
         </div>
+      )
+    },
+    // {
+    //   key: 'ticketsSold',
+    //   header: 'Tickets Sold',
+    //   render: (concert) => (
+    //     <span className="font-semibold text-slate-800 whitespace-nowrap">
+    //       {concert.ticketsSold.toLocaleString()}
+    //     </span>
+    //   )
+    // },
+    {
+      key: 'totalCapacity',
+      header: 'Total Capacity',
+      render: (concert) => (
+        <span className="text-slate-600 whitespace-nowrap">
+          {concert.totalCapacity.toLocaleString()}
+        </span>
       )
     },
     {
@@ -228,13 +266,8 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
                 : { text: 'text-rose-600', bar: 'bg-rose-500' };
 
         return (
-          <div className="space-y-1 w-36">
-            <div className="flex justify-between text-[11px]">
-              <span className={`font-semibold ${color.text}`}>{pct}%</span>
-              <span className="text-slate-400">
-                {concert.ticketsSold.toLocaleString()} / {concert.totalCapacity.toLocaleString()}
-              </span>
-            </div>
+          <div className="space-y-1 w-28">
+            <span className={`text-[11px] font-semibold ${color.text}`}>{pct}%</span>
             <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
               <div
                 className={`h-full rounded-full ${color.bar} transition-all duration-300`}
@@ -271,7 +304,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
     {
       key: 'price',
       header: 'Price Range',
-      width: 'min-w-[145px]',
+      width: 'min-w-[130px]',
       render: (concert) => {
         const isFree = concert.isFree || (concert.minPrice === 0 && concert.maxPrice === 0);
         return isFree ? (
@@ -279,7 +312,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
             Free Admission
           </span>
         ) : (
-          <span className="font-semibold min-w-[115px] text-slate-900">
+          <span className="font-semibold text-slate-900 whitespace-nowrap">
             ₹{concert.minPrice.toLocaleString()} - ₹{concert.maxPrice.toLocaleString()}
           </span>
         );
@@ -311,6 +344,17 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              navigate(`/concerts/${concert.id}/edit`);
+            }}
+            className="p-1.5 rounded-md bg-slate-50 text-slate-600 hover:bg-purple-50 hover:text-purple-700 border border-slate-200/80 hover:border-purple-200 transition-all cursor-pointer shadow-2xs"
+            title="Edit Concert"
+          >
+            <Edit3 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               if (window.confirm(`Archive concert "${concert.title}"?`)) {
                 onDeleteConcert(concert.id);
               }
@@ -330,7 +374,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
       {/* Top Header Card */}
       <div className="rounded-lg border border-slate-200/90 bg-white p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+          <h1 className="PageTitle">
             Concert Tours & Event Roster
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -590,7 +634,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
             columns={columns}
             data={paginatedConcerts}
             keyExtractor={(c) => c.id}
-            // onRowClick={onSelectConcert}
+            onRowClick={onSelectConcert}
             pageSize={pageSize}
             showPagination={false}
             containerClassName="border-0 rounded-none shadow-none bg-transparent"

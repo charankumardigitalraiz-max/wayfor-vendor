@@ -148,7 +148,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 font-medium flex items-center justify-between cursor-pointer hover:border-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none transition-colors"
+        className="w-full min-h-[44px] rounded-[7px] border border-[#d9ddd7] bg-white px-3.5 py-2.5 text-[13px] text-slate-900 font-medium flex items-center justify-between cursor-pointer hover:border-[#b8beb7] focus:border-purple-600 focus:ring-3 focus:ring-purple-600/12 focus:outline-none transition-all"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <CalendarIcon className="h-4 w-4 text-purple-600 shrink-0" />

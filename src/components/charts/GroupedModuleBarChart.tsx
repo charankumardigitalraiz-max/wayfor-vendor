@@ -195,9 +195,9 @@ export const GroupedModuleBarChart: React.FC<GroupedModuleBarChartProps> = ({
               <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                 Live Program Inventory & Capacity Fill
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              {/* <p className="text-xs text-slate-500 mt-0.5">
                 Real-time occupancy fill percentage for each active event, trip, and mixer.
-              </p>
+              </p> */}
             </div>
           </div>
 

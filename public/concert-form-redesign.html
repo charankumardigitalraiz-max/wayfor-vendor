@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create concert — Minimal form</title>
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --ink: #202321;
+      --muted: #7e837f;
+      --line: #e8e8e3;
+      --paper: #fbfbf8;
+      --white: #fff;
+      --concerts-primary: #9333EA;
+      --concerts-primary-hover: #7E22CE;
+      --concerts-secondary: #FAF5FF;
+      --concerts-secondary-text: #7E22CE;
+      --concerts-border: #E9D5FF;
+      --concerts-btn-bg: #9333EA;
+      --concerts-btn-hover: #7E22CE;
+      --accent: var(--concerts-primary);
+      --accent-soft: var(--concerts-secondary);
+      --green: #377764;
+      --radius: 13px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: auto;
+      padding: 34px 28px 70px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 25px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 17px;
+    }
+
+    .back {
+      border: 0;
+      background: none;
+      color: var(--muted);
+      padding: 7px 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .back:hover {
+      color: var(--accent);
+    }
+
+    .header-copy {
+      border-left: 1px solid var(--line);
+      padding-left: 17px;
+    }
+
+    .overline {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 7px;
+    }
+
+    h1 {
+      font-family: var(--font-sans);
+      font-size: clamp(27px, 4vw, 40px);
+      font-weight: 500;
+      line-height: 1.05;
+      letter-spacing: -.035em;
+    }
+
+    .intro {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 9px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .btn {
+      border: 1px solid #dcded9;
+      border-radius: 7px;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 11px 15px;
+    }
+
+    .btn.primary {
+      background: var(--concerts-btn-bg);
+      border-color: var(--concerts-btn-bg);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--concerts-btn-hover);
+      border-color: var(--concerts-btn-hover);
+    }
+
+    /* Form & Sections */
+    .form {
+      margin-top: 30px;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    .section {
+      padding: 30px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 23px;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: baseline;
+      gap: 11px;
+    }
+
+    .section-no {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    .section h2 {
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: -.02em;
+    }
+
+    .section-note {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Grid Layout & Fields */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 19px;
+    }
+
+    .field {
+      grid-column: span 4;
+      min-width: 0;
+    }
+
+    .field.half {
+      grid-column: span 6;
+    }
+
+    .field.wide {
+      grid-column: span 8;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      color: #555c57;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 7px;
+    }
+
+    .req {
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .optional {
+      float: right;
+      color: #a3a8a3;
+      font-weight: 500;
+      font-size: 10px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d9ddd7;
+      background: transparent;
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 11px 12px;
+      min-height: 44px;
+      outline: 0;
+      font-size: 13px;
+      transition: .16s;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #aeb3ad;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      border-color: #b8beb7;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--concerts-primary);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 82px;
+    }
+
+    .select {
+      position: relative;
+    }
+
+    .select select {
+      appearance: none;
+      padding-right: 32px;
+    }
+
+    .select:after {
+      content: "⌄";
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      color: #89908a;
+      font-size: 18px;
+      pointer-events: none;
+    }
+
+    /* Categories */
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .category {
+      min-height: 58px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      border-radius: 0;
+      padding: 10px 8px;
+      color: #6c736d;
+      text-align: center;
+      transition: .16s;
+    }
+
+    .category:hover {
+      color: var(--concerts-primary);
+      background: var(--concerts-secondary);
+    }
+
+    .category strong {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .category small {
+      display: block;
+      font-size: 9px;
+      line-height: 1.3;
+      color: #a0a6a0;
+      margin-top: 4px;
+    }
+
+    .category.active {
+      border-bottom-color: var(--concerts-primary);
+      background: transparent;
+      color: var(--concerts-primary);
+    }
+
+    .category.active small {
+      color: var(--concerts-secondary-text);
+    }
+
+    /* Chips */
+    .chips {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 44px;
+      border: 1px solid #d9ddd7;
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .chips input {
+      border: 0;
+      box-shadow: none;
+      min-width: 120px;
+      flex: 1;
+      padding: 4px;
+      min-height: 25px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--concerts-secondary);
+      color: var(--concerts-secondary-text);
+      border: 1px solid var(--concerts-border);
+      border-radius: 6px;
+      padding: 5px 7px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .chip button {
+      background: none;
+      border: 0;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* Tiers */
+    .tiers {
+      display: grid;
+      gap: 10px;
+    }
+
+    .tier {
+      border: 0;
+      border-top: 1px solid var(--line);
+      border-radius: 0;
+      padding: 18px 0;
+      background: transparent;
+    }
+
+    .tier-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .tier-title {
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .tier-number {
+      color: var(--accent);
+      margin-right: 8px;
+      font-size: 11px;
+    }
+
+    .remove {
+      border: 0;
+      background: none;
+      color: #9b9f9a;
+      font-size: 11px;
+    }
+
+    .remove:hover {
+      color: var(--accent);
+    }
+
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1.4fr .7fr .8fr;
+      gap: 11px;
+    }
+
+    .add-tier {
+      width: 100%;
+      border: 0;
+      border-top: 1px dashed var(--concerts-border);
+      background: transparent;
+      color: var(--concerts-primary);
+      border-radius: 0;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .add-tier:hover {
+      color: var(--concerts-primary-hover);
+    }
+
+    /* Media Upload & Gallery */
+    .media {
+      border: 1px dashed #cdd3cc;
+      border-radius: 11px;
+      background: transparent;
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .media strong {
+      font-size: 13px;
+    }
+
+    .media p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .upload {
+      margin-top: 11px;
+      border: 1px solid var(--concerts-border);
+      background: #fff;
+      color: var(--concerts-primary);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .upload:hover {
+      background: var(--concerts-secondary);
+      border-color: var(--concerts-primary);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .gallery img,
+    .add-photo {
+      width: 100%;
+      aspect-ratio: 1.35;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .add-photo {
+      border: 1px dashed var(--concerts-border);
+      background: var(--concerts-secondary);
+      color: var(--concerts-secondary-text);
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    .add-photo:hover {
+      border-color: var(--concerts-primary);
+      color: var(--concerts-primary);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Bottom Bar */
+    .bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 0;
+      background: transparent;
+    }
+
+    .bottom-note {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .bottom-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    /* Responsive */
+    @media (max-width: 850px) {
+      .categories {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .wrap {
+        padding: 18px 11px 40px;
+      }
+
+      .header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions .btn {
+        flex: 1;
+      }
+
+      .header-copy {
+        padding-left: 13px;
+      }
+
+      .section {
+        padding: 24px 17px;
+      }
+
+      .field,
+      .field.half,
+      .field.wide {
+        grid-column: 1 / -1;
+      }
+
+      .categories {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .tier-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .bottom {
+        padding: 16px 17px;
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .bottom-actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button class="back" type="button">← Back</button>
+        <div class="header-copy">
+          <div class="overline">Event management / New listing</div>
+          <h1>Create a concert</h1>
+          <p class="intro">Add the essentials, review the details, and publish when everything feels right.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" type="button">Save draft</button>
+        <button class="btn primary" type="button">Publish event</button>
+      </div>
+    </header>
+
+    <!-- Form -->
+    <form class="form" onsubmit="event.preventDefault();alert('Demo only — connect this form to your React submit handler.');">
+      
+      <!-- Section 01: Event basics -->
+      <section class="section">
+        <div class="section-top">
+          <div class="section-label">
+            <span class="section-no">01</span>
+            <h2>Event basics</h2>
+          </div>
+          <span class="section-note">Required details first</span>
+        </div>
+
+        <div class="grid">
+          <div class="field half">
+            <label>Concert / event category <span class="req">*</span></label>
+            <div class="select">
+              <select required>
+                <option>Live Music & Concert</option>
+                <option>Standup Comedy & Funny Show</option>
+                <option>Dance Show & Choreography</option>
+                <option>Theatre, Drama & Acting</option>
+                <option>DJ Night & EDM Festival</option>
+                <option>Magic, Illusion & Variety</option>
+              </select>
+            </div>
+            <p class="hint">Choose the format that best describes this event.</p>
+          </div>
+
+          <div class="field half">
+            <label>Concert / tour title <span class="req">*</span></label>
+            <input required placeholder="e.g. Neon Odyssey: World Electronic Symphony 2026">
+          </div>
+
+          <div class="field">
+            <label>
+              Headlining artist / band <span class="req">*</span>
+              <span class="optional">＋ Add performer</span>
+            </label>
+            <input required placeholder="Search roster or type an artist">
+            <p class="hint">Search the roster or register a new artist.</p>
+          </div>
+
+          <div class="field">
+            <label>
+              Supporting acts & opening bands
+              <span class="optional">Optional</span>
+            </label>
+            <input placeholder="e.g. Argy, Massano, Cassian">
+          </div>
+
+          <div class="field wide">
+            <label>Genre classification <span class="req">*</span></label>
+            <div class="chips">
+              <span class="chip">EDM <button type="button">×</button></span>
+              <span class="chip">House <button type="button">×</button></span>
+              <input placeholder="Search or add genre">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 02: When & where -->
+      <section class="section">
+        <div class="section-top">
+          <div class="section-label">
+            <span class="section-no">02</span>
+            <h2>When & where</h2>
+          </div>
+          <span class="section-note">Schedule and venue</span>
+        </div>
+
+        <div class="grid">
+          <div class="field wide">
+            <label>
+              Host arena / venue <span class="req">*</span>
+              <span class="optional">＋ Add venue</span>
+            </label>
+            <div class="select">
+              <select>
+                <option>Genesys Global Arena — Mumbai</option>
+                <option>Indira Gandhi Indoor Stadium — New Delhi</option>
+                <option>Palace Grounds — Bengaluru</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Event date <span class="req">*</span></label>
+            <input type="date" value="2026-12-20" required>
+          </div>
+
+          <div class="field">
+            <label>Showtime <span class="req">*</span></label>
+            <input type="time" value="19:30" required>
+          </div>
+
+          <div class="field">
+            <label>Doors open</label>
+            <input type="time" value="17:00">
+          </div>
+
+          <div class="field">
+            <label>Show duration</label>
+            <input value="3.5 Hours" placeholder="e.g. 3.5 Hours">
+          </div>
+
+          <div class="field">
+            <label>Age restriction & entry policy</label>
+            <div class="select">
+              <select>
+                <option>16+ (Valid Govt ID Required)</option>
+                <option>All Ages (Kids under 12 accompanied by adult)</option>
+                <option>Open for All Ages (Family Friendly)</option>
+                <option>12+ (Parental Guidance Recommended)</option>
+                <option>18+ (Adults Only · Photo ID Mandatory)</option>
+                <option>21+ (Full Access Pass)</option>
+              </select>
+            </div>
+            <input style="margin-top: 8px;" placeholder="Or enter custom restriction, e.g. 14+ with guardian">
+          </div>
+
+          <div class="field wide">
+            <label>
+              Performance & event languages
+              <span class="optional">2 selected</span>
+            </label>
+            <div class="chips">
+              <span class="chip">English <button type="button">×</button></span>
+              <span class="chip">Hindi <button type="button">×</button></span>
+              <input placeholder="Search languages">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>City</label>
+            <input value="Mumbai">
+          </div>
+
+          <div class="field">
+            <label>Country</label>
+            <input value="India">
+          </div>
+
+          <div class="field">
+            <label>Total venue capacity</label>
+            <input type="number" value="25000">
+          </div>
+
+          <div class="field wide">
+            <label>Venue address</label>
+            <input value="Bandra Kurla Complex, G Block">
+          </div>
+
+          <div class="field">
+            <label>Sound system</label>
+            <input value="Line array + subwoofer">
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 03: Ticket categories -->
+      <section class="section">
+        <div class="section-top">
+          <div class="section-label">
+            <span class="section-no">03</span>
+            <h2>Ticket categories</h2>
+          </div>
+          <span class="section-note">Pricing and allocation</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 13px; padding-bottom: 13px; border-bottom: 1px solid var(--line);">
+          <span style="font-size: 12px; color: #606660;">Ticket pricing</span>
+          <div style="display: flex; gap: 7px;">
+            <button class="btn primary" type="button" style="padding: 7px 11px; font-size: 11px;">Paid event</button>
+            <button class="btn" type="button" style="padding: 7px 11px; font-size: 11px;">Free event</button>
+          </div>
+        </div>
+
+        <div class="tiers">
+          <article class="tier">
+            <div class="tier-head">
+              <div class="tier-title">
+                <span class="tier-number">01</span>General Admission Floor
+              </div>
+              <button class="remove" type="button">Remove</button>
+            </div>
+            <div class="tier-grid">
+              <div>
+                <label>Pass / Zone Name</label>
+                <input value="General Admission Floor">
+              </div>
+              <div>
+                <label>Price (₹)</label>
+                <input type="number" value="1999">
+              </div>
+              <div>
+                <label>Seats Quota</label>
+                <input type="number" value="15000">
+              </div>
+            </div>
+          </article>
+
+          <article class="tier">
+            <div class="tier-head">
+              <div class="tier-title">
+                <span class="tier-number">02</span>VIP Front Stage Pit
+              </div>
+              <button class="remove" type="button">Remove</button>
+            </div>
+            <div class="tier-grid">
+              <div>
+                <label>Pass / Zone Name</label>
+                <input value="VIP Front Stage Pit">
+              </div>
+              <div>
+                <label>Price (₹)</label>
+                <input type="number" value="4999">
+              </div>
+              <div>
+                <label>Seats Quota</label>
+                <input type="number" value="8000">
+              </div>
+            </div>
+          </article>
+
+          <article class="tier">
+            <div class="tier-head">
+              <div class="tier-title">
+                <span class="tier-number">03</span>VVIP Hospitality Deck
+              </div>
+              <button class="remove" type="button">Remove</button>
+            </div>
+            <div class="tier-grid">
+              <div>
+                <label>Pass / Zone Name</label>
+                <input value="VVIP Hospitality Deck">
+              </div>
+              <div>
+                <label>Price (₹)</label>
+                <input type="number" value="12999">
+              </div>
+              <div>
+                <label>Seats Quota</label>
+                <input type="number" value="2000">
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <button class="add-tier" type="button">＋ Add Tier</button>
+      </section>
+
+      <!-- Section 04: Media -->
+      <section class="section">
+        <div class="section-top">
+          <div class="section-label">
+            <span class="section-no">04</span>
+            <h2>Media</h2>
+          </div>
+          <span class="section-note">Optional except poster</span>
+        </div>
+
+        <div class="grid">
+          <div class="field wide">
+            <label>
+              Cover poster <span class="req">*</span>
+              <span class="optional">16:9 · JPG, PNG or WEBP · 1600 × 900 recommended</span>
+            </label>
+            <div class="media">
+              <div>
+                <strong>Upload your cover poster</strong>
+                <p>Use a clear image that represents the event.</p>
+                <button class="upload" type="button">Choose image</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>
+              YouTube promo video
+              <span class="optional">Optional</span>
+            </label>
+            <input placeholder="https://www.youtube.com/...">
+            <p class="hint">A short trailer can help attendees decide faster.</p>
+          </div>
+
+          <div class="field full">
+            <label>
+              Photo gallery highlights
+              <span class="optional">Optional · up to 8 images</span>
+            </label>
+            <div class="gallery">
+              <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500&q=80" alt="Stage lights">
+              <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80" alt="Arena crowd">
+              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80" alt="Neon stage">
+              <button class="add-photo" type="button">＋ Add photos</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Bar -->
+      <div class="bottom">
+        <div class="bottom-note">
+          Review all fields carefully before publishing live. Required details are marked with <span class="req">*</span>.
+        </div>
+        <div class="bottom-actions">
+          <button class="btn" type="button">Cancel</button>
+          <button class="btn" type="button">Save as draft</button>
+          <button class="btn primary" type="submit">Publish tour stop live</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.querySelectorAll('.category').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.category').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

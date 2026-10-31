@@ -234,15 +234,15 @@ export const VendorTripsView: React.FC<VendorTripsViewProps> = ({
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-lg border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200">
               Trip Planner Module
             </span>
             <span className="text-xs text-slate-400">• Vendor Curated Tours</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
+          </div> */}
+          <h1 className="PageTitle">
             Group Expeditions & Travel Companion Tours
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -253,9 +253,9 @@ export const VendorTripsView: React.FC<VendorTripsViewProps> = ({
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-xs cursor-pointer self-start sm:self-auto shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-xs cursor-pointer self-start sm:self-auto shrink-0"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           <span>Create New Expedition</span>
         </button>
       </div>

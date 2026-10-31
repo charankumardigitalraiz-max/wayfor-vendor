@@ -9,8 +9,6 @@ import {
   Search,
   X,
   SlidersHorizontal,
-  LayoutGrid,
-  List,
   Eye,
   CheckCircle2,
   Radio
@@ -52,7 +50,6 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('All');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const filteredVenues = useMemo(() => {
     return venues.filter((v) => {
@@ -195,12 +192,12 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
       <div className="rounded-lg border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+            <h1 className="PageTitle">
               Venues & Stages
             </h1>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+            {/* <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
               {venues.length} Partner Arenas
-            </span>
+            </span> */}
           </div>
           <p className="text-xs text-slate-500 mt-1">
             Certified concert arenas, total staging capacity of {totalSeats.toLocaleString()} seats, sound rigs, and logistics coordinators.
@@ -282,183 +279,19 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
               </button>
             )}
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center p-1 bg-slate-100/90 rounded-md border border-slate-200/80 shrink-0 h-10">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`h-8 px-2.5 rounded-md flex items-center justify-center transition-all cursor-pointer ${viewMode === 'grid'
-                  ? 'bg-white text-purple-700 shadow-2xs font-semibold'
-                  : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                title="Grid view"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`h-8 px-2.5 rounded-md flex items-center justify-center transition-all cursor-pointer ${viewMode === 'table'
-                  ? 'bg-white text-purple-700 shadow-2xs font-semibold'
-                  : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                title="Table view"
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Card Body: Directly Attached Grid or Table */}
-        {viewMode === 'grid' ? (
-          <div className="p-5 bg-slate-50/30">
-            {filteredVenues.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center space-y-3">
-                <Building2 className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-semibold text-slate-800">No Venues Found</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  No arenas match your search query. Try clearing your search or adding a new venue.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedType('All');
-                  }}
-                  className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredVenues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    className="group relative overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs hover:shadow-md hover:border-purple-300 transition-all duration-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Visual Image Banner with Gradient & Badges */}
-                      <div className="relative h-44 w-full overflow-hidden bg-slate-900">
-                        <AppImage
-                          src={getVenueImage(venue)}
-                          alt={venue.name}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
-
-                        {/* Top Floating Badges */}
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-white/95 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-slate-800 shadow-xs">
-                            <Building2 className="h-3 w-3 text-purple-600" />
-                            <span>{venue.type}</span>
-                          </span>
-                        </div>
-
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-md backdrop-blur-md shadow-xs border ${venue.status === 'maintenance'
-                              ? 'bg-amber-500/90 text-white border-amber-400/50'
-                              : 'bg-emerald-500/90 text-white border-emerald-400/50'
-                              }`}
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                            {venue.status === 'maintenance' ? 'Maintenance' : 'Ready for Staging'}
-                          </span>
-                        </div>
-
-                        {/* Bottom Title & Location inside Banner */}
-                        <div className="absolute bottom-3 left-3.5 right-3.5 text-white">
-                          <h3
-                            className="text-base font-bold tracking-tight text-white drop-shadow-xs truncate"
-                            title={venue.name}
-                          >
-                            {venue.name}
-                          </h3>
-                          <p className="text-xs text-purple-200 font-medium flex items-center gap-1 mt-0.5 truncate">
-                            <MapPin className="h-3 w-3 text-purple-300 shrink-0" />
-                            <span>{venue.city}</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Card Body Specs */}
-                      <div className="p-4 space-y-3">
-                        {/* Clean Specs Row */}
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Users className="h-4 w-4 text-purple-600 shrink-0" />
-                            <div className="min-w-0">
-                              <span className="text-[10.5px] text-slate-400 block">Capacity</span>
-                              <span className="text-xs font-semibold text-slate-800 truncate block">
-                                {venue.capacity.toLocaleString()} seats
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Volume2 className="h-4 w-4 text-purple-600 shrink-0" />
-                            <div className="min-w-0">
-                              <span className="text-[10.5px] text-slate-400 block">Sound Rig</span>
-                              <span
-                                className="text-xs font-semibold text-slate-800 truncate block"
-                                title={venue.soundSystem}
-                              >
-                                {venue.soundSystem.split(' with ')[0].split(' & ')[0]}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Address */}
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 pt-2 border-t border-slate-100">
-                          <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                          <span className="text-[11px] text-slate-600 truncate" title={venue.address}>
-                            {venue.address}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card Footer: Coordinator & View Button */}
-                    <div className="px-4 py-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <Phone className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-                        <span
-                          className="text-[11px] font-medium text-slate-700 truncate"
-                          title={venue.contactPerson}
-                        >
-                          {venue.contactPerson}
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedVenue(venue)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer shrink-0"
-                        title="View Arena Specifications"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>View</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <Table<Venue>
-            columns={tableColumns}
-            data={filteredVenues}
-            keyExtractor={(venue) => venue.id}
-            pageSize={10}
-            showPagination={false}
-            containerClassName="border-0 rounded-none shadow-none bg-transparent"
-            emptyMessage="No venues match your current search criteria."
-          />
-        )}
+        {/* Card Body: Table Only */}
+        <Table<Venue>
+          columns={tableColumns}
+          data={filteredVenues}
+          keyExtractor={(venue) => venue.id}
+          pageSize={10}
+          showPagination={filteredVenues.length > 10}
+          containerClassName="border-0 rounded-none shadow-none bg-transparent"
+          emptyMessage="No venues match your current search criteria."
+        />
 
         {/* Footer Summary Strip */}
         <div className="p-3.5 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -485,156 +318,93 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
         <Modal
           isOpen={!!selectedVenue}
           onClose={() => setSelectedVenue(null)}
-          title={selectedVenue.name}
-          subtitle={`${selectedVenue.type} Arena • ${selectedVenue.city}`}
-          maxWidth="lg"
+          title="Venue Details"
+          subtitle="Overview of registered venue and location information"
+          maxWidth="md"
         >
-          <div className="space-y-4 text-xs">
-            {/* 1. Hero Showcase Banner */}
-            <div className="relative h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200/90 shadow-2xs group">
+          <div className="space-y-4">
+            {/* Venue Image */}
+            <div className="relative h-28 sm:h-32 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs">
               <AppImage
                 src={getVenueImage(selectedVenue)}
                 alt={selectedVenue.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent" />
-
-              {/* Badges on Top */}
-              <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900/75 backdrop-blur-md text-white text-[11px] font-semibold border border-white/10 shadow-xs">
+              <div className="absolute top-2.5 left-2.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
                   <Building2 className="h-3.5 w-3.5 text-purple-400" />
                   <span>{selectedVenue.type}</span>
                 </span>
-
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md border shadow-xs ${
-                    selectedVenue.status === 'maintenance'
-                      ? 'bg-amber-500/85 text-white border-amber-400/50'
-                      : 'bg-emerald-500/85 text-white border-emerald-400/50'
-                  }`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                  <span>{selectedVenue.status === 'maintenance' ? 'Maintenance' : 'Ready for Staging'}</span>
-                </span>
-              </div>
-
-              {/* Bottom Info inside Banner */}
-              <div className="absolute bottom-3 left-3.5 right-3.5 z-10 flex items-end justify-between gap-3 text-white">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs">
-                      {selectedVenue.name}
-                    </span>
-                    <span className="h-4 w-4 rounded-full bg-purple-500/90 text-white flex items-center justify-center text-[10px]" title="Certified Arena">
-                      <CheckCircle2 className="h-3 w-3" />
-                    </span>
-                  </div>
-                  <p className="text-xs text-purple-200 font-medium flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3.5 w-3.5 text-purple-300 shrink-0" />
-                    <span>{selectedVenue.city}</span>
-                  </p>
-                </div>
-
-                <div className="text-right hidden sm:block">
-                  <span className="text-[10.5px] uppercase font-semibold text-purple-200/80 block tracking-wider">Capacity</span>
-                  <span className="text-base font-bold text-white">
-                    {selectedVenue.capacity.toLocaleString()} seats
-                  </span>
-                </div>
               </div>
             </div>
 
-            {/* 2. Key Stats Strip (3 Columns) */}
-            <div className="grid grid-cols-3 gap-2.5">
-              <div className="p-3 rounded-lg border border-slate-200/90 bg-slate-50/70 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Audience</span>
-                <span className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block">
-                  {selectedVenue.capacity.toLocaleString()}
-                </span>
-                <span className="text-[10.5px] text-slate-500 font-medium block">Certified seats</span>
-              </div>
-
-              <div className="p-3 rounded-lg border border-purple-200/80 bg-purple-50/60 text-center">
-                <span className="text-[10px] uppercase font-bold text-purple-700 tracking-wider block">Category</span>
-                <span className="text-sm sm:text-base font-bold text-purple-900 mt-0.5 block truncate">
-                  {selectedVenue.type}
-                </span>
-                <span className="text-[10.5px] text-purple-700 font-medium block">Arena Stage</span>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-200/90 bg-slate-50/70 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Staging Status</span>
-                <span className={`text-sm sm:text-base font-bold mt-0.5 block capitalize ${selectedVenue.status === 'maintenance' ? 'text-amber-700' : 'text-emerald-700'}`}>
-                  {selectedVenue.status === 'maintenance' ? 'Maintenance' : 'Ready'}
-                </span>
-                <span className="text-[10.5px] text-slate-500 font-medium block">Inspected</span>
-              </div>
+            {/* Venue Name */}
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">
+                {selectedVenue.name}
+              </h3>
             </div>
 
-            {/* 3. Audio Rig & Acoustics */}
-            <div className="p-3.5 rounded-lg border border-slate-200/90 bg-white shadow-2xs space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-200/80">
-                    <Radio className="h-3.5 w-3.5" />
-                  </div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Audio Rig & Acoustics
-                  </h4>
+            {/* Details Grid: Exactly matches AddVenueModal fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* City */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin className="h-4 w-4 text-purple-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">City</span>
                 </div>
-                <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200/80">
-                  Live Production Spec
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded-md bg-slate-50/80 border border-slate-100 flex items-start gap-2.5">
-                <Volume2 className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-slate-800 block">
-                    {selectedVenue.soundSystem}
-                  </span>
-                  <span className="text-[11px] text-slate-500 mt-0.5 block">
-                    Pre-rigged line array audio system calibrated for high-SPL concert touring.
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Location & Contact Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className="p-3 rounded-lg border border-slate-200/90 bg-white shadow-2xs space-y-1">
-                <div className="flex items-center gap-1.5 text-slate-500">
-                  <MapPin className="h-3.5 w-3.5 text-purple-600" />
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Venue Address</span>
-                </div>
-                <p className="text-xs font-semibold text-slate-800 leading-snug">
-                  {selectedVenue.address}
-                </p>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className="text-sm font-medium text-slate-900">
                   {selectedVenue.city}
                 </p>
               </div>
 
-              <div className="p-3 rounded-lg border border-slate-200/90 bg-white shadow-2xs space-y-1">
-                <div className="flex items-center gap-1.5 text-slate-500">
-                  <Phone className="h-3.5 w-3.5 text-purple-600" />
-                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Stage Coordinator</span>
+              {/* Max Capacity */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="h-4 w-4 text-purple-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">Max Capacity</span>
                 </div>
-                <p className="text-xs font-semibold text-slate-800 leading-snug">
-                  {selectedVenue.contactPerson}
+                <p className="text-sm font-medium text-slate-900">
+                  {Number(selectedVenue.capacity).toLocaleString()} seats
                 </p>
-                <p className="text-[11px] text-purple-700 font-medium">
-                  Direct Logistics Liaison
+              </div>
+
+              {/* Contact Phone Number */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 sm:col-span-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Phone className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">Contact Phone Number</span>
+                </div>
+                {selectedVenue.contactPerson ? (
+                  <a
+                    href={`tel:${selectedVenue.contactPerson}`}
+                    className="text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline inline-block"
+                  >
+                    {selectedVenue.contactPerson}
+                  </a>
+                ) : (
+                  <span className="text-sm text-slate-500 italic">Not provided</span>
+                )}
+              </div>
+
+              {/* Full Address */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 sm:col-span-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">Full Address</span>
+                </div>
+                <p className="text-sm font-medium text-slate-900 leading-snug">
+                  {selectedVenue.address || `${selectedVenue.name}, ${selectedVenue.city}`}
                 </p>
               </div>
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="pt-2 flex items-center justify-end border-t border-slate-100">
+            <div className="pt-3 flex items-center justify-end border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setSelectedVenue(null)}
-                className="px-4 py-1.5 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 transition-colors cursor-pointer"
               >
                 Close
               </button>

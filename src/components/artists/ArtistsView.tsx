@@ -29,7 +29,7 @@ import {
   UserX
 } from 'lucide-react';
 import type { Artist } from '../../types';
-import { CreateArtistModal } from '../common/CreateArtistModal';
+import { CreateArtistModal, ARTIST_CATEGORIES } from '../common/CreateArtistModal';
 import { MetricCard } from '../common/MetricCard';
 import { Table, type Column } from '../common/Table';
 import { Pagination } from '../common/Pagination';
@@ -45,15 +45,9 @@ interface ArtistsViewProps {
   onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-const GENRE_FILTERS = [
-  'All Genres',
-  'EDM',
-  'Bollywood',
-  'Rock',
-  'Punjabi',
-  'Pop',
-  'Hip-Hop',
-  'Indie'
+const CATEGORY_FILTERS = [
+  'All Categories',
+  ...ARTIST_CATEGORIES
 ];
 
 export const ArtistsView: React.FC<ArtistsViewProps> = ({
@@ -77,7 +71,9 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [editName, setEditName] = useState('');
   const [editStatus, setEditStatus] = useState<Artist['status']>('active');
-  const [editGenre, setEditGenre] = useState('EDM');
+  const [editCategory, setEditCategory] = useState('Singing / Vocalist');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editAvatarPreview, setEditAvatarPreview] = useState('');
   const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
@@ -85,7 +81,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
   // Filters & Controls
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('All Genres');
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedRiderArtist, setSelectedRiderArtist] = useState<Artist | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
@@ -97,7 +93,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
     try {
       setIsLoading(true);
       const data = await vendorArtistService.getArtists({
-        genre: selectedGenre !== 'All Genres' ? selectedGenre : undefined,
+        genre: selectedCategory !== 'All Categories' ? selectedCategory : undefined,
       });
       setArtists(data);
       onArtistsChange?.(data);
@@ -111,7 +107,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
   useEffect(() => {
     fetchArtists();
-  }, [selectedGenre]);
+  }, [selectedCategory]);
 
   // Sync state if prop changes from outside
   useEffect(() => {
@@ -150,7 +146,9 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
     setEditingArtist(artist);
     setEditName(artist.name);
     setEditStatus(artist.status);
-    setEditGenre(artist.genre || 'EDM');
+    setEditCategory(artist.genre || 'Singing / Vocalist');
+    setEditEmail(artist.management?.email || '');
+    setEditPhone(artist.management?.phone || '');
     setEditBio(artist.bio || '');
     setEditAvatarPreview(artist.avatar);
     setEditAvatarFile(null);
@@ -168,8 +166,11 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
         {
           name: editName.trim(),
           status: editStatus,
-          genre: editGenre,
+          genre: editCategory,
+          email: editEmail.trim(),
+          phone: editPhone.trim(),
           bio: editBio.trim(),
+          aboutus: editBio.trim(),
         },
         editAvatarFile
       );
@@ -217,7 +218,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
   // Reset to first page when search or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedGenre, selectedStatus]);
+  }, [searchQuery, selectedCategory, selectedStatus]);
 
   // Filtered artists
   const filteredArtists = artists.filter((artist) => {
@@ -226,19 +227,19 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
       !q ||
       artist.name.toLowerCase().includes(q) ||
       (artist.stageName && artist.stageName.toLowerCase().includes(q)) ||
-      artist.city?.toLowerCase().includes(q) ||
-      artist.country.toLowerCase().includes(q) ||
-      artist.management?.agency?.toLowerCase().includes(q) ||
+      artist.management?.email?.toLowerCase().includes(q) ||
+      artist.management?.phone?.toLowerCase().includes(q) ||
+      artist.bio?.toLowerCase().includes(q) ||
       artist.subGenres?.some(sg => sg.toLowerCase().includes(q));
 
-    const matchesGenre =
-      selectedGenre === 'All Genres' ||
-      artist.genre.toLowerCase() === selectedGenre.toLowerCase();
+    const matchesCategory =
+      selectedCategory === 'All Categories' ||
+      artist.genre.toLowerCase() === selectedCategory.toLowerCase();
 
     const matchesStatus =
       selectedStatus === 'all' || artist.status === selectedStatus;
 
-    return matchesSearch && matchesGenre && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const totalItems = filteredArtists.length;
@@ -255,14 +256,12 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
   const activeCount = artists.filter((a) => a.status === 'active').length;
   const inactiveCount = artists.filter((a) => a.status === 'inactive').length;
 
-
-
   const columns: Column<Artist>[] = [
     {
       key: 'name',
       header: 'Artist',
       render: (artist) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-[200px] max-w-[280px]">
           <div className="relative shrink-0">
             <img
               src={artist.avatar}
@@ -272,39 +271,71 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             {artist.verified && (
               <div
                 className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-600 text-white flex items-center justify-center border border-white"
-                title="Verified Concert Headliner"
+                title="Verified Artist"
               >
                 <CheckCircle2 className="h-2.5 w-2.5" />
               </div>
             )}
           </div>
-          <div className="min-w-0">
-            <span className="font-semibold text-md text-slate-900 block truncate hover:text-purple-600 transition-colors">
+          <div className="min-w-0 flex-1">
+            <span className="font-semibold text-sm text-slate-900 truncate block" title={artist.name}>
               {artist.name}
             </span>
-            {/* {artist.stageName && (
-              <span className="text-[11px] text-slate-400 block truncate">
-                {artist.stageName}
-              </span>
-            )} */}
+            <span
+              className="text-[11.5px] text-slate-500 truncate block mt-0.5"
+              title={artist.bio}
+            >
+              {artist.bio || '—'}
+            </span>
           </div>
         </div>
       )
     },
     {
-      key: 'genre',
-      header: 'Genre',
+      key: 'category',
+      header: 'Category',
       render: (artist) => (
-        <div className="space-y-1">
-          <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200/80">
-            {artist.genre}
-          </span>
-          {artist.subGenres && artist.subGenres.length > 0 && (
-            <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
-              {artist.subGenres.slice(0, 2).join(', ')}
-            </div>
+        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200/80 whitespace-nowrap">
+          {artist.genre || 'General'}
+        </span>
+      )
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      render: (artist) => (
+        <span className="text-slate-700 text-xs truncate max-w-[180px] block">
+          {artist.management?.email ? (
+            <a
+              href={`mailto:${artist.management.email}`}
+              className="text-purple-600 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {artist.management.email}
+            </a>
+          ) : (
+            <span className="text-slate-400">—</span>
           )}
-        </div>
+        </span>
+      )
+    },
+    {
+      key: 'phone',
+      header: 'Phone',
+      render: (artist) => (
+        <span className="text-slate-700 text-xs whitespace-nowrap">
+          {artist.management?.phone ? (
+            <a
+              href={`tel:${artist.management.phone}`}
+              className="hover:text-purple-600"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {artist.management.phone}
+            </a>
+          ) : (
+            <span className="text-slate-400">—</span>
+          )}
+        </span>
       )
     },
     {
@@ -328,38 +359,6 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
       }
     },
     {
-      key: 'location',
-      header: 'Location & Agency',
-      render: (artist) => (
-        <div className="space-y-0.5 min-w-0">
-          <div className="flex items-center gap-1.5 truncate">
-            <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-            <span className="text-xs font-semibold text-slate-800 truncate">
-              {artist.city ? `${artist.city}, ` : ''}{artist.country}
-            </span>
-          </div>
-          {artist.management?.agency && (
-            <div className="text-[11px] font-medium text-slate-600 truncate pl-5">
-              {artist.management.agency.split('/')[0].trim()}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'monthlyListeners',
-      header: 'Listeners',
-      render: (artist) =>
-        artist.monthlyListeners ? (
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80">
-            <Headphones className="h-3.5 w-3.5 text-emerald-600" />
-            <span>{artist.monthlyListeners}</span>
-          </div>
-        ) : (
-          <span className="text-slate-400 text-[11px]">—</span>
-        )
-    },
-    {
       key: 'actions',
       header: 'Action',
       align: 'right',
@@ -369,7 +368,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => setSelectedRiderArtist(artist)}
             className="p-1.5 rounded-md text-purple-700 hover:text-purple-600 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
-            title="View Technical & Hospitality Rider"
+            title="View Artist Details"
           >
             <Eye className="h-3.5 w-3.5" />
           </button>
@@ -378,7 +377,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => handleOpenEdit(artist)}
             className="p-1.5 rounded-md text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors cursor-pointer"
-            title="Edit artist details"
+            title="Edit Artist"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -387,7 +386,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             type="button"
             onClick={() => handleDelete(artist.id, artist.name)}
             className="p-1.5 rounded-md text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-colors cursor-pointer"
-            title="Delete artist from roster"
+            title="Delete Artist"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -402,20 +401,23 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
       <div className="rounded-lg border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center">
-              <Mic2 className="h-4 w-4" />
+            <div className="h-10 w-10 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center">
+              <Mic2 className="h-5 w-5" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-              Artists & Headliners
-            </h1>
+            <div>
+              <h1 className="PageTitle">
+                Artists & Headliners
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                Manage touring headliners, update performance status, upload technical riders, and coordinate tour lineups.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage touring headliners, update performance status, upload technical riders, and coordinate tour lineups.
-          </p>
+
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <button
+          {/* <button
             type="button"
             onClick={fetchArtists}
             disabled={isLoading}
@@ -424,7 +426,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-purple-600' : ''}`} />
             <span>{isLoading ? 'Syncing...' : 'Sync Live'}</span>
-          </button>
+          </button> */}
 
           <button
             type="button"
@@ -476,7 +478,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by artist name, stage alias, city, agency..."
-              className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/70 pl-9.5 pr-9 py-2 text-xs sm:text-[13px] text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 shadow-2xs"
+              className="w-full h-10 rounded-lg border border-slate-200 bg-white pl-9.5 pr-9 py-2 text-xs sm:text-[13px] text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 "
             />
             {searchQuery && (
               <button
@@ -491,15 +493,15 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
           {/* Right: Filter Dropdowns + View Switcher */}
           <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
-            {/* Genre Dropdown */}
+            {/* Category Dropdown */}
             <select
-              value={selectedGenre}
-              onChange={(e) => setSelectedGenre(e.target.value)}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="h-10 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:border-purple-500 cursor-pointer shadow-2xs"
             >
-              {GENRE_FILTERS.map((g) => (
-                <option key={g} value={g}>
-                  {g === 'All Genres' ? 'All Genres' : `${g} Genre`}
+              {CATEGORY_FILTERS.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
               ))}
             </select>
@@ -551,14 +553,14 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             </div>
             <h3 className="text-sm font-semibold text-slate-900">No Artists Found</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              No artists match your current search criteria. Try modifying your search query or genre filter.
+              No artists match your current search criteria. Try modifying your search query or category filter.
             </p>
             <div className="pt-2 flex items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => {
                   setSearchQuery('');
-                  setSelectedGenre('All Genres');
+                  setSelectedCategory('All Categories');
                   setSelectedStatus('all');
                 }}
                 className="px-3.5 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
@@ -663,48 +665,54 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                             )}
                           </div>
 
-                          <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                          {/* <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                             {artist.genre}
-                          </span>
+                          </span> */}
                         </div>
 
-                        {/* Artist Title & Alias */}
+                        {/* Artist Title & Bio */}
                         <div className="min-w-0">
                           <h3 className="text-sm font-semibold text-slate-900 truncate" title={artist.name}>
                             {artist.name}
                           </h3>
-                          {artist.stageName && (
-                            <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                              {artist.stageName}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Location & Agency */}
-                        <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
-                          <div className="flex items-center gap-1 min-w-0">
-                            <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
-                            <span className="truncate">{artist.city ? `${artist.city}, ` : ''}{artist.country}</span>
-                          </div>
-                          {artist.management?.agency && (
-                            <div className="flex items-center gap-1 min-w-0 text-slate-400">
-                              <span>•</span>
-                              <span className="truncate text-slate-600 font-medium">
-                                {artist.management.agency.split('/')[0]}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Bio Snippet */}
-                        <div className="mt-2.5 p-2 rounded-md bg-slate-50/80 border border-slate-100/80">
-                          <p className="text-[11.5px] leading-relaxed text-slate-500 line-clamp-2 font-normal">
-                            {artist.bio}
+                          <p className="mt-1 text-[11.5px] leading-relaxed text-slate-500 line-clamp-2 font-normal" title={artist.bio}>
+                            {artist.bio || 'No bio provided.'}
                           </p>
                         </div>
 
+                        {/* Contact: Email & Phone from Form */}
+                        <div className="mt-2.5 flex items-center justify-between gap-2 text-xs">
+                          {artist.management?.email ? (
+                            <a
+                              href={`mailto:${artist.management.email}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1.5 min-w-0 max-w-[150px] px-2 py-1 rounded-md text-[11px] font-medium text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/70 transition-colors shadow-2xs"
+                              title={artist.management.email}
+                            >
+                              <Mail className="h-3 w-3 text-blue-500 shrink-0" />
+                              <span className="truncate">{artist.management.email}</span>
+                            </a>
+                          ) : (
+                            <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+                              <Mail className="h-3 w-3 text-slate-300 shrink-0" />
+                              <span className="italic">No email</span>
+                            </div>
+                          )}
+                          {artist.management?.phone ? (
+                            <a
+                              href={`tel:${artist.management.phone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1.5 shrink-0 px-2 py-1 rounded-md text-[11px] font-medium text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/70 transition-colors shadow-2xs"
+                              title={artist.management.phone}
+                            >
+                              <Phone className="h-3 w-3 text-emerald-500 shrink-0" />
+                              <span className="truncate">{artist.management.phone}</span>
+                            </a>
+                          ) : null}
+                        </div>
+
                         {/* Subgenre Tags */}
-                        {artist.subGenres && artist.subGenres.length > 0 && (
+                        {/* {artist.subGenres && artist.subGenres.length > 0 && (
                           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                             {artist.subGenres.slice(0, 3).map((sg, i) => (
                               <span
@@ -720,7 +728,7 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                               </span>
                             )}
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
 
@@ -793,48 +801,73 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
             setEditingArtist(null);
           }}
           title={`Edit Artist: ${editingArtist.name}`}
-          subtitle="Update status, genre, bio, or upload a new headshot photo"
+          subtitle="Update category, contact details, status, bio, or upload a new headshot photo"
           maxWidth="lg"
         >
           <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
-            {/* Name */}
-            <div className="space-y-1.5">
-              <label className="font-semibold text-slate-700">Artist Name *</label>
-              <input
-                type="text"
-                required
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs"
-              />
-            </div>
-
-            {/* Tour Status & Genre */}
+            {/* Name & Category */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700">Status</label>
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as Artist['status'])}
-                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
-                >
-                  <option value="active">Active (Available for Concerts)</option>
-                  <option value="inactive">Inactive (Unavailable)</option>
-                </select>
+                <label className="font-semibold text-slate-700">Artist Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs"
+                />
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-700">Genre</label>
+                <label className="font-semibold text-slate-700">Category *</label>
                 <select
-                  value={editGenre}
-                  onChange={(e) => setEditGenre(e.target.value)}
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
                   className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
                 >
-                  {GENRE_FILTERS.filter((g) => g !== 'All Genres').map((g) => (
-                    <option key={g} value={g}>{g}</option>
+                  {ARTIST_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Email & Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700">Email (Optional)</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="artist@example.com"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-700">Phone (Optional)</label>
+                <input
+                  type="tel"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-700">Status</label>
+              <select
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value as Artist['status'])}
+                className="w-full h-10 rounded-lg border border-slate-200 bg-slate-50/60 px-3 text-xs text-slate-800 focus:bg-white focus:outline-none focus:border-purple-500 shadow-2xs cursor-pointer"
+              >
+                <option value="active">Active (Available for Concerts)</option>
+                <option value="inactive">Inactive (Unavailable)</option>
+              </select>
             </div>
 
             {/* Profile Photo / Avatar Upload (Supports Multipart Form-Data as in artists.txt Option A) */}
@@ -922,10 +955,10 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
           subtitle="Profile overview and contact information"
           maxWidth="md"
         >
-          <div className="space-y-4 text-xs">
-            {/* Header: Photo, Name, Genre, Status */}
-            <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 shadow-2xs">
+          <div className="space-y-4">
+            {/* Header: Photo, Name, Category, Status */}
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 shadow-xs">
                 <AppImage
                   src={selectedRiderArtist.avatar}
                   alt={selectedRiderArtist.name}
@@ -935,89 +968,88 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-bold text-slate-900 truncate">
+                  <h3 className="text-lg font-bold text-slate-900 truncate">
                     {selectedRiderArtist.name}
                   </h3>
                   <span
-                    className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shrink-0 ${
-                      selectedRiderArtist.status === 'active'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-slate-100 text-slate-600 border-slate-200'
-                    }`}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0 ${selectedRiderArtist.status === 'active'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-slate-100 text-slate-700 border-slate-300'
+                      }`}
                   >
                     <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        selectedRiderArtist.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'
-                      }`}
+                      className={`h-2 w-2 rounded-full ${selectedRiderArtist.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}
                     />
                     {selectedRiderArtist.status === 'active' ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 
-                <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                  <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/80">
-                    {selectedRiderArtist.genre}
+                {/* <div className="mt-2 flex items-center gap-2 flex-wrap">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
+                    {selectedRiderArtist.genre || 'General'}
                   </span>
-                  {(selectedRiderArtist.city || selectedRiderArtist.country) && (
-                    <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-slate-400" />
-                      <span>{selectedRiderArtist.city ? `${selectedRiderArtist.city}, ` : ''}{selectedRiderArtist.country}</span>
-                    </span>
-                  )}
-                </div>
+                </div> */}
               </div>
             </div>
 
-            {/* Contact Details (Email & Phone from Create Form) */}
+            {/* Contact Details: Email & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg border border-slate-200/80 bg-white space-y-1">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-purple-600" />
-                  <span>Email Address</span>
-                </span>
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Mail className="h-4 w-4 text-blue-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">Email Address</span>
+                </div>
                 {selectedRiderArtist.management?.email ? (
                   <a
                     href={`mailto:${selectedRiderArtist.management.email}`}
-                    className="text-xs font-semibold text-purple-700 hover:underline block truncate pt-0.5"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline block truncate"
                   >
                     {selectedRiderArtist.management.email}
                   </a>
                 ) : (
-                  <span className="text-xs text-slate-400 block pt-0.5">Not provided</span>
+                  <span className="text-sm text-slate-500 italic">Not provided</span>
                 )}
               </div>
 
-              <div className="p-3 rounded-lg border border-slate-200/80 bg-white space-y-1">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5 text-purple-600" />
-                  <span>Phone Number</span>
-                </span>
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Phone className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600">Phone Number</span>
+                </div>
                 {selectedRiderArtist.management?.phone ? (
                   <a
                     href={`tel:${selectedRiderArtist.management.phone}`}
-                    className="text-xs font-semibold text-slate-800 hover:text-purple-600 block truncate pt-0.5"
+                    className="text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline block truncate"
                   >
                     {selectedRiderArtist.management.phone}
                   </a>
                 ) : (
-                  <span className="text-xs text-slate-400 block pt-0.5">Not provided</span>
+                  <span className="text-sm text-slate-500 italic">Not provided</span>
                 )}
               </div>
             </div>
 
             {/* About Us / Bio */}
-            <div className="p-3.5 rounded-lg border border-slate-200/80 bg-white space-y-1.5">
-              <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-purple-600" />
-                <span>About Us / Bio</span>
-              </span>
-              <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line pt-0.5">
-                {selectedRiderArtist.bio || 'No bio provided for this artist.'}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-purple-600 shrink-0" />
+                <span className="text-xs font-semibold text-slate-700">About / Biography</span>
+              </div>
+              <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line">
+                {selectedRiderArtist.bio || 'No biography provided for this artist.'}
               </p>
             </div>
 
             {/* Actions: Edit & Close */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setSelectedRiderArtist(null)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -1025,18 +1057,10 @@ export const ArtistsView: React.FC<ArtistsViewProps> = ({
                   setSelectedRiderArtist(null);
                   handleOpenEdit(current);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 shadow-sm transition-colors cursor-pointer"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 <span>Edit Artist</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedRiderArtist(null)}
-                className="px-4 py-1.5 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-              >
-                Close
               </button>
             </div>
           </div>

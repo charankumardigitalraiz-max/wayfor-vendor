@@ -290,6 +290,12 @@ export const mockVendorConcerts: ConcertEvent[] = [
     ageRestriction: '16+ (Valid Govt ID Required)',
     organizer: 'Zenith Live Touring & Entertainment',
     connectedRidesCount: 42,
+    gallery: [
+      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&auto=format&fit=crop&q=80'
+    ],
     productionChecklist: {
       soundCheck: true,
       lightingRig: true,
@@ -361,6 +367,12 @@ export const mockVendorConcerts: ConcertEvent[] = [
     ageRestriction: 'All Ages (Kids under 12 accompanied by adult)',
     organizer: 'Zenith Live Touring & Entertainment',
     connectedRidesCount: 88,
+    gallery: [
+      'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=900&auto=format&fit=crop&q=80'
+    ],
     productionChecklist: {
       soundCheck: true,
       lightingRig: true,
@@ -423,6 +435,12 @@ export const mockVendorConcerts: ConcertEvent[] = [
     ageRestriction: 'All Ages',
     organizer: 'Zenith Live Touring & Entertainment',
     connectedRidesCount: 64,
+    gallery: [
+      'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=900&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&auto=format&fit=crop&q=80'
+    ],
     productionChecklist: {
       soundCheck: false,
       lightingRig: true,
