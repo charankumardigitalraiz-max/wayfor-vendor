@@ -19,6 +19,7 @@ export type NavigationTab =
 export type StatusType = 'active' | 'upcoming' | 'completed' | 'cancelled' | 'draft' | 'pending' | 'verified';
 
 export * from './auth';
+import type { BackendAddress, BackendBankDetails, BackendDocuments } from './auth';
 
 export interface TicketTier {
   id: string;
@@ -50,6 +51,7 @@ export interface ConcertEvent {
   date: string;
   doorsOpen: string;
   showTime?: string;
+  venue?: string;
   venueName: string;
   venueAddress?: string;
   city: string;
@@ -152,9 +154,11 @@ export interface VendorProfile {
   id: string;
   name: string;
   companyName: string;
+  businessName?: string;
   email: string;
   phone: string;
   avatar: string;
+  address?: BackendAddress;
   city?: string;
   country?: string;
   serviceModule?: VendorModule | string;
@@ -165,9 +169,11 @@ export interface VendorProfile {
   gstNumber: string;
   panNumber?: string;
   panPhoto?: string;
+  documents?: BackendDocuments;
   bankName: string;
   bankAccountNumber: string;
   ifscCode: string;
+  bankDetails?: BackendBankDetails;
   isVerified: boolean;
   isRegistered?: boolean;
   rating: number;

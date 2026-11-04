@@ -102,6 +102,19 @@ export function AppContent() {
     return () => window.removeEventListener('vendor:auth-changed', handleAuthChange);
   }, []);
 
+  // Synchronize authenticated vendor profile from backend GET /api/vendor/auth/me
+  useEffect(() => {
+    if (vendorAuthService.isAuthenticated()) {
+      vendorAuthService.getProfile().then((user) => {
+        if (user) {
+          setCurrentVendor(user);
+        }
+      }).catch((err) => {
+        console.warn('Failed to refresh vendor profile from backend:', err);
+      });
+    }
+  }, []);
+
   const handleLogin = (user: VendorUser) => {
     setCurrentVendor(user);
     showToast(`Welcome back, ${user.name}!`);
@@ -687,7 +700,7 @@ export function AppContent() {
             />
             <Route
               path="/settings"
-              element={<VendorSettingsView onShowToast={showToast} />}
+              element={<VendorSettingsView currentVendor={currentVendor} onShowToast={showToast} />}
             />
             <Route
               path="/profile"

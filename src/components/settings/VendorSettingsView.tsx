@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   ShieldCheck,
@@ -18,23 +18,101 @@ import {
 } from 'lucide-react';
 import { vendorAuthService } from '../../services/vendorAuthService';
 import { mockVendorProfile, ALL_WAYFOR_MODULES } from '../../data/mockVendorData';
+import type { VendorUser } from '../../types/auth';
 
 interface VendorSettingsViewProps {
+  currentVendor?: VendorUser | null;
   onShowToast: (msg: string) => void;
 }
 
 export const VendorSettingsView: React.FC<VendorSettingsViewProps> = ({
+  currentVendor,
   onShowToast
 }) => {
-  const current = vendorAuthService.getCurrentVendor() || mockVendorProfile;
-  const [companyName, setCompanyName] = useState(current.companyName);
+  const current = currentVendor || vendorAuthService.getCurrentVendor() || mockVendorProfile;
+  const [companyName, setCompanyName] = useState(current.companyName || current.name);
   const [contactName, setContactName] = useState(current.name);
   const [email, setEmail] = useState(current.email);
   const [phone, setPhone] = useState(current.phone);
-  const [gstNumber, setGstNumber] = useState(current.gstNumber || '');
-  const [bankName, setBankName] = useState(current.bankName || '');
-  const [bankAccount, setBankAccount] = useState(current.bankAccountNumber || '');
-  const [ifsc, setIfsc] = useState(current.ifscCode || '');
+  const [gstNumber, setGstNumber] = useState(current.gstNumber && current.gstNumber !== 'Unregistered Promoter' ? current.gstNumber : (current.documents?.gstNumber || ''));
+  const [bankName, setBankName] = useState(current.bankName && current.bankName !== 'HDFC Bank Ltd' ? current.bankName : (current.bankDetails?.bankName || ''));
+  const [bankAccount, setBankAccount] = useState(current.bankAccountNumber && current.bankAccountNumber !== '50200084918231' ? current.bankAccountNumber : (current.bankDetails?.accountNumber || ''));
+  const [ifsc, setIfsc] = useState(current.ifscCode && current.ifscCode !== 'HDFC0000240' ? current.ifscCode : (current.bankDetails?.ifscCode || ''));
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Fetch live vendor profile from GET /api/vendor/auth/me on mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveProfile = async () => {
+      try {
+        setIsSyncing(true);
+        const live = await vendorAuthService.getProfile();
+        if (live && isMounted) {
+          setCompanyName(live.companyName || live.businessName || live.name);
+          setContactName(live.name);
+          setEmail(live.email);
+          setPhone(live.phone);
+          if (live.gstNumber && live.gstNumber !== 'Unregistered Promoter') {
+            setGstNumber(live.gstNumber);
+          } else if (live.documents?.gstNumber) {
+            setGstNumber(live.documents.gstNumber);
+          }
+          if (live.bankName && live.bankName !== 'HDFC Bank Ltd') {
+            setBankName(live.bankName);
+          } else if (live.bankDetails?.bankName) {
+            setBankName(live.bankDetails.bankName);
+          }
+          if (live.bankAccountNumber && live.bankAccountNumber !== '50200084918231') {
+            setBankAccount(live.bankAccountNumber);
+          } else if (live.bankDetails?.accountNumber) {
+            setBankAccount(live.bankDetails.accountNumber);
+          }
+          if (live.ifscCode && live.ifscCode !== 'HDFC0000240') {
+            setIfsc(live.ifscCode);
+          } else if (live.bankDetails?.ifscCode) {
+            setIfsc(live.bankDetails.ifscCode);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load live settings profile from /vendor/auth/me:', err);
+      } finally {
+        if (isMounted) setIsSyncing(false);
+      }
+    };
+
+    fetchLiveProfile();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Also sync when currentVendor prop updates
+  useEffect(() => {
+    if (currentVendor) {
+      setCompanyName(currentVendor.companyName || currentVendor.name);
+      setContactName(currentVendor.name);
+      setEmail(currentVendor.email);
+      setPhone(currentVendor.phone);
+      if (currentVendor.gstNumber && currentVendor.gstNumber !== 'Unregistered Promoter') {
+        setGstNumber(currentVendor.gstNumber);
+      } else if (currentVendor.documents?.gstNumber) {
+        setGstNumber(currentVendor.documents.gstNumber);
+      }
+      if (currentVendor.bankName && currentVendor.bankName !== 'HDFC Bank Ltd') {
+        setBankName(currentVendor.bankName);
+      } else if (currentVendor.bankDetails?.bankName) {
+        setBankName(currentVendor.bankDetails.bankName);
+      }
+      if (currentVendor.bankAccountNumber && currentVendor.bankAccountNumber !== '50200084918231') {
+        setBankAccount(currentVendor.bankAccountNumber);
+      } else if (currentVendor.bankDetails?.accountNumber) {
+        setBankAccount(currentVendor.bankDetails.accountNumber);
+      }
+      if (currentVendor.ifscCode && currentVendor.ifscCode !== 'HDFC0000240') {
+        setIfsc(currentVendor.ifscCode);
+      } else if (currentVendor.bankDetails?.ifscCode) {
+        setIfsc(currentVendor.bankDetails.ifscCode);
+      }
+    }
+  }, [currentVendor]);
 
   const [notifyOnSellout, setNotifyOnSellout] = useState(true);
   const [notifyOnGateMilestone, setNotifyOnGateMilestone] = useState(true);

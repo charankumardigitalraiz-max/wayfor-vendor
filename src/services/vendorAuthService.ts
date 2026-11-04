@@ -84,6 +84,10 @@ export const PRESET_VENDOR_ACCOUNTS: { label: string; email: string; phone?: str
 ];
 
 class VendorAuthService {
+  isAuthenticated(): boolean {
+    return Boolean(this.getToken() || this.getCurrentVendor());
+  }
+
   getToken(): string | null {
     try {
       return localStorage.getItem(VENDOR_TOKEN_KEY);
@@ -255,13 +259,21 @@ class VendorAuthService {
       email: emailNorm,
       phone: cleanPhone,
       password: payload.password,
-      address: payload.address || {
-        street: 'Plot 42, Hitec City',
-        city: 'Hyderabad',
-        state: 'Telangana',
-        country: 'India',
-        postalCode: '500081'
-      },
+      address: typeof payload.address === 'string'
+        ? {
+          street: payload.address.trim(),
+          city: 'Hyderabad',
+          state: 'Telangana',
+          country: 'India',
+          postalCode: '500081'
+        }
+        : payload.address || {
+          street: 'Plot 42, Hitec City',
+          city: 'Hyderabad',
+          state: 'Telangana',
+          country: 'India',
+          postalCode: '500081'
+        },
       bankDetails: {
         accountHolderName: (payload.companyName || payload.name).trim(),
         accountNumber: payload.bankAccountNumber?.trim() || '',
@@ -393,23 +405,23 @@ class VendorAuthService {
     const user: VendorUser = match
       ? { ...match, token, isRegistered: true }
       : {
-          id: `vnd-${Date.now().toString().slice(-4)}`,
-          name: rawInput.split('@')[0].replace('.', ' ').replace(/^./, str => str.toUpperCase()),
-          companyName: `${rawInput.split('@')[0].toUpperCase()} Live Touring Ltd`,
-          email: emailNorm || 'promoter@wayfor.live',
-          phone: isPhone ? rawInput : '+91 98000 12345',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-          gstNumber: '27AABCE1234F1Z8',
-          bankName: 'HDFC Bank Ltd',
-          bankAccountNumber: '50200084918231',
-          ifscCode: 'HDFC0000240',
-          isVerified: true,
-          isRegistered: true,
-          rating: 5.0,
-          totalConcertsHosted: 1,
-          totalTicketsSold: 1200,
-          token
-        };
+        id: `vnd-${Date.now().toString().slice(-4)}`,
+        name: rawInput.split('@')[0].replace('.', ' ').replace(/^./, str => str.toUpperCase()),
+        companyName: `${rawInput.split('@')[0].toUpperCase()} Live Touring Ltd`,
+        email: emailNorm || 'promoter@wayfor.live',
+        phone: isPhone ? rawInput : '+91 98000 12345',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+        gstNumber: '27AABCE1234F1Z8',
+        bankName: 'HDFC Bank Ltd',
+        bankAccountNumber: '50200084918231',
+        ifscCode: 'HDFC0000240',
+        isVerified: true,
+        isRegistered: true,
+        rating: 5.0,
+        totalConcertsHosted: 1,
+        totalTicketsSold: 1200,
+        token
+      };
 
     this.setToken(token);
     this.setCurrentVendor(user);

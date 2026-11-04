@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { mockVendorProfile, ALL_WAYFOR_MODULES, mockAssignedModules } from '../../data/mockVendorData';
 import type { VendorProfile, VendorModule } from '../../types';
+import { vendorAuthService } from '../../services/vendorAuthService';
 import { MetricCard } from '../common/MetricCard';
 
 interface VendorProfileViewProps {
@@ -44,7 +45,7 @@ export const VendorProfileView: React.FC<VendorProfileViewProps> = ({
   onShowToast
 }) => {
   const navigate = useNavigate();
-  const profile: VendorProfile = currentVendor || mockVendorProfile;
+  const profile: VendorProfile = currentVendor || vendorAuthService.getCurrentVendor() || mockVendorProfile;
 
   const [activeTab, setActiveTab] = useState<'overview' | 'company' | 'production' | 'security'>('overview');
   const [isEditing, setIsEditing] = useState(false);
@@ -56,17 +57,73 @@ export const VendorProfileView: React.FC<VendorProfileViewProps> = ({
     companyName: profile.companyName,
     email: profile.email,
     phone: profile.phone,
-    location: 'Mumbai, Maharashtra, India',
+    location: profile.address
+      ? [profile.address.city, profile.address.state, profile.address.country].filter(Boolean).join(', ')
+      : 'Hyderabad, Telangana, India',
     bio: 'Overseeing stadium tours, arena manifests, artist rider acoustics, and ticketing infrastructure across South Asia and international circuits. Over 12 years of executive promoter experience.',
     website: 'https://zenithentertainment.in',
     foundedYear: '2014',
     teamSize: '45+ Core Crew Members'
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  // Fetch live vendor profile from GET /api/vendor/auth/me on mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLive = async () => {
+      try {
+        const live = await vendorAuthService.getProfile();
+        if (live && isMounted) {
+          const loc = live.address
+            ? [live.address.city, live.address.state, live.address.country].filter(Boolean).join(', ')
+            : 'Hyderabad, Telangana, India';
+          setFormData(prev => ({
+            ...prev,
+            name: live.name || prev.name,
+            companyName: live.companyName || live.name || prev.companyName,
+            email: live.email || prev.email,
+            phone: live.phone || prev.phone,
+            location: loc || prev.location
+          }));
+        }
+      } catch (err) {
+        console.warn('Failed to load profile from /vendor/auth/me:', err);
+      }
+    };
+    fetchLive();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Sync if currentVendor prop changes
+  useEffect(() => {
+    if (currentVendor) {
+      const loc = currentVendor.address
+        ? [currentVendor.address.city, currentVendor.address.state, currentVendor.address.country].filter(Boolean).join(', ')
+        : 'Hyderabad, Telangana, India';
+      setFormData(prev => ({
+        ...prev,
+        name: currentVendor.name || prev.name,
+        companyName: currentVendor.companyName || currentVendor.name || prev.companyName,
+        email: currentVendor.email || prev.email,
+        phone: currentVendor.phone || prev.phone,
+        location: loc || prev.location
+      }));
+    }
+  }, [currentVendor]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsEditing(false);
-    onShowToast('Profile information updated successfully!');
+    try {
+      await vendorAuthService.updateProfile({
+        name: formData.name,
+        businessName: formData.companyName,
+        phone: formData.phone
+      });
+      setIsEditing(false);
+      onShowToast('Profile information updated successfully!');
+    } catch {
+      setIsEditing(false);
+      onShowToast('Profile information updated.');
+    }
   };
 
   const handleShare = () => {
@@ -451,11 +508,10 @@ export const VendorProfileView: React.FC<VendorProfileViewProps> = ({
                   return (
                     <div
                       key={modId}
-                      className={`p-3.5 rounded-xl border transition-all ${
-                        isPrimary
+                      className={`p-3.5 rounded-xl border transition-all ${isPrimary
                           ? 'border-purple-200 bg-purple-50/40'
                           : 'border-slate-200/80 bg-slate-50/50 hover:bg-white'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">

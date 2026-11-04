@@ -809,7 +809,7 @@ export const mockVenues: Venue[] = [
     address: 'Motera, Sabarmati, Ahmedabad, Gujarat 380005',
     soundSystem: 'L-Acoustics K1 Stadium Array with K1-SB subwoofers',
     type: 'Stadium',
-    contactPerson: 'Bhavesh Patel (+91 98250 11920)',
+    contactPerson: '91 98250 11920',
     status: 'active',
     image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&auto=format&fit=crop&q=80'
   },
@@ -821,7 +821,7 @@ export const mockVenues: Venue[] = [
     address: 'Pragati Vihar, Bhishma Pitamah Marg, New Delhi 110003',
     soundSystem: 'd&b audiotechnik GSL System & SL-SUB arc',
     type: 'Stadium',
-    contactPerson: 'Sunil Aggarwal (+91 98110 44291)',
+    contactPerson: '91 98110 44291',
     status: 'active',
     image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&auto=format&fit=crop&q=80'
   },
@@ -833,7 +833,7 @@ export const mockVenues: Venue[] = [
     address: 'Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra 400051',
     soundSystem: 'Meyer Sound PANTHER Line Array & 2100-LFC',
     type: 'Open Grounds',
-    contactPerson: 'Farhan Dastoor (+91 98200 88291)',
+    contactPerson: '91 98200 88291',
     status: 'active',
     image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80'
   },
@@ -845,7 +845,7 @@ export const mockVenues: Venue[] = [
     address: 'Old Mumbai Highway, Gachibowli, Hyderabad, Telangana 500032',
     soundSystem: 'JBL VTX A12 Acoustic Rig & Delay Towers',
     type: 'Stadium',
-    contactPerson: 'K. S. Rao (+91 98490 22391)',
+    contactPerson: '91 98490 22391',
     status: 'active',
     image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80'
   },
@@ -857,7 +857,7 @@ export const mockVenues: Venue[] = [
     address: 'Whitefield Main Road, Mahadevapura, Bengaluru, Karnataka 560048',
     soundSystem: 'Adamson E-Series Line Array',
     type: 'Club',
-    contactPerson: 'Cherian George (+91 98860 39182)',
+    contactPerson: '91 98860 39182',
     status: 'active',
     image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80'
   }

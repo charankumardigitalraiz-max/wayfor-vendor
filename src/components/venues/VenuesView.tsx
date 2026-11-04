@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Building2,
   MapPin,
@@ -11,7 +11,9 @@ import {
   SlidersHorizontal,
   Eye,
   CheckCircle2,
-  Radio
+  Radio,
+  Pencil,
+  Loader2
 } from 'lucide-react';
 import type { Venue } from '../../types';
 import { AddVenueModal } from '../common/AddVenueModal';
@@ -46,13 +48,80 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
   onAddVenue,
   onShowToast
 }) => {
+  const [internalVenues, setInternalVenues] = useState<Venue[]>(venues);
+
+  useEffect(() => {
+    setInternalVenues(venues);
+  }, [venues]);
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('All');
 
+  // Edit Venue state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editType, setEditType] = useState<Venue['type']>('Arena');
+  const [editCity, setEditCity] = useState('');
+  const [editCapacity, setEditCapacity] = useState<number | string>(0);
+  const [editContactPerson, setEditContactPerson] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editSoundSystem, setEditSoundSystem] = useState('');
+  const [editStatus, setEditStatus] = useState<Venue['status']>('active');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  const handleOpenEdit = (venue: Venue) => {
+    setEditingVenue(venue);
+    setEditName(venue.name);
+    setEditType(venue.type);
+    setEditCity(venue.city);
+    setEditCapacity(venue.capacity);
+    setEditContactPerson(venue.contactPerson || '');
+    setEditAddress(venue.address || '');
+    setEditSoundSystem(venue.soundSystem || '');
+    setEditStatus(venue.status || 'active');
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingVenue || !editName.trim() || isSavingEdit) return;
+
+    try {
+      setIsSavingEdit(true);
+      const updated: Venue = {
+        ...editingVenue,
+        name: editName.trim(),
+        type: editType,
+        city: editCity.trim(),
+        capacity: Number(editCapacity) || 0,
+        contactPerson: editContactPerson.trim(),
+        address: editAddress.trim(),
+        soundSystem: editSoundSystem.trim(),
+        status: editStatus
+      };
+
+      setInternalVenues((prev) => prev.map((v) => (v.id === editingVenue.id ? updated : v)));
+      onShowToast?.(`Venue "${updated.name}" updated successfully!`);
+      setIsEditOpen(false);
+      setEditingVenue(null);
+    } catch (err) {
+      console.error('Error updating venue:', err);
+      onShowToast?.('Failed to update venue.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleAddVenue = (newVenue: Venue) => {
+    setInternalVenues((prev) => [newVenue, ...prev]);
+    onAddVenue(newVenue);
+  };
+
   const filteredVenues = useMemo(() => {
-    return venues.filter((v) => {
+    return internalVenues.filter((v) => {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -67,11 +136,11 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
 
       return true;
     });
-  }, [venues, searchQuery, selectedType]);
+  }, [internalVenues, searchQuery, selectedType]);
 
   const totalSeats = useMemo(() => {
-    return venues.reduce((acc, v) => acc + (v.capacity || 0), 0);
-  }, [venues]);
+    return internalVenues.reduce((acc, v) => acc + (v.capacity || 0), 0);
+  }, [internalVenues]);
 
   const tableColumns = useMemo(
     () => [
@@ -114,25 +183,13 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
       },
       {
         key: 'capacity',
-        header: 'Audience Capacity',
+        header: 'Capacity',
+        width: "min-w-[130px]",
         render: (venue: Venue) => (
           <div className="text-xs">
             <span className="font-semibold text-slate-900 block">
               {venue.capacity.toLocaleString()} seats
             </span>
-            <span className="text-[10px] text-slate-400">Total Seating</span>
-          </div>
-        )
-      },
-      {
-        key: 'soundSystem',
-        header: 'Audio Rig',
-        render: (venue: Venue) => (
-          <div className="text-xs text-slate-700 truncate max-w-xs" title={venue.soundSystem}>
-            <span className="font-medium block truncate">
-              {venue.soundSystem.split(' with ')[0].split(' & ')[0]}
-            </span>
-            <span className="text-[10px] text-slate-400 truncate block">Line Array System</span>
           </div>
         )
       },
@@ -171,15 +228,30 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
         header: 'Action',
         align: 'right' as const,
         render: (venue: Venue) => (
-          <button
-            type="button"
-            onClick={() => setSelectedVenue(venue)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-colors cursor-pointer"
-            title="View Arena Specifications"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            <span>View</span>
-          </button>
+          <div className="inline-flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedVenue(venue);
+              }}
+              className="rounded-md px-2 py-1 bg-purple-50 border border-purple-100 text-purple-600 hover:bg-purple-600 hover:text-white hover:border-purple-600 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1 text-[11px] font-semibold"
+              title="View Venue Specifications"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEdit(venue);
+              }}
+              className="rounded-md px-2 py-1 bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1 text-[11px] font-semibold"
+              title="Edit Venue"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          </div>
         )
       }
     ],
@@ -309,7 +381,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
       <AddVenueModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onAddVenue={onAddVenue}
+        onAddVenue={handleAddVenue}
         onShowToast={onShowToast}
       />
 
@@ -400,7 +472,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="pt-3 flex items-center justify-end border-t border-slate-200">
+            <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setSelectedVenue(null)}
@@ -408,8 +480,155 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
               >
                 Close
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const v = selectedVenue;
+                  setSelectedVenue(null);
+                  handleOpenEdit(v);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer shadow-xs shadow-purple-200"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Edit Venue</span>
+              </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Edit Venue Modal */}
+      {isEditOpen && editingVenue && (
+        <Modal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditingVenue(null);
+          }}
+          title={`Edit Venue: ${editingVenue.name}`}
+          subtitle="Update arena details, capacity, and coordinator information"
+          maxWidth="lg"
+        >
+          <form onSubmit={handleSaveEdit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700">Venue Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                  placeholder="e.g., Madison Square Garden"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Type</label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as Venue['type'])}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                >
+                  <option value="Arena">Arena</option>
+                  <option value="Stadium">Stadium</option>
+                  <option value="Open Grounds">Open Grounds</option>
+                  <option value="Club">Club</option>
+                  <option value="Auditorium">Auditorium</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">City</label>
+                <input
+                  type="text"
+                  required
+                  value={editCity}
+                  onChange={(e) => setEditCity(e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                  placeholder="e.g., New York, NY"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Max Capacity</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={editCapacity}
+                  onChange={(e) => setEditCapacity(Number(e.target.value))}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Contact Person / Phone</label>
+                <input
+                  type="text"
+                  value={editContactPerson}
+                  onChange={(e) => setEditContactPerson(e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                  placeholder="e.g., +1 234 567 8900"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700">Full Address</label>
+                <input
+                  type="text"
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                  placeholder="Street address, landmarks..."
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700">Sound System / Specs</label>
+                <input
+                  type="text"
+                  value={editSoundSystem}
+                  onChange={(e) => setEditSoundSystem(e.target.value)}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                  placeholder="e.g., L-Acoustics K2 Line Array, DiGiCo Quantum 338"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700">Status</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as Venue['status'])}
+                  className="w-full h-9 rounded-md border border-slate-200 px-3 text-xs text-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none"
+                >
+                  <option value="active">Active / Ready</option>
+                  <option value="maintenance">Under Maintenance</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditingVenue(null);
+                }}
+                className="px-4 py-2 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingEdit}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-xs shadow-purple-200 cursor-pointer"
+              >
+                {isSavingEdit && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

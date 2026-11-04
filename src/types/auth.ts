@@ -36,7 +36,7 @@ export interface RegisterVendorPayload {
   bankName?: string;
   bankAccountNumber?: string;
   ifscCode?: string;
-  address?: BackendAddress;
+  address?: BackendAddress | string;
 }
 
 export interface BackendAddress {

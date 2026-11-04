@@ -346,7 +346,7 @@ export const VendorConcertsList: React.FC<VendorConcertsListProps> = ({
               e.stopPropagation();
               navigate(`/concerts/${concert.id}/edit`);
             }}
-            className="p-1.5 rounded-md bg-slate-50 text-slate-600 hover:bg-purple-50 hover:text-purple-700 border border-slate-200/80 hover:border-purple-200 transition-all cursor-pointer shadow-2xs"
+            className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-200/80 transition-all cursor-pointer shadow-2xs"
             title="Edit Concert"
           >
             <Edit3 className="h-4 w-4" />
