@@ -238,9 +238,9 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
               <Sliders className="w-4 h-4 text-purple-600" />
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-700">Custom Event Dynamic Fields</h2>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                {/* <p className="text-[11px] text-slate-400 mt-0.5">
                   Configure dynamic questionnaires that organizers must answer when submitting concert events under this category.
-                </p>
+                </p> */}
               </div>
             </div>
             {customFields.length > 0 && (

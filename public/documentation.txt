@@ -1,0 +1,701 @@
+# Vendor Dashboard – Product & Functional Requirements
+
+**Project:** Multi-Module SaaS Platform  
+**Module:** Vendor Dashboard  
+**Document Type:** Product Requirements & Frontend Implementation Specification  
+**Initial Implementation:** Frontend with mock/static data  
+**Future Implementation:** Backend APIs, database, GST verification and payment integration
+
+---
+
+## 1. Project Overview
+
+The platform provides three independent business modules:
+
+1. Concerts & Events – event posting, planning, management and execution.
+2. Stranger Meets – planning and organizing stranger meetups.
+3. Trip Pool – planning, organizing and conducting trips.
+
+Each vendor/organization can subscribe to one or more modules and manage its own employees, module licenses, roles and permissions.
+
+The Vendor Dashboard is the central workspace for the vendor to manage organization information, business details, GST registration, subscriptions, employees, billing and module access.
+
+### User Types
+
+- **Platform Admin:** Manages the complete SaaS platform, all vendors, modules, pricing, subscriptions and global configurations.
+- **Vendor Admin:** Manages their own organization, subscriptions, employees, billing and module access.
+- **Vendor Employee:** Uses only the modules and features assigned by their Vendor Admin.
+
+This document covers the Vendor Dashboard only.
+
+---
+
+## 2. Vendor Dashboard Navigation Structure
+
+### Dashboard
+- Overview
+- Subscription Summary
+- Organization Summary
+- Recent Activities
+- Notifications
+
+### Organization Management
+- Organization Profile
+- Business Information
+- GST & Tax Information
+- Registered Address
+- Billing Address
+- Branch Management
+- Business Documents
+- Organization Verification
+
+### Modules & Subscriptions
+- Available Modules
+- My Subscriptions
+- Subscription Details
+- Plans & Upgrades
+- Renewals
+- Subscription History
+
+### Team Management
+- Employee Management
+- Add Employee
+- Employee Invitations
+- Employee Details
+- Module License Assignment
+- Roles & Permissions
+
+### Billing & Payments
+- Billing Overview
+- Billing Profile
+- Payment History
+- Invoices
+- GST Invoices
+- Credit Notes
+- Refund History
+
+### Usage & Reports
+- Module Usage
+- Employee License Usage
+- Plan Limits
+- Usage History
+- Activity Reports
+
+### Settings
+- Account Settings
+- Profile Settings
+- Notification Settings
+- Security Settings
+
+---
+
+## 3. Organization Registration & Profile
+
+### Organization Information
+
+Required fields:
+
+- Organization Name
+- Display Name
+- Organization Type
+- Business Category
+- Organization Email
+- Business Contact Number
+- Website
+- Year Established
+- Organization Logo
+- Organization Description
+
+### Organization Types
+
+- Private Limited Company
+- Public Limited Company
+- Limited Liability Partnership (LLP)
+- Partnership Firm
+- Sole Proprietorship
+- One Person Company (OPC)
+- Trust
+- Society
+- Other
+
+### Organization Status
+
+- Draft
+- Pending Verification
+- Verified
+- Rejected
+- Suspended
+- Active
+
+### Organization Profile Actions
+
+- Create organization
+- Edit organization details
+- Upload organization logo
+- Upload supporting documents
+- View verification status
+- Update organization information
+
+One vendor account should be associated with an organization. The data model should allow multiple branches and multiple employees under the same organization.
+
+---
+
+## 4. GST & Tax Information
+
+### GST Registration Status
+
+Provide two options:
+
+- GST Registered
+- GST Unregistered
+
+If GST Registered is selected, display the GSTIN input and GST verification action.
+
+### GST Fields
+
+- GSTIN
+- Legal Business Name
+- Trade Name
+- GST Registration Status
+- GST Registration Date
+- Constitution of Business
+- Taxpayer Type
+- State
+- State Code
+- Principal Place of Business
+- Additional Business Locations, when available
+- GST Registration Certificate
+
+### GSTIN Auto-Fetch Requirement
+
+When the Vendor Admin enters a GSTIN and clicks Verify GSTIN, the application should call a GST verification API through the backend.
+
+The API response should automatically populate the available fields.
+
+Example workflow:
+
+1. Vendor enters GSTIN.
+2. Frontend validates the GSTIN format.
+3. Vendor clicks Verify GSTIN.
+4. Backend calls the selected GST verification provider.
+5. Backend receives taxpayer information.
+6. Frontend displays the returned details.
+7. Vendor reviews the information.
+8. Vendor confirms and saves the organization details.
+
+The application must not silently overwrite previously saved information.
+
+### GST Verification States
+
+- Not Verified
+- Verifying
+- Verified
+- Invalid GSTIN
+- Cancelled GSTIN
+- Suspended GSTIN
+- API Service Unavailable
+- Verification Failed
+
+A failed API request must not be treated as an invalid GSTIN. Provide a retry option.
+
+### Important GST Rules
+
+- GSTIN is 15 characters.
+- Perform frontend format validation.
+- Perform authoritative verification through the backend/API provider.
+- Preserve the original API response and verification timestamp where appropriate.
+- Allow manual correction of fields that are not returned by the provider.
+- Show the source and verification date.
+- Do not treat a GSTIN format check as proof of active registration.
+- Do not allow a user to claim GST verification simply by entering a valid-looking number.
+
+---
+
+## 5. Address Management
+
+Support multiple address types:
+
+- Registered Business Address
+- Billing Address
+- Office Address
+- Branch Address
+
+### Address Fields
+
+- Address Line 1
+- Address Line 2
+- Country
+- State
+- District
+- City
+- Pincode
+- GST State Code
+
+Provide a checkbox:
+
+**Billing Address Same as Registered Address**
+
+When enabled, populate the billing address from the registered address.
+
+Allow the Vendor Admin to add, edit and delete branch addresses.
+
+---
+
+## 6. Business Documents
+
+Provide a document management section for:
+
+- GST Registration Certificate
+- PAN Card
+- Certificate of Incorporation
+- Partnership Deed, where applicable
+- Business Address Proof
+- Other Supporting Documents
+
+Each document should have:
+
+- Document Name
+- Document Type
+- Upload Date
+- Verification Status
+- Document Preview
+- Replace Document
+- Delete Document
+
+Document statuses:
+
+- Pending
+- Verified
+- Rejected
+- Expired
+
+The frontend prototype should use mock upload states. Real file storage and verification will be implemented later.
+
+---
+
+## 7. Module Marketplace & Subscriptions
+
+The Vendor Admin must be able to browse and subscribe to the available modules.
+
+### Available Modules
+
+**Concerts & Events**
+- Event creation
+- Event planning
+- Event management
+- Event execution
+
+**Stranger Meets**
+- Meetup creation
+- Meetup planning
+- Participant management
+- Meetup execution
+
+**Trip Pool**
+- Trip creation
+- Trip planning
+- Trip management
+- Trip execution
+
+### Subscription Flow
+
+1. Open Available Modules.
+2. Select a module.
+3. View available plans.
+4. Select a plan.
+5. Select monthly or yearly billing.
+6. Select employee seats if applicable.
+7. Review the order summary.
+8. View applicable taxes and discounts.
+9. Complete mock checkout.
+10. Display payment success or failure.
+11. Update mock subscription status.
+12. Make the subscribed module available in the Vendor Dashboard.
+
+The Vendor Admin should be able to subscribe to one, multiple or all available modules independently.
+
+### Subscription Details
+
+- Module Name
+- Plan Name
+- Subscription ID
+- Subscription Status
+- Billing Cycle
+- Subscription Start Date
+- Expiry Date
+- Renewal Date
+- Total Licenses
+- Assigned Licenses
+- Available Licenses
+- Usage Limits
+- Amount
+- Tax Amount
+
+### Subscription Statuses
+
+- Trial
+- Active
+- Pending Payment
+- Payment Failed
+- Expired
+- Cancelled
+- Suspended
+
+### Subscription Actions
+
+- View Subscription
+- Upgrade Plan
+- Downgrade Plan
+- Renew Subscription
+- Cancel Subscription
+- View Subscription History
+
+Do not delete vendor data when a subscription expires. Access restrictions should follow a configurable subscription-expiry policy.
+
+---
+
+## 8. Employee Management
+
+The Vendor Admin should manage employees belonging to their organization.
+
+### Employee Fields
+
+- Employee ID
+- Full Name
+- Email Address
+- Mobile Number
+- Designation
+- Department
+- Profile Picture
+- Joining Date
+- Account Status
+
+### Employee Actions
+
+- Add Employee
+- Edit Employee
+- Invite Employee
+- Resend Invitation
+- View Employee Details
+- Activate Employee
+- Deactivate Employee
+- Assign Modules
+- Revoke Module Access
+
+### Employee Statuses
+
+- Invited
+- Invitation Pending
+- Active
+- Inactive
+- Suspended
+
+The employee list should include search, filtering, sorting and pagination.
+
+---
+
+## 9. Module Licenses
+
+Subscriptions belong to the organization. Licenses determine which employees can access those subscribed modules.
+
+### License Assignment
+
+For each employee, the Vendor Admin should be able to:
+
+- Select an employee.
+- Select a subscribed module.
+- Assign a role.
+- Assign permissions.
+- Save the license assignment.
+- Revoke access when required.
+
+### License Information
+
+- Organization ID
+- Employee ID
+- Subscription ID
+- Module ID
+- Role ID
+- Permissions
+- Assignment Date
+- Assigned By
+- License Status
+
+### License Rules
+
+- An employee cannot receive access to an unsubscribed module.
+- An employee cannot be assigned more licenses than the subscription permits.
+- Only active employees can receive active licenses.
+- Revoked licenses should no longer provide access.
+- License usage should update when assignments change.
+
+---
+
+## 10. Roles & Permissions
+
+Roles and permissions must be configurable independently for each module.
+
+### Example Roles
+
+- Module Admin
+- Manager
+- Editor
+- Viewer
+- Custom Role
+
+### Example Permissions
+
+- View Dashboard
+- View Records
+- Create Records
+- Edit Records
+- Delete Records
+- Publish Records
+- Manage Participants
+- Manage Employees
+- View Reports
+- Export Reports
+- Manage Module Settings
+
+The Vendor Admin should be able to assign roles and permissions within the purchased modules.
+
+A Vendor Employee should see only the assigned modules and authorized features.
+
+---
+
+## 11. Billing & Payments
+
+### Billing Overview
+
+Display:
+
+- Current Subscription Amount
+- Next Renewal Amount
+- Upcoming Renewal Date
+- Outstanding Payments
+- Total Payments
+- Active Subscriptions
+
+### Payment History
+
+Fields:
+
+- Transaction ID
+- Invoice Number
+- Payment Date
+- Description
+- Amount
+- Payment Method
+- Payment Status
+
+### Invoice Management
+
+Each invoice should support:
+
+- Invoice Number
+- Invoice Date
+- Vendor Legal Name
+- Vendor GSTIN, when applicable
+- Billing Address
+- Module Name
+- Plan Name
+- Billing Cycle
+- Taxable Amount
+- Discount
+- CGST
+- SGST
+- IGST
+- Total Amount
+- Payment Status
+- Download PDF
+
+Tax calculation and invoice generation must follow the applicable GST rules and the platform's actual registration and place-of-supply requirements.
+
+Billing information should be stored as an invoice snapshot so that changes to an organization's GST details do not alter previously issued invoices.
+
+---
+
+## 12. Usage & Reports
+
+Provide a consolidated view of subscription and employee usage.
+
+### Usage Dashboard
+
+- Total Purchased Licenses
+- Assigned Licenses
+- Available Licenses
+- Module Usage
+- Monthly Usage
+- Remaining Quota
+- Usage Percentage
+
+### Module-Specific Usage
+
+Each module should display its applicable limits and usage.
+
+Examples:
+
+- Number of events created
+- Number of meetups organized
+- Number of trips created
+- Number of employees assigned
+- Other plan-specific limits
+
+Show warning indicators when the organization approaches its subscription limits.
+
+---
+
+## 13. Vendor Dashboard Overview
+
+The main dashboard should display:
+
+- Organization Profile Completion
+- Organization Verification Status
+- GST Verification Status
+- Active Subscriptions
+- Expiring Subscriptions
+- Total Employees
+- Assigned Licenses
+- Available Licenses
+- Upcoming Renewals
+- Recent Payments
+- Recent Activities
+- Pending Invitations
+- Module Usage Summary
+
+The dashboard should include clear links to the relevant management pages.
+
+---
+
+## 14. Frontend Prototype Requirements
+
+The initial implementation must be frontend-only.
+
+### Data
+
+Use static/mock data for:
+
+- Organization profile
+- GST details
+- Addresses
+- Business documents
+- Modules
+- Plans
+- Subscriptions
+- Employees
+- Licenses
+- Roles
+- Permissions
+- Payments
+- Invoices
+- Usage records
+
+### Interactions
+
+All important user interactions should work with mock data:
+
+- Create and edit organization
+- GST verification simulation
+- Add and edit addresses
+- Upload simulation
+- Browse modules
+- Select plans
+- Checkout simulation
+- Update subscription state
+- Add and edit employees
+- Assign and revoke licenses
+- Assign roles and permissions
+- View invoices
+- Search and filter records
+
+Use local state or localStorage for prototype persistence. Provide a Reset Demo Data action.
+
+### Backend Restrictions
+
+Do not implement:
+
+- Real authentication APIs
+- Database connections
+- Real GST verification API calls
+- Real payment gateway integration
+- Production email invitations
+- Real document storage
+
+Keep service functions and mock data separated so they can be replaced by backend integrations later.
+
+---
+
+## 15. Existing Project Integration Requirements
+
+Before implementation:
+
+1. Inspect the existing project structure.
+2. Identify the current Vendor Dashboard layout.
+3. Identify the existing routing and navigation conventions.
+4. Identify the existing shared components and styling system.
+5. Identify the existing module dashboard routes.
+6. Reuse existing components wherever possible.
+
+Do not rebuild or redesign the existing Concerts & Events, Stranger Meets or Trip Pool module dashboards.
+
+Add Vendor Dashboard management features around the existing modules.
+
+When a vendor or employee opens an authorized module, navigate to its existing dashboard.
+
+Maintain consistent UI, responsive layouts, reusable forms, tables, dialogs and status indicators.
+
+---
+
+## 16. Access Control & Data Isolation
+
+The production implementation must enforce the following rules:
+
+- A Vendor Admin can manage only their own organization.
+- A Vendor Admin cannot access another vendor's organization information.
+- A Vendor Admin cannot change platform-wide plans or pricing.
+- A Vendor Employee can access only assigned modules.
+- A Vendor Employee can perform only permitted actions.
+- An employee cannot access an expired or inactive subscription unless the configured policy permits it.
+- All access restrictions must eventually be validated by backend APIs, not just frontend navigation or hidden menu items.
+
+---
+
+## 17. Recommended Implementation Sequence
+
+1. Vendor Dashboard layout and navigation.
+2. Organization Profile.
+3. Business Information.
+4. GST & Tax Information.
+5. Address Management.
+6. Business Documents.
+7. Module Marketplace.
+8. Subscription Management.
+9. Employee Management.
+10. Module License Assignment.
+11. Roles & Permissions.
+12. Billing & Invoices.
+13. Usage & Reports.
+14. Dashboard Overview.
+15. Demo Scenarios and Testing.
+
+---
+
+## 18. Acceptance Criteria
+
+The Vendor Dashboard prototype is considered ready when:
+
+- A Vendor Admin can create and update an organization profile.
+- GSTIN verification can be demonstrated using mock responses.
+- GST details populate the appropriate form fields.
+- Registered, unregistered and invalid GSTIN scenarios can be tested.
+- Billing and registered addresses can be maintained separately.
+- Vendors can browse and subscribe to multiple modules using mock checkout.
+- Vendors can manage their employees.
+- Vendors can assign module licenses and permissions.
+- Employees see only their assigned modules in the prototype.
+- Subscription states and license limits are reflected correctly.
+- Billing and invoice screens display consistent mock data.
+- Existing module dashboards continue to work without being rebuilt.
+- The complete flow works without a backend connection.
+
+**End of Document**

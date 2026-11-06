@@ -13,7 +13,7 @@ const ATTENDEES_STORAGE_KEY = 'digitalraiz_vendor_attendees';
 const SCAN_LOGS_STORAGE_KEY = 'digitalraiz_vendor_scan_logs';
 
 class VendorConcertService {
-  private getStoredConcerts(): ConcertEvent[] {
+  getStoredConcerts(): ConcertEvent[] {
     const raw = localStorage.getItem(CONCERTS_STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(CONCERTS_STORAGE_KEY, JSON.stringify(mockVendorConcerts));

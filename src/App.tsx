@@ -26,6 +26,7 @@ import { VendorOverview } from './components/dashboard/VendorOverview';
 import { ConcertsOverview } from './components/concerts/ConcertsOverview';
 import { VendorConcertsList } from './components/concerts/VendorConcertsList';
 import { CategoryList } from './components/concerts/CategoryList';
+import { BookTicketScreen } from './components/concerts/BookTicketScreen';
 import { VendorConcertDetail } from './components/concerts/VendorConcertDetail';
 import { CreateConcertScreen } from './components/concerts/CreateConcertScreen';
 import { ArtistsView } from './components/artists/ArtistsView';
@@ -150,14 +151,21 @@ export function AppContent() {
       setActiveTab('concerts-overview');
     } else if (path === '/concerts/categories' || path === '/categories') {
       setActiveTab('categories');
+    } else if (
+      path.startsWith('/concerts/booking') ||
+      path.startsWith('/concerts/book') ||
+      path.startsWith('/booking') ||
+      path.startsWith('/attendees') ||
+      path.startsWith('/bookings') ||
+      path === '/concerts/bookings'
+    ) {
+      setActiveTab('attendees');
     } else if (path.startsWith('/concerts')) {
       setActiveTab('concerts');
     } else if (path.startsWith('/artists')) {
       setActiveTab('artists');
     } else if (path.startsWith('/gate-scanner')) {
       setActiveTab('gate-scanner');
-    } else if (path.startsWith('/attendees')) {
-      setActiveTab('attendees');
     } else if (path.startsWith('/venues')) {
       setActiveTab('venues');
     } else if (path === '/trips/overview') {
@@ -235,7 +243,7 @@ export function AppContent() {
       const updated = [newTrip, ...prev];
       try {
         localStorage.setItem('wayfor_vendor_trips', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -245,7 +253,7 @@ export function AppContent() {
       const updated = prev.filter((t) => t.id !== id);
       try {
         localStorage.setItem('wayfor_vendor_trips', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -256,7 +264,7 @@ export function AppContent() {
       const updated = [newMeet, ...prev];
       try {
         localStorage.setItem('wayfor_vendor_meets', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -266,7 +274,7 @@ export function AppContent() {
       const updated = prev.filter((m) => m.id !== id);
       try {
         localStorage.setItem('wayfor_vendor_meets', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -356,20 +364,28 @@ export function AppContent() {
         <ShieldAlert className="h-6 w-6" />
       </div>
       <div>
-        <h2 className="text-base font-bold text-slate-900">Module Access Restricted</h2>
+        <h2 className="text-base font-semibold text-slate-900">Module Access Restricted</h2>
         <p className="text-xs text-slate-600 mt-1">
-          Your agency account currently does not have access authorization for the <strong>{moduleName}</strong> module.
+          Your organization account currently does not have an active subscription for the <span className="font-semibold text-slate-800">{moduleName}</span> module.
         </p>
       </div>
       <div className="text-[11px] text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
-        Active modules assigned by Admin: <strong className="text-purple-700">{assignedModules.join(', ')}</strong>
+        Active modules assigned to Organization: <span className="text-purple-700 font-semibold">{assignedModules.join(', ')}</span>
       </div>
-      <div className="pt-2">
+      <div className="pt-2 flex items-center justify-center gap-2.5">
         <button
+          type="button"
           onClick={() => navigate('/overview')}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 cursor-pointer"
+          className="px-3.5 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors cursor-pointer"
         >
-          Return to Studio Dashboard
+          Return to Dashboard
+        </button>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('vendor:open-module-modal'))}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors cursor-pointer shadow-xs shadow-purple-200"
+        >
+          Subscribe & Unlock Module
         </button>
       </div>
     </div>
@@ -418,6 +434,7 @@ export function AppContent() {
           onSearchChange={setSearchQuery}
           currentVendor={currentVendor}
           onLogout={handleLogout}
+          onShowToast={showToast}
         />
 
         <main className="flex-1 p-5 sm:p-7 max-w-7xl w-full mx-auto">
@@ -580,12 +597,47 @@ export function AppContent() {
                     attendees={attendees}
                     concerts={concerts}
                     onToggleCheckIn={handleToggleCheckIn}
+                    onAddBooking={handleAddBooking}
                     onShowToast={showToast}
                   />
                 ) : (
                   <UnauthorizedNotice moduleName="Attendee Manifest" />
                 )
               }
+            />
+            <Route
+              path="/concerts/booking"
+              element={
+                isAuthorized('concerts') ? (
+                  <BookTicketScreen
+                    concerts={concerts}
+                    onAddBooking={handleAddBooking}
+                    onShowToast={showToast}
+                  />
+                ) : (
+                  <UnauthorizedNotice moduleName="Ticket Booking Desk" />
+                )
+              }
+            />
+            <Route
+              path="/concerts/book"
+              element={<Navigate to="/concerts/booking" replace />}
+            />
+            <Route
+              path="/booking"
+              element={<Navigate to="/concerts/booking" replace />}
+            />
+            <Route
+              path="/attendees/book"
+              element={<Navigate to="/concerts/booking" replace />}
+            />
+            <Route
+              path="/bookings"
+              element={<Navigate to="/attendees" replace />}
+            />
+            <Route
+              path="/concerts/bookings"
+              element={<Navigate to="/attendees" replace />}
             />
             <Route
               path="/venues"

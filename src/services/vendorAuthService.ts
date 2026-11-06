@@ -175,6 +175,34 @@ class VendorAuthService {
     }
   }
 
+  getAssignedModules(): string[] {
+    const current = this.getCurrentVendor();
+    if (current?.serviceModules && current.serviceModules.length > 0) {
+      return current.serviceModules;
+    }
+    return [current?.serviceModule || 'concerts'];
+  }
+
+  addServiceModule(moduleId: string): VendorUser {
+    const current = this.getCurrentVendor() || mockVendorProfile;
+    const currentModules = current.serviceModules && current.serviceModules.length > 0
+      ? current.serviceModules
+      : [current.serviceModule || 'concerts'];
+
+    if (!currentModules.includes(moduleId)) {
+      const updatedModules = [...currentModules, moduleId];
+      const updated: VendorUser = {
+        ...current,
+        serviceModules: updatedModules,
+        serviceModule: current.serviceModule || moduleId
+      };
+      this.setCurrentVendor(updated);
+      this.saveRegisteredVendor(updated);
+      return updated;
+    }
+    return current;
+  }
+
   findVendorByIdentifier(identifier: string): VendorUser | null {
     const raw = identifier.trim();
     if (!raw) return null;

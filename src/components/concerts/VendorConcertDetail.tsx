@@ -45,7 +45,6 @@ import { MetricCard } from '../common/MetricCard';
 import { Table, type Column } from '../common/Table';
 import { Pagination } from '../common/Pagination';
 import { AppImage } from '../common/AppImage';
-import { BookTicketModal } from './BookTicketModal';
 import { formatUtcDate, formatUtcTime } from '../../utils/dateUtils';
 import { vendorConcertService } from '../../services/vendorConcertService';
 import { EVENT_CATEGORIES, type EventCategoryType } from './CreateConcertScreen';
@@ -110,8 +109,6 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
   const [attendeePage, setAttendeePage] = useState(1);
   const [attendeePageSize, setAttendeePageSize] = useState(5);
 
-  // Booking Modal State
-  const [isBookTicketOpen, setIsBookTicketOpen] = useState(false);
   const [isSpecsExpanded, setIsSpecsExpanded] = useState(true);
 
   const concert = concerts.find(c => c.id === concertId) || concerts[0];
@@ -379,7 +376,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
           {totalTierAvailable > 0 && (
             <button
               type="button"
-              onClick={() => setIsBookTicketOpen(true)}
+              onClick={() => navigate(`/concerts/booking?concertId=${concert.id}`)}
               className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-purple-600 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs shadow-purple-200 transition-all cursor-pointer shrink-0"
             >
               <Ticket className="h-3.5 w-3.5" />
@@ -894,7 +891,7 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
             {totalTierAvailable > 0 && (
               <button
                 type="button"
-                onClick={() => setIsBookTicketOpen(true)}
+                onClick={() => navigate(`/concerts/booking?concertId=${concert.id}`)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-xs shadow-purple-200 transition-all cursor-pointer"
               >
                 <Plus className="h-3 w-3 stroke-[2.5]" />
@@ -1033,15 +1030,6 @@ export const VendorConcertDetail: React.FC<VendorConcertDetailProps> = ({
           </table>
         </div>
       </div>
-
-      {/* Book Concert Ticket Modal */}
-      <BookTicketModal
-        isOpen={isBookTicketOpen}
-        onClose={() => setIsBookTicketOpen(false)}
-        concert={concert}
-        onAddBooking={onAddBooking}
-        onShowToast={onShowToast}
-      />
 
       {/* Photo Lightbox Modal */}
       {

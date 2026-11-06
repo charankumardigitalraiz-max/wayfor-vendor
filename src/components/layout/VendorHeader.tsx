@@ -11,16 +11,12 @@ import {
   Sparkles,
   Ticket,
   ChevronDown,
-  User,
-  Settings,
-  CreditCard,
-  Building2,
-  ShieldCheck,
-  LogOut,
-  Scan
+  LayoutGrid
 } from 'lucide-react';
 import type { NavigationTab } from '../../types';
 import { mockVendorProfile } from '../../data/mockVendorData';
+import { ModuleAccessDrawer } from './ModuleAccessDrawer';
+import { VendorProfileDrawer } from './VendorProfileDrawer';
 
 interface VendorHeaderProps {
   activeTab: NavigationTab;
@@ -29,6 +25,7 @@ interface VendorHeaderProps {
   onSearchChange: (q: string) => void;
   currentVendor?: any;
   onLogout?: () => void;
+  onShowToast?: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 export const VendorHeader: React.FC<VendorHeaderProps> = ({
@@ -37,26 +34,34 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
   searchQuery,
   onSearchChange,
   currentVendor,
-  onLogout
+  onLogout,
+  onShowToast
 }) => {
   const activeProfile = currentVendor || mockVendorProfile;
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [showModuleDrawer, setShowModuleDrawer] = useState(false);
   const [isLiveEventMode, setIsLiveEventMode] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
-  const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOpenModuleDrawer = () => setShowModuleDrawer(true);
+    window.addEventListener('vendor:open-module-drawer', handleOpenModuleDrawer);
+    window.addEventListener('vendor:open-module-modal', handleOpenModuleDrawer);
+    return () => {
+      window.removeEventListener('vendor:open-module-drawer', handleOpenModuleDrawer);
+      window.removeEventListener('vendor:open-module-modal', handleOpenModuleDrawer);
+    };
+  }, []);
 
   // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      if (profileRef.current && !profileRef.current.contains(target)) {
-        setShowProfileModal(false);
-      }
       if (notificationsRef.current && !notificationsRef.current.contains(target)) {
         setShowNotifications(false);
       }
@@ -219,7 +224,7 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
             type="button"
             onClick={() => {
               setShowNotifications(!showNotifications);
-              setShowProfileModal(false);
+              // setShowProfileModal(false);
             }}
             className="relative h-9 w-9 rounded-md border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
           >
@@ -269,15 +274,16 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
           )}
         </div>
 
-        {/* Vendor Avatar & Smart Moving Modal */}
-        <div className="relative" ref={profileRef}>
+        {/* Vendor Avatar Trigger for Profile Drawer */}
+        <div>
           <button
             type="button"
             onClick={() => {
-              setShowProfileModal(!showProfileModal);
+              setShowProfileDrawer(true);
               setShowNotifications(false);
             }}
             className="flex items-center gap-2 pl-2.5 pr-2 py-1.5 rounded-lg border-l border-slate-200 hover:bg-slate-50 transition-all cursor-pointer group"
+            title="Open Account & Profile Drawer"
           >
             <div className="relative">
               <img
@@ -294,125 +300,39 @@ export const VendorHeader: React.FC<VendorHeaderProps> = ({
               <p className="text-[10px] text-slate-400">Head of Touring</p>
             </div>
             <ChevronDown
-              className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showProfileModal ? 'rotate-180 text-purple-600' : 'group-hover:text-slate-600'
+              className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showProfileDrawer ? 'rotate-180 text-purple-600' : 'group-hover:text-slate-600'
                 }`}
             />
           </button>
-
-          {/* Profile Dropdown Menu */}
-          {showProfileModal && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 py-1.5 z-50 animate-in fade-in slide-in-from-top-2">
-              {/* User Identity */}
-              <div
-                onClick={() => {
-                  setShowProfileModal(false);
-                  navigate('/profile');
-                }}
-                className="px-3.5 py-3 border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer"
-                title="View Full Promoter Profile"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="relative shrink-0">
-                    <img
-                      src={activeProfile.avatar}
-                      alt={activeProfile.name}
-                      className="h-9 w-9 rounded-full object-cover border border-slate-200 shadow-2xs"
-                    />
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-semibold text-slate-900 truncate">
-                        {activeProfile.name}
-                      </span>
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                    </div>
-                    <p className="text-[11px] text-slate-500 truncate">
-                      {activeProfile.email}
-                    </p>
-                    {/* <p className="text-[10px] text-purple-700 font-medium truncate mt-0.5">
-                      {activeProfile.companyName || 'Promoter Studio'}
-                    </p> */}
-                  </div>
-                </div>
-              </div>
-
-              {/* Authorized Modules Badges */}
-              {/* <div className="px-3 py-2 bg-slate-50/70 border-b border-slate-100">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Authorized Modules
-                  </span>
-                  <span className="text-[9px] font-bold text-purple-700 bg-purple-100/60 px-1.5 py-0.2 rounded border border-purple-200">
-                    {(activeProfile.serviceModules?.length || 1)} Active
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {(activeProfile.serviceModules || ['concerts']).map((mod: string) => (
-                    <span
-                      key={mod}
-                      className={`text-[9px] px-2 py-0.5 rounded font-semibold ${
-                        mod === 'concerts'
-                          ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                          : mod === 'trips'
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                          : mod === 'stranger-meets'
-                          ? 'bg-teal-50 text-teal-800 border border-teal-200'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                      }`}
-                    >
-                      {mod === 'concerts' ? 'Concerts' : mod === 'trips' ? 'Trip Planner' : mod === 'stranger-meets' ? 'Stranger Meets' : 'Carpooling'}
-                    </span>
-                  ))}
-                </div>
-              </div> */}
-
-              {/* Quick Navigation */}
-              <div className="p-1 space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileModal(false);
-                    navigate('/profile');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left"
-                >
-                  <User className="h-4 w-4 text-slate-400" />
-                  <span>My Profile</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileModal(false);
-                    navigate('/settings');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer text-left"
-                >
-                  <Settings className="h-4 w-4 text-slate-400" />
-                  <span>Studio Settings</span>
-                </button>
-              </div>
-
-              {/* Sign Out */}
-              <div className="p-1 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileModal(false);
-                    if (onLogout) onLogout();
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
-                >
-                  <LogOut className="h-4 w-4 text-rose-500" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Module Launcher Icon Button at Right Edge */}
+        <button
+          type="button"
+          onClick={() => setShowModuleDrawer(true)}
+          className="relative h-9 w-9 rounded-md border border-slate-200 bg-white hover:bg-purple-50 hover:border-purple-200 text-slate-600 hover:text-purple-700 flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs"
+          title="Module Subscriptions & Access"
+          aria-label="Module Subscriptions & Access"
+        >
+          <LayoutGrid className="h-4 w-4" />
+        </button>
       </div>
-    </header >
+
+      {/* Smart Module Access & Subscription Slide-over Drawer */}
+      <ModuleAccessDrawer
+        isOpen={showModuleDrawer}
+        onClose={() => setShowModuleDrawer(false)}
+        currentVendor={currentVendor}
+        onShowToast={onShowToast}
+      />
+
+      {/* Profile & Account Slide-over Drawer */}
+      <VendorProfileDrawer
+        isOpen={showProfileDrawer}
+        onClose={() => setShowProfileDrawer(false)}
+        currentVendor={currentVendor}
+        onLogout={onLogout}
+      />
+    </header>
   );
 };

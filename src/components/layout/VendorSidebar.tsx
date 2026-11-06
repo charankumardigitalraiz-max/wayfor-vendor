@@ -16,7 +16,9 @@ import {
   LogOut,
   LayoutDashboard,
   Sparkle,
-  FolderTree
+  FolderTree,
+  Ticket,
+  Plus
 } from 'lucide-react';
 import type { NavigationTab } from '../../types';
 import { mockVendorProfile } from '../../data/mockVendorData';
@@ -98,7 +100,7 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
   activeTab,
   onTabChange,
   activeConcertsCount,
-  totalAttendeesCount: _totalAttendeesCount,
+  totalAttendeesCount,
   artistsCount = 0,
   tripsCount = 0,
   meetsCount = 0,
@@ -180,6 +182,7 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
     items: [
       { id: 'concerts-overview', label: 'Concerts Overview', path: '/concerts/overview', icon: LayoutDashboard },
       { id: 'concerts', label: 'My Concerts', path: '/concerts', icon: Music, badge: activeConcertsCount },
+      { id: 'attendees', label: 'Ticket Bookings', path: '/attendees', icon: Ticket, badge: totalAttendeesCount },
       { id: 'categories', label: 'Event Categories', path: '/concerts/categories', icon: FolderTree },
       { id: 'artists', label: 'Artists & Lineup', path: '/artists', icon: Mic2, badge: artistsCount },
       { id: 'venues', label: 'Venues & Stages', path: '/venues', icon: Building2 },
@@ -263,15 +266,15 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
           type="button"
           onClick={() => handleNav('overview', '/overview')}
           className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname === '/overview' || location.pathname === '/'
-              ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+            ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
             }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <Compass
               className={`h-4 w-4 shrink-0 transition-colors ${location.pathname === '/overview' || location.pathname === '/'
-                  ? 'text-purple-600'
-                  : 'text-slate-400 group-hover:text-slate-600'
+                ? 'text-purple-600'
+                : 'text-slate-400 group-hover:text-slate-600'
                 }`}
             />
             <span className="truncate">Studio Dashboard</span>
@@ -305,17 +308,17 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                   type="button"
                   onClick={() => handleParentModuleClick(module)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${isModuleActive && !isExpanded
-                      ? `${style.activeBg} font-semibold shadow-2xs`
-                      : isModuleActive
-                        ? 'text-slate-900 font-semibold bg-slate-50/70'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+                    ? `${style.activeBg} font-semibold shadow-2xs`
+                    : isModuleActive
+                      ? 'text-slate-900 font-semibold bg-slate-50/70'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
                     }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 pr-1">
                     <Icon
                       className={`h-4 w-4 shrink-0 transition-colors ${isModuleActive
-                          ? style.activeIcon
-                          : 'text-slate-400 group-hover:text-slate-600'
+                        ? style.activeIcon
+                        : 'text-slate-400 group-hover:text-slate-600'
                         }`}
                     />
                     <span className="truncate">{module.label}</span>
@@ -325,8 +328,8 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                     {module.badge !== undefined && module.badge > 0 && (
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${isModuleActive
-                            ? `${style.activeBadgeBg} ${style.activeBadgeText}`
-                            : 'bg-slate-100 text-slate-600'
+                          ? `${style.activeBadgeBg} ${style.activeBadgeText}`
+                          : 'bg-slate-100 text-slate-600'
                           }`}
                       >
                         {module.badge}
@@ -363,8 +366,8 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                           type="button"
                           onClick={() => handleNav(sub.id, sub.path)}
                           className={`w-full flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-colors text-left cursor-pointer group ${isSubActive
-                              ? `${style.activeSubBg} font-semibold shadow-2xs`
-                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+                            ? `${style.activeSubBg} font-semibold shadow-2xs`
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
                             }`}
                         >
                           <span className="truncate">{sub.label}</span>
@@ -372,8 +375,8 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
                           {sub.badge !== undefined && sub.badge !== 0 && (
                             <span
                               className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ml-1.5 ${isSubActive
-                                  ? `${style.activeBadgeBg} ${style.activeBadgeText}`
-                                  : 'bg-slate-100 text-slate-500'
+                                ? `${style.activeBadgeBg} ${style.activeBadgeText}`
+                                : 'bg-slate-100 text-slate-500'
                                 }`}
                             >
                               {sub.badge}
@@ -387,6 +390,25 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
               </div>
             );
           })}
+
+          {/* {vendorActiveModules.length < allAvailableModules.length && (
+            <div className="pt-1.5 px-1">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('vendor:open-module-modal'))}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-dashed border-purple-300 bg-purple-50/40 hover:bg-purple-50 text-[11px] font-medium text-purple-700 transition-colors cursor-pointer"
+                title="Subscribe to more business modules"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Plus className="w-3 h-3 text-purple-600" />
+                  <span>Subscribe to Modules</span>
+                </span>
+                <span className="text-[10px] text-purple-600/80 font-mono">
+                  +{allAvailableModules.length - vendorActiveModules.length} More
+                </span>
+              </button>
+            </div>
+          )} */}
         </div>
 
         {/* MANAGEMENT Header */}
@@ -399,15 +421,15 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
             type="button"
             onClick={() => handleNav('payouts', '/payouts')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname.startsWith('/payouts')
-                ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+              ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
               }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <Wallet
                 className={`h-4 w-4 shrink-0 transition-colors ${location.pathname.startsWith('/payouts')
-                    ? 'text-purple-600'
-                    : 'text-slate-400 group-hover:text-slate-600'
+                  ? 'text-purple-600'
+                  : 'text-slate-400 group-hover:text-slate-600'
                   }`}
               />
               <span className="truncate">Box Office & Payouts</span>
@@ -418,15 +440,15 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
             type="button"
             onClick={() => handleNav('settings', '/settings')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors text-left cursor-pointer group ${location.pathname.startsWith('/settings')
-                ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+              ? 'bg-purple-50 text-purple-700 font-semibold shadow-2xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
               }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <Settings
                 className={`h-4 w-4 shrink-0 transition-colors ${location.pathname.startsWith('/settings')
-                    ? 'text-purple-600'
-                    : 'text-slate-400 group-hover:text-slate-600'
+                  ? 'text-purple-600'
+                  : 'text-slate-400 group-hover:text-slate-600'
                   }`}
               />
               <span className="truncate">Studio Settings</span>

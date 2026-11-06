@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Ticket,
   User,
   Mail,
   Phone,
-  DoorOpen,
   CheckCircle2,
   Calendar,
-  MapPin,
-  AlertCircle,
+  AlertCircle
 } from 'lucide-react';
 import type { ConcertEvent, AttendeeBooking } from '../../types';
 import { Modal } from '../common/Modal';
@@ -19,7 +17,8 @@ import { formatUtcDate } from '../../utils/dateUtils';
 export interface BookTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
-  concert: ConcertEvent;
+  concert?: ConcertEvent;
+  concerts?: ConcertEvent[];
   onAddBooking?: (booking: AttendeeBooking) => void;
   onShowToast: (msg: string) => void;
 }
@@ -27,10 +26,14 @@ export interface BookTicketModalProps {
 export const BookTicketModal: React.FC<BookTicketModalProps> = ({
   isOpen,
   onClose,
-  concert,
+  concert: propConcert,
+  concerts = [],
   onAddBooking,
   onShowToast
 }) => {
+  const [activeConcertId, setActiveConcertId] = useState<string>(
+    propConcert?.id || concerts[0]?.id || ''
+  );
   const [selectedTierName, setSelectedTierName] = useState<string>('');
   const [bookingQuantity, setBookingQuantity] = useState<number>(1);
   const [customerName, setCustomerName] = useState('');
@@ -40,13 +43,30 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const activeConcert = useMemo(() => {
+    if (propConcert) return propConcert;
+    if (concerts.length > 0) {
+      return concerts.find((c) => c.id === activeConcertId) || concerts[0];
+    }
+    return null;
+  }, [propConcert, concerts, activeConcertId]);
+
   // Reset and pre-select available tier on open
   useEffect(() => {
-    if (isOpen && concert) {
-      const firstAvailable =
-        concert.ticketTiers.find((t) => t.available > 0) || concert.ticketTiers[0];
-      if (firstAvailable) {
-        setSelectedTierName(firstAvailable.name);
+    if (isOpen) {
+      const targetConcert =
+        propConcert ||
+        (concerts.length > 0
+          ? concerts.find((c) => c.id === activeConcertId) || concerts[0]
+          : null);
+
+      if (targetConcert) {
+        setActiveConcertId(targetConcert.id);
+        const firstAvailable =
+          targetConcert.ticketTiers.find((t) => t.available > 0) || targetConcert.ticketTiers[0];
+        if (firstAvailable) {
+          setSelectedTierName(firstAvailable.name);
+        }
       }
       setBookingQuantity(1);
       setCustomerName('');
@@ -56,11 +76,11 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
       setErrors({});
       setIsSubmitting(false);
     }
-  }, [isOpen, concert]);
+  }, [isOpen, propConcert, concerts]);
 
   const selectedBookingTier =
-    concert.ticketTiers.find((t) => t.name === selectedTierName) ||
-    concert.ticketTiers[0];
+    activeConcert?.ticketTiers.find((t) => t.name === selectedTierName) ||
+    activeConcert?.ticketTiers[0];
 
   const maxTierAvailable = selectedBookingTier ? selectedBookingTier.available : 0;
   const isSelectedTierSoldOut = maxTierAvailable <= 0;
@@ -100,6 +120,11 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!activeConcert || !selectedBookingTier) {
+      onShowToast('Please select a valid concert and tier.');
+      return;
+    }
+
     if (!validate()) {
       onShowToast('Please fill in all required customer details accurately.');
       return;
@@ -113,15 +138,15 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
     const newBooking: AttendeeBooking = {
       id: `booking-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       orderNumber: randomOrderNumber,
-      concertId: concert.id,
-      concertTitle: concert.title,
+      concertId: activeConcert.id,
+      concertTitle: activeConcert.title,
       customerName: customerName.trim(),
       customerEmail: customerEmail.trim(),
       customerPhone: customerPhone.trim(),
       ticketTier: selectedBookingTier.name,
       seatsCount: bookingQuantity,
       totalPaid: bookingTotalAmount,
-      currency: concert.currency || 'INR',
+      currency: activeConcert.currency || 'INR',
       purchaseDate: new Date().toISOString(),
       ticketCode: randomTicketCode,
       checkedIn: false,
@@ -149,35 +174,89 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
 
   if (!isOpen) return null;
 
+  if (!activeConcert) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Book Concert Ticket"
+        maxWidth="md"
+      >
+        <div className="p-6 text-center space-y-3">
+          <Ticket className="h-10 w-10 text-slate-300 mx-auto" />
+          <h3 className="text-sm font-semibold text-slate-800">No Concerts Available</h3>
+          <p className="text-xs text-slate-500">
+            Please publish a concert first before creating ticket reservations.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-900 cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Book Concert Ticket"
-      subtitle={`Manual pass booking and gate allocation for ${concert.title}`}
+      subtitle={`Manual pass booking and seat reservation for ${activeConcert.title}`}
       maxWidth="lg"
     >
       <form onSubmit={handleConfirmBooking} className="space-y-4">
+        {/* Concert Selector (if multiple concerts available and no single concert was hardcoded) */}
+        {!propConcert && concerts.length > 1 && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700">
+              Select Concert Event <span className="text-purple-600">*</span>
+            </label>
+            <select
+              value={activeConcert.id}
+              onChange={(e) => {
+                const newId = e.target.value;
+                setActiveConcertId(newId);
+                const found = concerts.find((c) => c.id === newId);
+                if (found) {
+                  const firstAvail =
+                    found.ticketTiers.find((t) => t.available > 0) || found.ticketTiers[0];
+                  setSelectedTierName(firstAvail?.name || '');
+                }
+              }}
+              className="w-full h-10 rounded-md border border-slate-200/90 bg-white hover:bg-slate-50 focus:bg-white px-3.5 pr-8 py-2 text-xs sm:text-[13px] font-medium text-slate-800 outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 cursor-pointer shadow-2xs"
+            >
+              {concerts.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title} • {c.city} ({formatUtcDate(c.date)})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Event Summary Mini-Banner */}
         <div className="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200/80 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-11 w-11 rounded-lg overflow-hidden bg-purple-100 shrink-0 border border-purple-200">
               <AppImage
-                src={concert.image}
-                alt={concert.title}
+                src={activeConcert.image}
+                alt={activeConcert.title}
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="min-w-0">
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                {concert.title}
+                {activeConcert.title}
               </h4>
               <p className="text-[11px] text-purple-700 font-medium truncate mt-0.5">
-                {formatUtcDate(concert.date)} · Doors {concert.doorsOpen} · {concert.venueName}, {concert.city}
+                {formatUtcDate(activeConcert.date)} · Doors {activeConcert.doorsOpen} · {activeConcert.venueName}, {activeConcert.city}
               </p>
             </div>
           </div>
-
         </div>
 
         {/* Ticket Tier Selection */}
@@ -187,12 +266,12 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
               Select Ticket Tier <span className="text-purple-600">*</span>
             </label>
             <span className="text-[11px] text-slate-500 font-normal">
-              {concert.ticketTiers.length} categories available
+              {activeConcert.ticketTiers.length} categories available
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {concert.ticketTiers.map((tier) => {
+            {activeConcert.ticketTiers.map((tier) => {
               const isSelected = selectedBookingTier?.name === tier.name;
               const isSoldOut = tier.available <= 0;
 
@@ -211,10 +290,10 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
                     }
                   }}
                   className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${isSoldOut
-                    ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'
-                    : isSelected
-                      ? 'border-purple-600 bg-purple-50/60 ring-2 ring-purple-600/20 shadow-xs'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                      ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'
+                      : isSelected
+                        ? 'border-purple-600 bg-purple-50/60 ring-2 ring-purple-600/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -228,10 +307,10 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
                     </div>
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${isSoldOut
-                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                        : tier.available <= 10
-                          ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : tier.available <= 10
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         }`}
                     >
                       {isSoldOut ? 'Sold Out' : `${tier.available} left`}
@@ -249,69 +328,51 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
           )}
         </div>
 
-        {/* Quantity Stepper & Gate Assignment */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-4">
-            <div>
-              <label className="text-xs font-semibold text-slate-800 block">
-                Passes / Quantity <span className="text-purple-600">*</span>
-              </label>
-              <span className="text-[10px] text-slate-500 font-normal">
-                Max {Math.min(10, maxTierAvailable || 1)} per booking
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={bookingQuantity <= 1 || isSelectedTierSoldOut}
-                onClick={() => setBookingQuantity(Math.max(1, bookingQuantity - 1))}
-                className="h-8 w-8 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
-              >
-                -
-              </button>
-              <span className="w-8 text-center text-xs font-bold text-slate-900">
-                {bookingQuantity}
-              </span>
-              <button
-                type="button"
-                disabled={
-                  bookingQuantity >= Math.min(10, maxTierAvailable) || isSelectedTierSoldOut
-                }
-                onClick={() =>
-                  setBookingQuantity(
-                    Math.min(Math.min(10, maxTierAvailable), bookingQuantity + 1)
-                  )
-                }
-                className="h-8 w-8 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
-              >
-                +
-              </button>
-            </div>
+        {/* Quantity Stepper */}
+        <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-800 block">
+              Passes / Quantity <span className="text-purple-600">*</span>
+            </label>
+            <span className="text-[10px] text-slate-500 font-normal">
+              Max {Math.min(10, maxTierAvailable || 1)} per booking
+            </span>
           </div>
 
-          {/* <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-col justify-center">
-            <label className="text-xs font-semibold text-slate-800 block mb-1">
-              Gate Assignment
-            </label>
-            <div className="relative">
-              <DoorOpen className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <input
-                type="text"
-                value={customGate}
-                onChange={(e) => setCustomGate(e.target.value)}
-                placeholder={defaultGate}
-                className="w-full h-8 pl-8 pr-2.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none transition-colors"
-              />
-            </div>
-          </div> */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={bookingQuantity <= 1 || isSelectedTierSoldOut}
+              onClick={() => setBookingQuantity(Math.max(1, bookingQuantity - 1))}
+              className="h-8 w-8 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+            >
+              -
+            </button>
+            <span className="w-8 text-center text-xs font-bold text-slate-900">
+              {bookingQuantity}
+            </span>
+            <button
+              type="button"
+              disabled={
+                bookingQuantity >= Math.min(10, maxTierAvailable) || isSelectedTierSoldOut
+              }
+              onClick={() =>
+                setBookingQuantity(
+                  Math.min(Math.min(10, maxTierAvailable), bookingQuantity + 1)
+                )
+              }
+              className="h-8 w-8 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Customer Information */}
         <div className="space-y-3 pt-1">
           <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
             <User className="h-3.5 w-3.5 text-purple-600" />
-            <span>Customer & Attendee Details</span>
+            <span>Customer Details</span>
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -392,7 +453,7 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
           </div>
         </div>
 
-        {/* Order Price & Code Summary */}
+        {/* Order Price Summary */}
         <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-600">
             <span>Pass Category:</span>
@@ -401,16 +462,10 @@ export const BookTicketModal: React.FC<BookTicketModalProps> = ({
               {selectedBookingTier?.price.toLocaleString()})
             </span>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-600">
-            <span>Gate Allocation:</span>
-            <span className="font-semibold text-purple-700">
-              {customGate.trim() || defaultGate}
-            </span>
-          </div>
           <div className="border-t border-slate-200/80 pt-2 flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-slate-900 block">Total Amount</span>
-              <span className="text-[10px] text-slate-500">Includes arena admission & taxes</span>
+              <span className="text-[10px] text-slate-500">Includes taxes & admission</span>
             </div>
             <span className="text-base font-extrabold text-purple-700">
               ₹{bookingTotalAmount.toLocaleString()}
