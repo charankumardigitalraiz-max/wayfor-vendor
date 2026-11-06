@@ -114,13 +114,12 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
           style={{
             left: `${mousePos.x}px`,
             top: `${mousePos.y}px`,
-            transform: `translate(${
-              mousePos.x < 140
-                ? '12px'
-                : containerRef.current && mousePos.x > containerRef.current.clientWidth - 140
+            transform: `translate(${mousePos.x < 140
+              ? '12px'
+              : containerRef.current && mousePos.x > containerRef.current.clientWidth - 140
                 ? 'calc(-100% - 12px)'
                 : '-50%'
-            }, ${mousePos.y < 125 ? '16px' : 'calc(-100% - 14px)'})`
+              }, ${mousePos.y < 125 ? '16px' : 'calc(-100% - 14px)'})`
           }}
         >
           <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
@@ -133,9 +132,9 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
                     barColors[activeTierIndex % barColors.length].fill
                 }}
               />
-              <span className="font-bold text-slate-900 truncate">
+              {/* <span className="font-bold text-slate-900 truncate">
                 {activeTier.label}
-              </span>
+              </span> */}
             </div>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700">
               Stage {activeTierIndex + 1}
@@ -223,13 +222,12 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
             <div
               key={tier.id}
               onMouseEnter={() => setHoveredTierId(tier.id)}
-              className={`space-y-1.5 transition-all duration-150 cursor-pointer p-1 rounded-lg ${
-                isHovered
-                  ? 'bg-slate-50/80 -translate-y-0.5'
-                  : isAnyHovered
+              className={`space-y-1.5 transition-all duration-150 cursor-pointer p-1 rounded-lg ${isHovered
+                ? 'bg-slate-50/80 -translate-y-0.5'
+                : isAnyHovered
                   ? 'opacity-60'
                   : ''
-              }`}
+                }`}
             >
               {/* Row Label & Values */}
               <div className="flex items-center justify-between text-xs">
@@ -250,9 +248,8 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
                     </span>
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                      tier.badgeColor || color.badgeBg
-                    }`}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${tier.badgeColor || color.badgeBg
+                      }`}
                   >
                     {tier.badgeText || `${pct.toFixed(1)}%`}
                   </span>
@@ -287,7 +284,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
       </div>
 
       {/* Footer Metrics */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+      {/* <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
         <div className="flex items-center gap-1.5">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
           <span>Stage-by-stage conversion velocity and ticket yield</span>
@@ -295,7 +292,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
         <span className="font-semibold text-slate-800">
           {overallYieldPct}% Net Admissions
         </span>
-      </div>
+      </div> */}
     </div>
   );
 };

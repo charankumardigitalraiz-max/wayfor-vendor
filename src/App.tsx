@@ -25,6 +25,7 @@ import { VendorHeader } from './components/layout/VendorHeader';
 import { VendorOverview } from './components/dashboard/VendorOverview';
 import { ConcertsOverview } from './components/concerts/ConcertsOverview';
 import { VendorConcertsList } from './components/concerts/VendorConcertsList';
+import { CategoryList } from './components/concerts/CategoryList';
 import { VendorConcertDetail } from './components/concerts/VendorConcertDetail';
 import { CreateConcertScreen } from './components/concerts/CreateConcertScreen';
 import { ArtistsView } from './components/artists/ArtistsView';
@@ -147,6 +148,8 @@ export function AppContent() {
     const path = location.pathname;
     if (path === '/concerts/overview') {
       setActiveTab('concerts-overview');
+    } else if (path === '/concerts/categories' || path === '/categories') {
+      setActiveTab('categories');
     } else if (path.startsWith('/concerts')) {
       setActiveTab('concerts');
     } else if (path.startsWith('/artists')) {
@@ -450,6 +453,20 @@ export function AppContent() {
                   <UnauthorizedNotice moduleName="Concerts & Events" />
                 )
               }
+            />
+            <Route
+              path="/concerts/categories"
+              element={
+                isAuthorized('concerts') ? (
+                  <CategoryList />
+                ) : (
+                  <UnauthorizedNotice moduleName="Event Categories" />
+                )
+              }
+            />
+            <Route
+              path="/categories"
+              element={<Navigate to="/concerts/categories" replace />}
             />
             <Route
               path="/concerts"

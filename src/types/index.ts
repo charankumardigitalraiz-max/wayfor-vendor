@@ -2,6 +2,7 @@ export type NavigationTab =
   | 'overview'
   | 'concerts-overview'
   | 'concerts'
+  | 'categories'
   | 'artists'
   | 'gate-scanner'
   | 'attendees'

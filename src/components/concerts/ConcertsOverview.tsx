@@ -155,7 +155,7 @@ export const ConcertsOverview: React.FC<ConcertsOverviewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <FunnelChart
           title="Ticket Admissions Funnel"
-          subtitle="Tour page discovery through confirmed stadium admissions"
+          subtitle=""
           unit="tickets"
           tiers={[
             {

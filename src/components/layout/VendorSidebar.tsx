@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   LogOut,
   LayoutDashboard,
-  Sparkle
+  Sparkle,
+  FolderTree
 } from 'lucide-react';
 import type { NavigationTab } from '../../types';
 import { mockVendorProfile } from '../../data/mockVendorData';
@@ -179,6 +180,7 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({
     items: [
       { id: 'concerts-overview', label: 'Concerts Overview', path: '/concerts/overview', icon: LayoutDashboard },
       { id: 'concerts', label: 'My Concerts', path: '/concerts', icon: Music, badge: activeConcertsCount },
+      { id: 'categories', label: 'Event Categories', path: '/concerts/categories', icon: FolderTree },
       { id: 'artists', label: 'Artists & Lineup', path: '/artists', icon: Mic2, badge: artistsCount },
       { id: 'venues', label: 'Venues & Stages', path: '/venues', icon: Building2 },
     ]

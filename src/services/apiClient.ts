@@ -1,7 +1,7 @@
 const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string) ||
   (import.meta.env.VITE_API_BASE_URL as string) ||
-  'http://192.168.0.115:5001/api';
+  'http://192.168.0.116:5001/api';
 
 const VENDOR_TOKEN_KEY = 'wayfor_vendor_token';
 
